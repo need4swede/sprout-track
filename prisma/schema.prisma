@@ -9,3 +9,164 @@ datasource db {
   provider = "sqlite"
   url      = "file:../db/baby-tracker.db"
 }
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum SleepType {
+  NAP
+  NIGHT_SLEEP
+}
+
+enum SleepQuality {
+  POOR
+  FAIR
+  GOOD
+  EXCELLENT
+}
+
+enum FeedType {
+  BREAST
+  BOTTLE
+  SOLIDS
+}
+
+enum BreastSide {
+  LEFT
+  RIGHT
+}
+
+enum DiaperType {
+  WET
+  DIRTY
+  BOTH
+}
+
+enum Mood {
+  HAPPY
+  CALM
+  FUSSY
+  CRYING
+}
+
+model Baby {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  birthDate   DateTime
+  gender      Gender?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // Relationships
+  sleepLogs   SleepLog[]
+  feedLogs    FeedLog[]
+  diaperLogs  DiaperLog[]
+  moodLogs    MoodLog[]
+  notes       Note[]
+
+  @@index([birthDate])
+  @@index([deletedAt])
+}
+
+model SleepLog {
+  id        String       @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?         // Duration in minutes, calculated from start/end
+  type      SleepType
+  location  String?
+  quality   SleepQuality?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  deletedAt DateTime?
+  
+  // Relationships
+  baby      Baby        @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId    String
+
+  @@index([startTime])
+  @@index([endTime])
+  @@index([babyId])
+  @@index([deletedAt])
+}
+
+model FeedLog {
+  id        String      @id @default(uuid())
+  time      DateTime
+  type      FeedType
+  amount    Float?      // In ml for bottles, minutes for nursing
+  side      BreastSide?
+  food      String?     // Description of solid foods
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  
+  // Relationships
+  baby      Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId    String
+
+  @@index([time])
+  @@index([babyId])
+  @@index([deletedAt])
+}
+
+model DiaperLog {
+  id        String      @id @default(uuid())
+  time      DateTime
+  type      DiaperType
+  condition String?
+  color     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  
+  // Relationships
+  baby      Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId    String
+
+  @@index([time])
+  @@index([babyId])
+  @@index([deletedAt])
+}
+
+model MoodLog {
+  id        String    @id @default(uuid())
+  time      DateTime
+  mood      Mood
+  intensity Int?      @default(3) // Scale of 1-5
+  duration  Int?      // Duration in minutes
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  
+  // Relationships
+  baby      Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId    String
+
+  @@index([time])
+  @@index([babyId])
+  @@index([deletedAt])
+}
+
+model Note {
+  id        String    @id @default(uuid())
+  time      DateTime
+  content   String    // The actual note content
+  category  String?   // Optional categorization
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  
+  // Relationships
+  baby      Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId    String
+
+  @@index([time])
+  @@index([babyId])
+  @@index([deletedAt])
+}
