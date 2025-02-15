@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -15,12 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState } from 'react';
+import { SleepType, SleepQuality } from '@prisma/client';
 
 interface SleepModalProps {
   open: boolean;
   onClose: () => void;
   isSleeping: boolean;
   onSleepToggle: () => void;
+  babyId: string | undefined;
 }
 
 export default function SleepModal({
@@ -28,24 +29,32 @@ export default function SleepModal({
   onClose,
   isSleeping,
   onSleepToggle,
+  babyId,
 }: SleepModalProps) {
   const [formData, setFormData] = useState({
-    startTime: '',
+    startTime: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
     endTime: '',
-    mood: '',
+    type: 'NAP' as SleepType,
     location: '',
-    notes: '',
+    quality: '' as SleepQuality | '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!babyId) return;
+
     try {
       const response = await fetch('/api/sleep-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          babyId,
+          startTime: new Date(formData.startTime),
+          endTime: formData.endTime ? new Date(formData.endTime) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -53,7 +62,7 @@ export default function SleepModal({
       }
 
       onClose();
-      if (!isSleeping) {
+      if (isSleeping) {
         onSleepToggle();
       }
     } catch (error) {
@@ -65,7 +74,9 @@ export default function SleepModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isSleeping ? 'Stop Sleep' : 'Start Sleep'}</DialogTitle>
+          <DialogTitle>
+            {isSleeping ? 'End Sleep' : 'Start Sleep'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -93,58 +104,59 @@ export default function SleepModal({
             </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Mood</label>
+            <label className="text-sm font-medium">Type</label>
             <Select
-              value={formData.mood}
-              onValueChange={(value) => setFormData({ ...formData, mood: value })}
+              value={formData.type}
+              onValueChange={(value: SleepType) =>
+                setFormData({ ...formData, type: value })
+              }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select mood" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="happy">Happy</SelectItem>
-                <SelectItem value="calm">Calm</SelectItem>
-                <SelectItem value="fussy">Fussy</SelectItem>
-                <SelectItem value="crying">Crying</SelectItem>
+                <SelectItem value="NAP">Nap</SelectItem>
+                <SelectItem value="NIGHT_SLEEP">Night Sleep</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Location</label>
-            <Select
+            <Input
               value={formData.location}
-              onValueChange={(value) =>
-                setFormData({ ...formData, location: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="crib">Crib</SelectItem>
-                <SelectItem value="bed">Bed</SelectItem>
-                <SelectItem value="stroller">Stroller</SelectItem>
-                <SelectItem value="car">Car</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Notes</label>
-            <Textarea
-              value={formData.notes}
               onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
+                setFormData({ ...formData, location: e.target.value })
               }
-              placeholder="Add any additional notes..."
+              placeholder="e.g., Crib, Car Seat"
             />
           </div>
+          {isSleeping && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Quality</label>
+              <Select
+                value={formData.quality}
+                onValueChange={(value: SleepQuality) =>
+                  setFormData({ ...formData, quality: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select quality" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="POOR">Poor</SelectItem>
+                  <SelectItem value="FAIR">Fair</SelectItem>
+                  <SelectItem value="GOOD">Good</SelectItem>
+                  <SelectItem value="EXCELLENT">Excellent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">
-              {isSleeping ? 'Stop Sleep' : 'Start Sleep'}
+              {isSleeping ? 'End Sleep' : 'Start Sleep'}
             </Button>
           </div>
         </form>

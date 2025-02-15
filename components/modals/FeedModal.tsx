@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -15,31 +14,43 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState } from 'react';
+import { FeedType, BreastSide } from '@prisma/client';
 
 interface FeedModalProps {
   open: boolean;
   onClose: () => void;
+  babyId: string | undefined;
 }
 
-export default function FeedModal({ open, onClose }: FeedModalProps) {
+export default function FeedModal({
+  open,
+  onClose,
+  babyId,
+}: FeedModalProps) {
   const [formData, setFormData] = useState({
-    time: '',
-    type: '',
+    time: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
+    type: '' as FeedType | '',
     amount: '',
-    unit: 'ml',
-    side: '',
-    notes: '',
+    side: '' as BreastSide | '',
+    food: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!babyId) return;
+
     try {
       const response = await fetch('/api/feed-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          babyId,
+          time: new Date(formData.time),
+          amount: formData.amount ? parseFloat(formData.amount) : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -56,7 +67,7 @@ export default function FeedModal({ open, onClose }: FeedModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Log Feeding</DialogTitle>
+          <DialogTitle>Log Feed</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -64,7 +75,9 @@ export default function FeedModal({ open, onClose }: FeedModalProps) {
             <Input
               type="datetime-local"
               value={formData.time}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
+              }
               required
             />
           </div>
@@ -72,80 +85,69 @@ export default function FeedModal({ open, onClose }: FeedModalProps) {
             <label className="text-sm font-medium">Type</label>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value })}
+              onValueChange={(value: FeedType) =>
+                setFormData({ ...formData, type: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="breast">Breast</SelectItem>
-                <SelectItem value="bottle">Bottle</SelectItem>
-                <SelectItem value="formula">Formula</SelectItem>
-                <SelectItem value="solids">Solids</SelectItem>
+                <SelectItem value="BREAST">Breast</SelectItem>
+                <SelectItem value="BOTTLE">Bottle</SelectItem>
+                <SelectItem value="FORMULA">Formula</SelectItem>
+                <SelectItem value="SOLID">Solid Food</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {formData.type !== 'solids' && (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Amount</label>
-                <div className="flex space-x-2">
-                  <Input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
-                    }
-                    required
-                  />
-                  <Select
-                    value={formData.unit}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, unit: value })
-                    }
-                  >
-                    <SelectTrigger className="w-24">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ml">ml</SelectItem>
-                      <SelectItem value="oz">oz</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              {formData.type === 'breast' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Side</label>
-                  <Select
-                    value={formData.side}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, side: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select side" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </>
+          {formData.type === 'BREAST' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Side</label>
+              <Select
+                value={formData.side}
+                onValueChange={(value: BreastSide) =>
+                  setFormData({ ...formData, side: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select side" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LEFT">Left</SelectItem>
+                  <SelectItem value="RIGHT">Right</SelectItem>
+                  <SelectItem value="BOTH">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Notes</label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              placeholder="Add any additional notes..."
-            />
-          </div>
+          {formData.type !== 'BREAST' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Amount {formData.type === 'SOLID' ? '(g)' : '(ml)'}
+              </label>
+              <Input
+                type="number"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: e.target.value })
+                }
+                step="0.1"
+                min="0"
+              />
+            </div>
+          )}
+          {formData.type === 'SOLID' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Food</label>
+              <Input
+                value={formData.food}
+                onChange={(e) =>
+                  setFormData({ ...formData, food: e.target.value })
+                }
+                placeholder="e.g., Banana, Rice Cereal"
+              />
+            </div>
+          )}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

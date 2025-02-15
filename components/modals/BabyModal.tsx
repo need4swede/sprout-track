@@ -1,4 +1,4 @@
-import { Baby } from '@prisma/client';
+import { Baby, Gender } from '@prisma/client';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,7 @@ export default function BabyModal({
       setFormData({
         firstName: baby.firstName,
         lastName: baby.lastName,
-        birthDate: baby.birthDate.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD
+        birthDate: baby.birthDate.toISOString().split('T')[0],
         gender: baby.gender || '',
       });
     }
@@ -58,7 +58,8 @@ export default function BabyModal({
         body: JSON.stringify({
           ...formData,
           id: baby?.id,
-          birthDate: new Date(formData.birthDate), // Convert string back to Date
+          birthDate: new Date(formData.birthDate),
+          gender: formData.gender as Gender,
         }),
       });
 
@@ -122,9 +123,9 @@ export default function BabyModal({
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="MALE">Male</SelectItem>
+                <SelectItem value="FEMALE">Female</SelectItem>
+                <SelectItem value="OTHER">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

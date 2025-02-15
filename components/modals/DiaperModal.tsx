@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -15,30 +14,41 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState } from 'react';
+import { DiaperType } from '@prisma/client';
 
 interface DiaperModalProps {
   open: boolean;
   onClose: () => void;
+  babyId: string | undefined;
 }
 
-export default function DiaperModal({ open, onClose }: DiaperModalProps) {
+export default function DiaperModal({
+  open,
+  onClose,
+  babyId,
+}: DiaperModalProps) {
   const [formData, setFormData] = useState({
-    time: '',
-    type: '',
+    time: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
+    type: '' as DiaperType | '',
     condition: '',
     color: '',
-    notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!babyId) return;
+
     try {
       const response = await fetch('/api/diaper-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          babyId,
+          time: new Date(formData.time),
+        }),
       });
 
       if (!response.ok) {
@@ -63,7 +73,9 @@ export default function DiaperModal({ open, onClose }: DiaperModalProps) {
             <Input
               type="datetime-local"
               value={formData.time}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
+              }
               required
             />
           </div>
@@ -71,66 +83,45 @@ export default function DiaperModal({ open, onClose }: DiaperModalProps) {
             <label className="text-sm font-medium">Type</label>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value })}
+              onValueChange={(value: DiaperType) =>
+                setFormData({ ...formData, type: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="wet">Wet</SelectItem>
-                <SelectItem value="dirty">Dirty</SelectItem>
-                <SelectItem value="both">Both</SelectItem>
+                <SelectItem value="WET">Wet</SelectItem>
+                <SelectItem value="DIRTY">Dirty</SelectItem>
+                <SelectItem value="MIXED">Mixed</SelectItem>
+                <SelectItem value="DRY">Dry</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Condition</label>
-            <Select
-              value={formData.condition}
-              onValueChange={(value) =>
-                setFormData({ ...formData, condition: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select condition" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="loose">Loose</SelectItem>
-                <SelectItem value="solid">Solid</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Color</label>
-            <Select
-              value={formData.color}
-              onValueChange={(value) =>
-                setFormData({ ...formData, color: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select color" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yellow">Yellow</SelectItem>
-                <SelectItem value="brown">Brown</SelectItem>
-                <SelectItem value="green">Green</SelectItem>
-                <SelectItem value="black">Black</SelectItem>
-                <SelectItem value="red">Red</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Notes</label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-              placeholder="Add any additional notes..."
-            />
-          </div>
+          {formData.type !== 'DRY' && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Condition</label>
+                <Input
+                  value={formData.condition}
+                  onChange={(e) =>
+                    setFormData({ ...formData, condition: e.target.value })
+                  }
+                  placeholder="e.g., Normal, Loose"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Color</label>
+                <Input
+                  value={formData.color}
+                  onChange={(e) =>
+                    setFormData({ ...formData, color: e.target.value })
+                  }
+                  placeholder="e.g., Yellow, Brown"
+                />
+              </div>
+            </>
+          )}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
