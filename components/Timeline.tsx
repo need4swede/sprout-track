@@ -4,7 +4,7 @@ import {
   MoreVertical,
   Moon,
   Droplet,
-  Baby,
+  Baby as BabyIcon,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ const getActivityIcon = (activity: ActivityType) => {
       return <Droplet className="h-4 w-4" />; // Feed activity
     }
     if ('condition' in activity) {
-      return <Baby className="h-4 w-4" />; // Diaper activity
+      return <BabyIcon className="h-4 w-4" />; // Diaper activity
     }
   }
   return null;
@@ -185,61 +185,69 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      {sortedActivities.map((activity, index) => {
-        const colors = getActivityColor(activity);
-        return (
-          <div
-            key={activity.id}
-            className={`relative flex items-start gap-4 pb-6 ${
-              index !== sortedActivities.length - 1 ? 'border-l-2 border-indigo-100 ml-3' : ''
-            }`}
-          >
-            {/* Timeline dot */}
-            <div className="absolute -left-[11px] mt-1">
-              <div className={`w-5 h-5 rounded-full ${colors.bg} flex items-center justify-center ring-4 ring-white`}>
-                <div className={`w-2.5 h-2.5 rounded-full ${colors.text}`} />
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 ml-8">
-              <div className="bg-white rounded-xl border border-indigo-100 shadow-sm hover:shadow-md transition-all p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-full ${colors.bg}`}>
-                      {getActivityIcon(activity)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {getActivityDescription(activity, settings)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {formatTime(getActivityTime(activity), settings)}
-                      </p>
-                    </div>
+    <div className="overflow-hidden">
+      <div className="divide-y divide-gray-100">
+        {sortedActivities.map((activity) => {
+          const colors = getActivityColor(activity);
+          return (
+            <div
+              key={activity.id}
+              className="group hover:bg-gray-50/50 transition-colors duration-200"
+            >
+              <div className="timeline-item">
+                {/* Icon */}
+                <div className={`timeline-icon ${colors.bg}`}>
+                  {getActivityIcon(activity)}
+                </div>
+                
+                {/* Content */}
+                <div className="timeline-content">
+                  <p className="text-sm font-medium text-gray-900">
+                    {getActivityDescription(activity, settings)}
+                  </p>
+                  <div className="ml-2 flex-shrink-0 flex items-center gap-4">
+                    <span className="flex-shrink-0 inline-block px-3 py-1.5 text-sm font-medium text-gray-500 rounded-full bg-gray-50 border border-gray-100">
+                      {formatTime(getActivityTime(activity), settings)}
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-36">
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          onClick={() => handleDelete(activity)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-36">
-                      <DropdownMenuItem
-                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                        onClick={() => handleDelete(activity)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
               </div>
             </div>
+          );
+        })}
+      </div>
+      
+      {/* Empty State */}
+      {sortedActivities.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+            <BabyIcon className="h-8 w-8 text-indigo-600" />
           </div>
-        );
-      })}
+          <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
+          <p className="text-sm text-gray-500">
+            Activities will appear here once you start tracking
+          </p>
+        </div>
+      )}
     </div>
   );
 };

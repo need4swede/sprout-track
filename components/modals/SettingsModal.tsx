@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -83,13 +84,16 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+      <DialogContent className="dialog-content">
+        <DialogHeader className="dialog-header">
+          <DialogTitle className="dialog-title">Settings</DialogTitle>
+          <DialogDescription className="dialog-description">
+            Configure your preferences for the Baby Tracker app
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Timezone</label>
+        <div className="space-y-6">
+          <div>
+            <label className="form-label">Timezone</label>
             <Select
               disabled={loading}
               value={settings?.timezone || 'America/Chicago'}
@@ -107,8 +111,13 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end">
-            <Button onClick={onClose}>Close</Button>
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              onClick={onClose}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
+              Save & Close
+            </Button>
           </div>
         </div>
       </DialogContent>

@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,51 +76,66 @@ export default function BabyModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Baby' : 'Add New Baby'}</DialogTitle>
+      <DialogContent className="dialog-content">
+        <DialogHeader className="dialog-header">
+          <DialogTitle className="dialog-title">
+            {isEditing ? 'Edit Baby' : 'Add New Baby'}
+          </DialogTitle>
+          <DialogDescription className="dialog-description">
+            {isEditing 
+              ? "Update your baby's information" 
+              : "Enter your baby's information to start tracking"
+            }
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">First Name</label>
-            <Input
-              value={formData.firstName}
-              onChange={(e) =>
-                setFormData({ ...formData, firstName: e.target.value })
-              }
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">First Name</label>
+              <Input
+                value={formData.firstName}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
+                className="w-full"
+                placeholder="Enter first name"
+                required
+              />
+            </div>
+            <div>
+              <label className="form-label">Last Name</label>
+              <Input
+                value={formData.lastName}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
+                className="w-full"
+                placeholder="Enter last name"
+                required
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Last Name</label>
-            <Input
-              value={formData.lastName}
-              onChange={(e) =>
-                setFormData({ ...formData, lastName: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Birth Date</label>
+          <div>
+            <label className="form-label">Birth Date</label>
             <Input
               type="date"
               value={formData.birthDate}
               onChange={(e) =>
                 setFormData({ ...formData, birthDate: e.target.value })
               }
+              className="w-full"
               required
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Gender</label>
+          <div>
+            <label className="form-label">Gender</label>
             <Select
               value={formData.gender}
               onValueChange={(value) =>
                 setFormData({ ...formData, gender: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
@@ -129,11 +145,21 @@ export default function BabyModal({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button type="submit">{isEditing ? 'Save' : 'Add'}</Button>
+            <Button 
+              type="submit"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
+              {isEditing ? 'Save Changes' : 'Add Baby'}
+            </Button>
           </div>
         </form>
       </DialogContent>

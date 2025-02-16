@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,50 +90,57 @@ export default function FeedModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Log Feed</DialogTitle>
+      <DialogContent className="dialog-content">
+        <DialogHeader className="dialog-header">
+          <DialogTitle className="dialog-title">Log Feeding</DialogTitle>
+          <DialogDescription className="dialog-description">
+            Record what and when your baby ate
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Time</label>
-            <Input
-              type="datetime-local"
-              value={formData.time}
-              onChange={(e) =>
-                setFormData({ ...formData, time: e.target.value })
-              }
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Time</label>
+              <Input
+                type="datetime-local"
+                value={formData.time}
+                onChange={(e) =>
+                  setFormData({ ...formData, time: e.target.value })
+                }
+                className="w-full"
+                required
+              />
+            </div>
+            <div>
+              <label className="form-label">Type</label>
+              <Select
+                value={formData.type}
+                onValueChange={(value: FeedType) =>
+                  setFormData({ ...formData, type: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BREAST">Breast</SelectItem>
+                  <SelectItem value="BOTTLE">Bottle</SelectItem>
+                  <SelectItem value="SOLIDS">Solid Food</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Type</label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: FeedType) =>
-                setFormData({ ...formData, type: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BREAST">Breast</SelectItem>
-                <SelectItem value="BOTTLE">Bottle</SelectItem>
-                <SelectItem value="SOLIDS">Solid Food</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
           {formData.type === 'BREAST' && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Side</label>
+            <div>
+              <label className="form-label">Side</label>
               <Select
                 value={formData.side}
                 onValueChange={(value: BreastSide) =>
                   setFormData({ ...formData, side: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select side" />
                 </SelectTrigger>
                 <SelectContent>
@@ -142,9 +150,10 @@ export default function FeedModal({
               </Select>
             </div>
           )}
+
           {formData.type !== 'BREAST' && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
+            <div>
+              <label className="form-label">
                 Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
               </label>
               <Input
@@ -153,28 +162,43 @@ export default function FeedModal({
                 onChange={(e) =>
                   setFormData({ ...formData, amount: e.target.value })
                 }
+                className="w-full"
                 step="0.1"
                 min="0"
+                placeholder={formData.type === 'SOLIDS' ? 'Enter grams' : 'Enter ounces'}
               />
             </div>
           )}
+
           {formData.type === 'SOLIDS' && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Food</label>
+            <div>
+              <label className="form-label">Food</label>
               <Input
                 value={formData.food}
                 onChange={(e) =>
                   setFormData({ ...formData, food: e.target.value })
                 }
+                className="w-full"
                 placeholder="e.g., Banana, Rice Cereal"
               />
             </div>
           )}
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button 
+              type="submit"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
+              Save Feed
+            </Button>
           </div>
         </form>
       </DialogContent>

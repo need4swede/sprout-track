@@ -153,50 +153,57 @@ export default function Home() {
 
   return (
     <main className="w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Baby Selection */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 max-w-xs">
-            <Select
-              value={selectedBabyId}
-              onValueChange={handleBabySelect}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a baby" />
-              </SelectTrigger>
-              <SelectContent>
-                {babies.map((baby) => (
-                  <SelectItem key={baby.id} value={baby.id}>
-                    {baby.firstName} {baby.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex-1 w-full sm:max-w-xs">
+              <label htmlFor="baby-select" className="block text-sm font-medium text-gray-700 mb-2">
+                Select Baby
+              </label>
+              <Select
+                value={selectedBabyId}
+                onValueChange={handleBabySelect}
+              >
+                <SelectTrigger id="baby-select" className="w-full">
+                  <SelectValue placeholder="Choose a baby to track" />
+                </SelectTrigger>
+                <SelectContent>
+                  {babies.map((baby) => (
+                    <SelectItem key={baby.id} value={baby.id}>
+                      {baby.firstName} {baby.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-3 mt-4 sm:mt-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(false);
+                  setShowBabyModal(true);
+                }}
+                className="flex items-center gap-2 hover:bg-indigo-50 transition-colors duration-200"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Baby</span>
+              </Button>
+              {selectedBaby && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(true);
+                    setShowBabyModal(true);
+                  }}
+                  className="flex items-center gap-2 hover:bg-indigo-50 transition-colors duration-200"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span>Edit</span>
+                </Button>
+              )}
+            </div>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              setIsEditing(false);
-              setShowBabyModal(true);
-            }}
-            className="shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-          {selectedBaby && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                setIsEditing(true);
-                setShowBabyModal(true);
-              }}
-              className="shrink-0"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
         </div>
 
         {/* Loading State */}
@@ -210,51 +217,59 @@ export default function Home() {
         {!isLoading && selectedBaby ? (
           <div className="space-y-8">
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="action-button bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700"
                 onClick={() => setShowSleepModal(true)}
               >
-                <Moon className="h-8 w-8" />
-                <span className="text-sm font-medium">Sleep</span>
+                <div className="action-button-icon bg-indigo-400/20">
+                  <Moon className="h-10 w-10" />
+                </div>
+                <span className="text-base font-medium">Sleep</span>
               </Button>
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="action-button bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700"
                 onClick={() => setShowFeedModal(true)}
               >
-                <Droplet className="h-8 w-8" />
-                <span className="text-sm font-medium">Feed</span>
+                <div className="action-button-icon bg-blue-400/20">
+                  <Droplet className="h-10 w-10" />
+                </div>
+                <span className="text-base font-medium">Feed</span>
               </Button>
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="action-button bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700"
                 onClick={() => setShowDiaperModal(true)}
               >
-                <BabyIcon className="h-8 w-8" />
-                <span className="text-sm font-medium">Diaper</span>
+                <div className="action-button-icon bg-purple-400/20">
+                  <BabyIcon className="h-10 w-10" />
+                </div>
+                <span className="text-base font-medium">Diaper</span>
               </Button>
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="action-button bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700"
                 onClick={() => setShowDiaperModal(true)}
               >
-                <Edit className="h-8 w-8" />
-                <span className="text-sm font-medium">Note</span>
+                <div className="action-button-icon bg-pink-400/20">
+                  <Edit className="h-10 w-10" />
+                </div>
+                <span className="text-base font-medium">Note</span>
               </Button>
             </div>
 
             {/* Timeline Section */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg overflow-hidden">
-              <div className="p-6 border-b border-indigo-100">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-indigo-100">
                 <h2 className="text-xl font-semibold text-indigo-950">Recent Activity</h2>
               </div>
-              <div className="p-6">
+              <div className="divide-y divide-gray-100">
                 {activities.length > 0 ? (
                   <Timeline activities={activities} />
                 ) : (

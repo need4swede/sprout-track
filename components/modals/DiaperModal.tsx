@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,69 +81,89 @@ export default function DiaperModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Log Diaper Change</DialogTitle>
+      <DialogContent className="dialog-content">
+        <DialogHeader className="dialog-header">
+          <DialogTitle className="dialog-title">Log Diaper Change</DialogTitle>
+          <DialogDescription className="dialog-description">
+            Record details about your baby's diaper change
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Time</label>
-            <Input
-              type="datetime-local"
-              value={formData.time}
-              onChange={(e) =>
-                setFormData({ ...formData, time: e.target.value })
-              }
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Time</label>
+              <Input
+                type="datetime-local"
+                value={formData.time}
+                onChange={(e) =>
+                  setFormData({ ...formData, time: e.target.value })
+                }
+                className="w-full"
+                required
+              />
+            </div>
+            <div>
+              <label className="form-label">Type</label>
+              <Select
+                value={formData.type || ''}
+                onValueChange={(value: DiaperType) =>
+                  setFormData({ ...formData, type: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WET">Wet</SelectItem>
+                  <SelectItem value="DIRTY">Dirty</SelectItem>
+                  <SelectItem value="BOTH">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Type</label>
-            <Select
-              value={formData.type || ''}
-              onValueChange={(value: DiaperType) =>
-                setFormData({ ...formData, type: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="WET">Wet</SelectItem>
-                <SelectItem value="DIRTY">Dirty</SelectItem>
-                <SelectItem value="BOTH">Both</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          
           {formData.type && (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Condition</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="form-label">Condition</label>
                 <Input
                   value={formData.condition}
                   onChange={(e) =>
                     setFormData({ ...formData, condition: e.target.value })
                   }
+                  className="w-full"
                   placeholder="e.g., Normal, Loose"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Color</label>
+              <div>
+                <label className="form-label">Color</label>
                 <Input
                   value={formData.color}
                   onChange={(e) =>
                     setFormData({ ...formData, color: e.target.value })
                   }
+                  className="w-full"
                   placeholder="e.g., Yellow, Brown"
                 />
               </div>
-            </>
+            </div>
           )}
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button 
+              type="submit"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
+              Save Change
+            </Button>
           </div>
         </form>
       </DialogContent>

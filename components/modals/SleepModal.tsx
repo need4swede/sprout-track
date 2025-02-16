@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,75 +79,88 @@ export default function SleepModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isSleeping ? 'End Sleep' : 'Start Sleep'}
+      <DialogContent className="dialog-content">
+        <DialogHeader className="dialog-header">
+          <DialogTitle className="dialog-title">
+            {isSleeping ? 'End Sleep Session' : 'Start Sleep Session'}
           </DialogTitle>
+          <DialogDescription className="dialog-description">
+            {isSleeping 
+              ? "Record when your baby woke up and how well they slept" 
+              : "Record when your baby is going to sleep"
+            }
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Start Time</label>
-            <Input
-              type="datetime-local"
-              value={formData.startTime}
-              onChange={(e) =>
-                setFormData({ ...formData, startTime: e.target.value })
-              }
-              required
-            />
-          </div>
-          {isSleeping && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">End Time</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Start Time</label>
               <Input
                 type="datetime-local"
-                value={formData.endTime}
+                value={formData.startTime}
                 onChange={(e) =>
-                  setFormData({ ...formData, endTime: e.target.value })
+                  setFormData({ ...formData, startTime: e.target.value })
                 }
+                className="w-full"
                 required
               />
             </div>
-          )}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Type</label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: SleepType) =>
-                setFormData({ ...formData, type: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NAP">Nap</SelectItem>
-                <SelectItem value="NIGHT_SLEEP">Night Sleep</SelectItem>
-              </SelectContent>
-            </Select>
+            {isSleeping && (
+              <div>
+                <label className="form-label">End Time</label>
+                <Input
+                  type="datetime-local"
+                  value={formData.endTime}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endTime: e.target.value })
+                  }
+                  className="w-full"
+                  required
+                />
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Location</label>
-            <Input
-              value={formData.location}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
-              }
-              placeholder="e.g., Crib, Car Seat"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Type</label>
+              <Select
+                value={formData.type}
+                onValueChange={(value: SleepType) =>
+                  setFormData({ ...formData, type: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NAP">Nap</SelectItem>
+                  <SelectItem value="NIGHT_SLEEP">Night Sleep</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="form-label">Location</label>
+              <Input
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
+                className="w-full"
+                placeholder="e.g., Crib, Car Seat"
+              />
+            </div>
           </div>
           {isSleeping && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Quality</label>
+            <div>
+              <label className="form-label">Sleep Quality</label>
               <Select
                 value={formData.quality}
                 onValueChange={(value: SleepQuality) =>
                   setFormData({ ...formData, quality: value })
                 }
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select quality" />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="How well did they sleep?" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="POOR">Poor</SelectItem>
@@ -157,11 +171,19 @@ export default function SleepModal({
               </Select>
             </div>
           )}
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
               {isSleeping ? 'End Sleep' : 'Start Sleep'}
             </Button>
           </div>

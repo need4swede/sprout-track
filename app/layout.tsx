@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import './globals.css';
 import SettingsModal from '@/components/modals/SettingsModal';
 import { Button } from '@/components/ui/button';
-import { Inter } from 'next/font/google';
+import { Inter as FontSans } from 'next/font/google';
+import { cn } from '@/lib/utils';
 
-const inter = Inter({ subsets: ['latin'] });
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
 
 export default function RootLayout({
   children,
@@ -21,21 +25,21 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50`} suppressHydrationWarning>
+    <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
+      <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
         {mounted ? (
           <div className="min-h-screen flex flex-col">
-            <header className="w-full bg-white/80 backdrop-blur-sm border-b border-indigo-100 shadow-sm">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <header className="w-full bg-white/90 backdrop-blur-sm border-b border-indigo-100 shadow-md sticky top-0 z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                     Baby Tracker
                   </h1>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={() => setSettingsOpen(true)}
-                    className="hover:bg-indigo-50"
+                    className="hover:bg-indigo-50 transition-colors duration-200"
                   >
                     Settings
                   </Button>
@@ -43,7 +47,7 @@ export default function RootLayout({
               </div>
             </header>
             
-            <main className="flex-1 w-full">
+            <main className="flex-1 w-full relative">
               {children}
             </main>
           </div>
