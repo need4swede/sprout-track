@@ -11,6 +11,7 @@ export async function GET() {
     if (!settings) {
       settings = await prisma.settings.create({
         data: {
+          familyName: 'My Family', // Default family name
           timezone: 'America/Chicago', // Default timezone
         },
       });
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
     
     const settings = await prisma.settings.create({
       data: {
+        familyName: body.familyName,
         timezone: body.timezone,
       },
     });
@@ -78,6 +80,7 @@ export async function PUT(req: NextRequest) {
     const settings = await prisma.settings.update({
       where: { id: existingSettings.id },
       data: {
+        familyName: body.familyName,
         timezone: body.timezone,
       },
     });

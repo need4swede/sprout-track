@@ -35,6 +35,7 @@ export default function BabyModal({
     lastName: '',
     birthDate: '',
     gender: '',
+    inactive: false,
   });
 
   useEffect(() => {
@@ -42,8 +43,11 @@ export default function BabyModal({
       setFormData({
         firstName: baby.firstName,
         lastName: baby.lastName,
-        birthDate: baby.birthDate.toISOString().split('T')[0],
+        birthDate: typeof baby.birthDate === 'string' 
+          ? baby.birthDate.split('T')[0] 
+          : new Date(baby.birthDate).toISOString().split('T')[0],
         gender: baby.gender || '',
+        inactive: baby.inactive || false,
       });
     }
   }, [baby]);
@@ -145,6 +149,22 @@ export default function BabyModal({
               </SelectContent>
             </Select>
           </div>
+          {isEditing && (
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="inactive"
+                checked={formData.inactive}
+                onChange={(e) =>
+                  setFormData({ ...formData, inactive: e.target.checked })
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="inactive" className="text-sm text-gray-700">
+                Mark as Inactive
+              </label>
+            </div>
+          )}
           <div className="flex justify-end gap-3 mt-8">
             <Button 
               type="button" 

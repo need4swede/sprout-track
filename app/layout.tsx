@@ -19,9 +19,25 @@ export default function RootLayout({
 }) {
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [familyName, setFamilyName] = useState('');
 
   useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        if (data.success && data.data.familyName) {
+          setFamilyName(data.data.familyName);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
     setMounted(true);
+    fetchSettings();
   }, []);
 
   return (
@@ -32,8 +48,8 @@ export default function RootLayout({
             <header className="w-full bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-md sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 via-emerald-600 to-sky-600 bg-clip-text text-transparent">
-                    Baby Tracker
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 via-emerald-600 to-sky-600 bg-clip-text text-transparent">
+                    {familyName ? `${familyName}'s Baby Tracker` : 'Baby Tracker'}
                   </h1>
                   <Button
                     variant="outline"

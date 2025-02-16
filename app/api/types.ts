@@ -19,6 +19,7 @@ export interface BabyCreate {
   lastName: string;
   birthDate: string;
   gender?: Gender;
+  inactive?: boolean;
 }
 
 export interface BabyUpdate extends Partial<BabyCreate> {
