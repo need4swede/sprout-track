@@ -40,12 +40,14 @@ export default function BabyModal({
 
   useEffect(() => {
     if (baby) {
+      const birthDate = baby.birthDate instanceof Date 
+        ? baby.birthDate.toISOString().split('T')[0]
+        : new Date(baby.birthDate as string).toISOString().split('T')[0];
+
       setFormData({
         firstName: baby.firstName,
         lastName: baby.lastName,
-        birthDate: typeof baby.birthDate === 'string' 
-          ? baby.birthDate.split('T')[0] 
-          : new Date(baby.birthDate).toISOString().split('T')[0],
+        birthDate,
         gender: baby.gender || '',
         inactive: baby.inactive || false,
       });
