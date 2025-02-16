@@ -55,14 +55,14 @@ const getActivityDescription = (activity: ActivityType) => {
   return 'Activity logged';
 };
 
-const getActivityTime = (activity: ActivityType) => {
+const getActivityTime = (activity: ActivityType): Date => {
   if ('time' in activity) {
-    return activity.time;
+    return new Date(activity.time);
   }
   if ('startTime' in activity) {
-    return activity.startTime;
+    return new Date(activity.startTime);
   }
-  return new Date();
+  return new Date(); // This should never happen as all activities should have a timestamp
 };
 
 export default function Timeline({ activities }: TimelineProps) {
@@ -70,6 +70,12 @@ export default function Timeline({ activities }: TimelineProps) {
   const sortedActivities = [...activities].sort((a, b) => 
     getActivityTime(b).getTime() - getActivityTime(a).getTime()
   );
+
+  const formatTime = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
 
   return (
     <div className="space-y-4">
@@ -80,36 +86,39 @@ export default function Timeline({ activities }: TimelineProps) {
             No activities logged yet
           </Card>
         ) : (
-          sortedActivities.map((activity) => (
-            <Card key={activity.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-gray-100 rounded-full">
-                    {getActivityIcon(activity)}
+          sortedActivities.map((activity) => {
+            const activityTime = getActivityTime(activity);
+            return (
+              <Card key={activity.id} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-gray-100 rounded-full">
+                      {getActivityIcon(activity)}
+                    </div>
+                    <div>
+                      <p className="font-medium">{getActivityDescription(activity)}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatTime(activityTime)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{getActivityDescription(activity)}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(getActivityTime(activity)).toLocaleTimeString()}
-                    </p>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-2 hover:bg-gray-100 rounded-full">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-2 hover:bg-gray-100 rounded-full">
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

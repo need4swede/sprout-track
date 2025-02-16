@@ -40,68 +40,100 @@ export default function Home() {
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch babies on mount
   useEffect(() => {
-    const fetchBabies = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/baby');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setBabies(data.data);
-            // If there's only one baby, select it automatically
-            if (data.data.length === 1) {
-              setSelectedBabyId(data.data[0].id);
-              setSelectedBaby(data.data[0]);
-            }
-          }
+        // Fetch babies
+        const babyResponse = await fetch('/api/baby');
+        if (!babyResponse.ok) return;
+        
+        const babyData = await babyResponse.json();
+        if (!babyData.success) return;
+        
+        setBabies(babyData.data);
+        
+        // If there's only one baby, select it automatically
+        if (babyData.data.length === 1) {
+          const baby = babyData.data[0];
+          setSelectedBabyId(baby.id);
+          setSelectedBaby(baby);
+          
+          // Fetch activities for the selected baby
+          const [sleepResponse, feedResponse, diaperResponse] = await Promise.all([
+            fetch(`/api/sleep-log?babyId=${baby.id}`),
+            fetch(`/api/feed-log?babyId=${baby.id}`),
+            fetch(`/api/diaper-log?babyId=${baby.id}`)
+          ]);
+          
+          const [sleepData, feedData, diaperData] = await Promise.all([
+            sleepResponse.json(),
+            feedResponse.json(),
+            diaperResponse.json()
+          ]);
+          
+          const allActivities = [
+            ...(sleepData.success ? sleepData.data : []),
+            ...(feedData.success ? feedData.data : []),
+            ...(diaperData.success ? diaperData.data : [])
+          ].map(activity => ({
+            ...activity,
+            time: activity.time ? new Date(activity.time).toISOString() : undefined,
+            startTime: activity.startTime ? new Date(activity.startTime).toISOString() : undefined,
+            endTime: activity.endTime ? new Date(activity.endTime).toISOString() : undefined,
+          }));
+          
+          setActivities(allActivities);
         }
       } catch (error) {
-        console.error('Error fetching babies:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchBabies();
+    fetchData();
   }, []);
 
-  // Fetch activities when selected baby changes
-  useEffect(() => {
-    const fetchActivities = async () => {
-      if (!selectedBaby) return;
-      
+  const handleBabySelect = async (babyId: string) => {
+    setIsLoading(true);
+    setSelectedBabyId(babyId);
+    const selected = babies.find(b => b.id === babyId);
+    setSelectedBaby(selected || null);
+    
+    if (selected) {
       try {
-        // Fetch sleep logs
-        const sleepResponse = await fetch(`/api/sleep-log?babyId=${selectedBaby.id}`);
-        const sleepData = await sleepResponse.json();
-        const sleepLogs = sleepData.success ? sleepData.data : [];
-
-        // Fetch feed logs
-        const feedResponse = await fetch(`/api/feed-log?babyId=${selectedBaby.id}`);
-        const feedData = await feedResponse.json();
-        const feedLogs = feedData.success ? feedData.data : [];
-
-        // Fetch diaper logs
-        const diaperResponse = await fetch(`/api/diaper-log?babyId=${selectedBaby.id}`);
-        const diaperData = await diaperResponse.json();
-        const diaperLogs = diaperData.success ? diaperData.data : [];
-
-        // Combine all activities
+        const [sleepResponse, feedResponse, diaperResponse] = await Promise.all([
+          fetch(`/api/sleep-log?babyId=${babyId}`),
+          fetch(`/api/feed-log?babyId=${babyId}`),
+          fetch(`/api/diaper-log?babyId=${babyId}`)
+        ]);
+        
+        const [sleepData, feedData, diaperData] = await Promise.all([
+          sleepResponse.json(),
+          feedResponse.json(),
+          diaperResponse.json()
+        ]);
+        
         const allActivities = [
-          ...sleepLogs,
-          ...feedLogs,
-          ...diaperLogs,
-        ];
-
+          ...(sleepData.success ? sleepData.data : []),
+          ...(feedData.success ? feedData.data : []),
+          ...(diaperData.success ? diaperData.data : [])
+        ].map(activity => ({
+          ...activity,
+          time: activity.time ? new Date(activity.time).toISOString() : undefined,
+          startTime: activity.startTime ? new Date(activity.startTime).toISOString() : undefined,
+          endTime: activity.endTime ? new Date(activity.endTime).toISOString() : undefined,
+        }));
+        
         setActivities(allActivities);
       } catch (error) {
         console.error('Error fetching activities:', error);
       }
-    };
-
-    fetchActivities();
-  }, [selectedBaby]);
+    } else {
+      setActivities([]);
+    }
+    setIsLoading(false);
+  };
 
   // Quick action buttons configuration
   const quickActions = [
@@ -125,12 +157,6 @@ export default function Home() {
       disabled: !selectedBaby,
     },
   ];
-
-  const handleBabySelect = (babyId: string) => {
-    setSelectedBabyId(babyId);
-    const baby = babies.find(b => b.id === babyId);
-    setSelectedBaby(baby || null);
-  };
 
   const handleBabyModalClose = async () => {
     setShowBabyModal(false);
@@ -193,25 +219,27 @@ export default function Home() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {quickActions.map((action, index) => (
-          <Card
-            key={index}
-            className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-              action.active ? 'bg-primary text-primary-foreground' : ''
-            } ${action.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={action.disabled ? undefined : action.onClick}
-          >
-            <div className="flex flex-col items-center justify-center space-y-2">
-              {action.icon}
-              <span className="text-sm font-medium">{action.label}</span>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {!isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {quickActions.map((action, index) => (
+            <Card
+              key={index}
+              className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                action.active ? 'bg-primary text-primary-foreground' : ''
+              } ${action.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={action.disabled ? undefined : action.onClick}
+            >
+              <div className="flex flex-col items-center justify-center space-y-2">
+                {action.icon}
+                <span className="text-sm font-medium">{action.label}</span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Timeline */}
-      {selectedBaby && <Timeline activities={activities} />}
+      {!isLoading && selectedBaby && <Timeline activities={activities} />}
 
       {/* Modals */}
       <BabyModal

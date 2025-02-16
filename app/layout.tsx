@@ -1,19 +1,24 @@
-import type { Metadata } from 'next'
-import './globals.css'
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Baby Tracker',
-  description: 'Track your baby\'s activities, milestones, and development',
-}
+import { useEffect, useState } from 'react';
+import './globals.css'
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        {mounted ? children : null}
+      </body>
     </html>
   )
 }
