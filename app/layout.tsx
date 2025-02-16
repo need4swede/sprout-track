@@ -29,17 +29,17 @@ export default function RootLayout({
       <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
         {mounted ? (
           <div className="min-h-screen flex flex-col">
-            <header className="w-full bg-white/90 backdrop-blur-sm border-b border-indigo-100 shadow-md sticky top-0 z-50">
+            <header className="w-full bg-white/90 backdrop-blur-sm border-b border-slate-200 shadow-md sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 via-emerald-600 to-sky-600 bg-clip-text text-transparent">
                     Baby Tracker
                   </h1>
                   <Button
                     variant="outline"
                     size="default"
                     onClick={() => setSettingsOpen(true)}
-                    className="hover:bg-indigo-50 transition-colors duration-200"
+                    className="hover:bg-teal-50 transition-colors duration-200"
                   >
                     Settings
                   </Button>

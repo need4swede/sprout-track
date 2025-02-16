@@ -150,13 +150,13 @@ export default function BabyModal({
               type="button" 
               variant="outline" 
               onClick={onClose}
-              className="hover:bg-gray-50"
+              className="hover:bg-slate-50"
             >
               Cancel
             </Button>
             <Button 
               type="submit"
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
             >
               {isEditing ? 'Save Changes' : 'Add Baby'}
             </Button>

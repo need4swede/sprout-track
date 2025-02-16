@@ -9,21 +9,21 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+          "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         destructive:
           "bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         outline:
-          "border-2 border-indigo-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 text-indigo-700",
+          "border-2 border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-teal-700",
         secondary:
-          "bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+          "bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         ghost: 
-          "hover:bg-indigo-50 hover:text-indigo-700",
+          "hover:bg-teal-50 hover:text-teal-700",
         link: 
-          "text-indigo-600 underline-offset-4 hover:underline",
+          "text-teal-600 underline-offset-4 hover:underline",
         success:
-          "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+          "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         info:
-          "bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+          "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         warning:
           "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
       },

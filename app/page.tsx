@@ -156,10 +156,10 @@ export default function Home() {
       <main className="w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Baby Selection */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-lg p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1 w-full sm:max-w-xs">
-              <label htmlFor="baby-select" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="baby-select" className="block text-sm font-medium text-slate-700 mb-2">
                 Select Baby
               </label>
               <Select
@@ -185,7 +185,7 @@ export default function Home() {
                   setIsEditing(false);
                   setShowBabyModal(true);
                 }}
-                className="flex items-center gap-2 hover:bg-indigo-50 transition-colors duration-200"
+                className="flex items-center gap-2 hover:bg-teal-50 transition-colors duration-200"
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Baby</span>
@@ -197,7 +197,7 @@ export default function Home() {
                     setIsEditing(true);
                     setShowBabyModal(true);
                   }}
-                  className="flex items-center gap-2 hover:bg-indigo-50 transition-colors duration-200"
+                  className="flex items-center gap-2 hover:bg-teal-50 transition-colors duration-200"
                 >
                   <Edit className="h-4 w-4" />
                   <span>Edit</span>
@@ -210,7 +210,7 @@ export default function Home() {
         {/* Loading State */}
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
           </div>
         ) : null}
 
@@ -222,10 +222,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowSleepModal(true)}
               >
-                <div className="w-16 h-16 rounded-xl bg-indigo-400/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-xl bg-teal-400/20 flex items-center justify-center">
                   <Moon className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Sleep</span>
@@ -233,10 +233,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowFeedModal(true)}
               >
-                <div className="w-16 h-16 rounded-xl bg-blue-400/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-xl bg-sky-400/20 flex items-center justify-center">
                   <Droplet className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Feed</span>
@@ -244,10 +244,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowDiaperModal(true)}
               >
-                <div className="w-16 h-16 rounded-xl bg-purple-400/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-xl bg-emerald-400/20 flex items-center justify-center">
                   <BabyIcon className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Diaper</span>
@@ -291,9 +291,9 @@ export default function Home() {
 
         {/* Welcome Screen */}
         {!isLoading && !selectedBaby ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-indigo-100 flex items-center justify-center">
-              <BabyIcon className="h-10 w-10 text-indigo-600" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-lg p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-teal-100 flex items-center justify-center">
+              <BabyIcon className="h-10 w-10 text-teal-600" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-3">Welcome to Baby Tracker!</h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -301,7 +301,7 @@ export default function Home() {
             </p>
             <Button
               onClick={() => setShowBabyModal(true)}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              className="bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
             >
               Add Your Baby
             </Button>
