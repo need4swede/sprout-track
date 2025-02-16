@@ -18,6 +18,7 @@ type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
 
 interface TimelineProps {
   activities: ActivityType[];
+  onActivityDeleted?: () => void;
 }
 
 const getActivityIcon = (activity: ActivityType) => {
@@ -86,7 +87,26 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
   return 'Activity logged';
 };
 
-export default function Timeline({ activities }: TimelineProps) {
+const getActivityEndpoint = (activity: ActivityType): string => {
+  if ('duration' in activity) {
+    return 'sleep-log';
+  }
+  if ('amount' in activity) {
+    return 'feed-log';
+  }
+  if ('condition' in activity) {
+    return 'diaper-log';
+  }
+  if ('mood' in activity) {
+    return 'mood-log';
+  }
+  if ('content' in activity) {
+    return 'note';
+  }
+  return '';
+};
+
+export default function Timeline({ activities, onActivityDeleted }: TimelineProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
@@ -109,6 +129,29 @@ export default function Timeline({ activities }: TimelineProps) {
   const sortedActivities = [...activities].sort((a, b) => 
     getActivityTime(b).getTime() - getActivityTime(a).getTime()
   );
+
+  const handleDelete = async (activity: ActivityType) => {
+    try {
+      const endpoint = getActivityEndpoint(activity);
+      if (!endpoint) {
+        console.error('Unknown activity type');
+        return;
+      }
+
+      const response = await fetch(`/api/${endpoint}?id=${activity.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Notify parent component to refresh data
+        onActivityDeleted?.();
+      } else {
+        console.error('Failed to delete activity');
+      }
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -143,7 +186,10 @@ export default function Timeline({ activities }: TimelineProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem 
+                        className="text-red-600"
+                        onClick={() => handleDelete(activity)}
+                      >
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
