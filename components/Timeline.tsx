@@ -185,7 +185,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   };
 
   return (
-    <div className="overflow-hidden">
+    <div>
       <div className="divide-y divide-gray-100">
         {sortedActivities.map((activity) => {
           const colors = getActivityColor(activity);
@@ -194,19 +194,19 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               key={activity.id}
               className="group hover:bg-gray-50/50 transition-colors duration-200"
             >
-              <div className="timeline-item">
+              <div className="flex items-center px-6 py-4">
                 {/* Icon */}
-                <div className={`timeline-icon ${colors.bg}`}>
+                <div className={`flex-shrink-0 ${colors.bg} p-3 rounded-xl mr-4`}>
                   {getActivityIcon(activity)}
                 </div>
                 
                 {/* Content */}
-                <div className="timeline-content">
-                  <p className="text-sm font-medium text-gray-900">
-                    {getActivityDescription(activity, settings)}
-                  </p>
-                  <div className="ml-2 flex-shrink-0 flex items-center gap-4">
-                    <span className="flex-shrink-0 inline-block px-3 py-1.5 text-sm font-medium text-gray-500 rounded-full bg-gray-50 border border-gray-100">
+                <div className="min-w-0 flex-1 flex items-center justify-between">
+                <p className="timeline-text">
+                  {getActivityDescription(activity, settings)}
+                </p>
+                <div className="flex items-center gap-4">
+                  <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
                       {formatTime(getActivityTime(activity), settings)}
                     </span>
                     <DropdownMenu>

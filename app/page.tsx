@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note } from '@prisma/client';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -152,8 +152,9 @@ export default function Home() {
   };
 
   return (
-    <main className="w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <>
+      <main className="w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Baby Selection */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -221,10 +222,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="action-button bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowSleepModal(true)}
               >
-                <div className="action-button-icon bg-indigo-400/20">
+                <div className="w-16 h-16 rounded-xl bg-indigo-400/20 flex items-center justify-center">
                   <Moon className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Sleep</span>
@@ -232,10 +233,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="action-button bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowFeedModal(true)}
               >
-                <div className="action-button-icon bg-blue-400/20">
+                <div className="w-16 h-16 rounded-xl bg-blue-400/20 flex items-center justify-center">
                   <Droplet className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Feed</span>
@@ -243,10 +244,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="action-button bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowDiaperModal(true)}
               >
-                <div className="action-button-icon bg-purple-400/20">
+                <div className="w-16 h-16 rounded-xl bg-purple-400/20 flex items-center justify-center">
                   <BabyIcon className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Diaper</span>
@@ -254,10 +255,10 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="action-button bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700"
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
                 onClick={() => setShowDiaperModal(true)}
               >
-                <div className="action-button-icon bg-pink-400/20">
+                <div className="w-16 h-16 rounded-xl bg-pink-400/20 flex items-center justify-center">
                   <Edit className="h-10 w-10" />
                 </div>
                 <span className="text-base font-medium">Note</span>
@@ -265,10 +266,10 @@ export default function Home() {
             </div>
 
             {/* Timeline Section */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-indigo-100">
-                <h2 className="text-xl font-semibold text-indigo-950">Recent Activity</h2>
-              </div>
+            <Card className="overflow-hidden">
+              <CardHeader className="py-4">
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
               <div className="divide-y divide-gray-100">
                 {activities.length > 0 ? (
                   <Timeline activities={activities} />
@@ -284,7 +285,7 @@ export default function Home() {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         ) : null}
 
@@ -306,32 +307,34 @@ export default function Home() {
             </Button>
           </div>
         ) : null}
-      </div>
 
-      {/* Modals */}
-      <BabyModal
-        open={showBabyModal}
-        onClose={handleBabyModalClose}
-        isEditing={isEditing}
-        baby={isEditing ? selectedBaby : null}
-      />
-      <SleepModal
-        open={showSleepModal}
-        onClose={() => setShowSleepModal(false)}
-        isSleeping={isSleeping}
-        onSleepToggle={() => setIsSleeping(!isSleeping)}
-        babyId={selectedBaby?.id}
-      />
-      <FeedModal
-        open={showFeedModal}
-        onClose={() => setShowFeedModal(false)}
-        babyId={selectedBaby?.id}
-      />
-      <DiaperModal
-        open={showDiaperModal}
-        onClose={() => setShowDiaperModal(false)}
-        babyId={selectedBaby?.id}
-      />
-    </main>
+        </div>
+
+        {/* Modals */}
+        <BabyModal
+          open={showBabyModal}
+          onClose={handleBabyModalClose}
+          isEditing={isEditing}
+          baby={isEditing ? selectedBaby : null}
+        />
+        <SleepModal
+          open={showSleepModal}
+          onClose={() => setShowSleepModal(false)}
+          isSleeping={isSleeping}
+          onSleepToggle={() => setIsSleeping(!isSleeping)}
+          babyId={selectedBaby?.id}
+        />
+        <FeedModal
+          open={showFeedModal}
+          onClose={() => setShowFeedModal(false)}
+          babyId={selectedBaby?.id}
+        />
+        <DiaperModal
+          open={showDiaperModal}
+          onClose={() => setShowDiaperModal(false)}
+          babyId={selectedBaby?.id}
+        />
+      </main>
+    </>
   );
 }
