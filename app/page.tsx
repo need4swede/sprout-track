@@ -152,61 +152,69 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Baby Tracker
-            </h1>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Select value={selectedBabyId} onValueChange={handleBabySelect}>
-                <SelectTrigger className="w-full sm:w-[200px] bg-white">
-                  <SelectValue placeholder="Select a baby" />
-                </SelectTrigger>
-                <SelectContent>
-                  {babies.map((baby) => (
-                    <SelectItem key={baby.id} value={baby.id}>
-                      {baby.firstName} {baby.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  setIsEditing(true);
-                  setShowBabyModal(true);
-                }}
-                className="bg-white hover:bg-indigo-50"
-              >
-                <Edit className="h-4 w-4 text-indigo-600" />
-              </Button>
-              <Button
-                size="icon"
-                onClick={() => {
-                  setIsEditing(false);
-                  setShowBabyModal(true);
-                }}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+    <main className="w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Baby Selection */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 max-w-xs">
+            <Select
+              value={selectedBabyId}
+              onValueChange={handleBabySelect}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a baby" />
+              </SelectTrigger>
+              <SelectContent>
+                {babies.map((baby) => (
+                  <SelectItem key={baby.id} value={baby.id}>
+                    {baby.firstName} {baby.lastName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              setIsEditing(false);
+              setShowBabyModal(true);
+            }}
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          {selectedBaby && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                setIsEditing(true);
+                setShowBabyModal(true);
+              }}
+              className="shrink-0"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        ) : null}
+
         {/* Main Content */}
-        {selectedBaby ? (
+        {!isLoading && selectedBaby ? (
           <div className="space-y-8">
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 onClick={() => setShowSleepModal(true)}
               >
                 <Moon className="h-8 w-8" />
@@ -215,7 +223,7 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 onClick={() => setShowFeedModal(true)}
               >
                 <Droplet className="h-8 w-8" />
@@ -224,7 +232,7 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 onClick={() => setShowDiaperModal(true)}
               >
                 <BabyIcon className="h-8 w-8" />
@@ -233,7 +241,7 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                className="h-28 sm:h-32 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 onClick={() => setShowDiaperModal(true)}
               >
                 <Edit className="h-8 w-8" />
@@ -263,7 +271,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-        ) : (
+        ) : null}
+
+        {/* Welcome Screen */}
+        {!isLoading && !selectedBaby ? (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-12 text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-indigo-100 flex items-center justify-center">
               <BabyIcon className="h-10 w-10 text-indigo-600" />
@@ -279,7 +290,7 @@ export default function Home() {
               Add Your Baby
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Modals */}
