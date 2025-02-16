@@ -36,12 +36,18 @@ export default function SleepModal({
     endTime: '',
     type: 'NAP' as SleepType,
     location: '',
-    quality: '' as SleepQuality | '',
+    quality: 'GOOD' as SleepQuality,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!babyId) return;
+
+    // Validate quality is a valid SleepQuality value
+    if (!Object.values(SleepQuality).includes(formData.quality)) {
+      console.error('Invalid sleep quality value');
+      return;
+    }
 
     try {
       const response = await fetch('/api/sleep-log', {

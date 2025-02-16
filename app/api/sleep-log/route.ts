@@ -6,11 +6,18 @@ export async function POST(req: NextRequest) {
   try {
     const body: SleepLogCreate = await req.json();
     
+    const startTime = new Date(body.startTime);
+    const endTime = body.endTime ? new Date(body.endTime) : undefined;
+    
+    // Calculate duration if both start and end times are present
+    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
+
     const sleepLog = await prisma.sleepLog.create({
       data: {
         ...body,
-        startTime: new Date(body.startTime),
-        endTime: body.endTime ? new Date(body.endTime) : undefined,
+        startTime,
+        endTime,
+        duration,
       },
     });
 
@@ -46,12 +53,34 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Get the existing sleep log to preserve startTime if not provided in update
+    const existingSleepLog = await prisma.sleepLog.findUnique({
+      where: { id },
+    });
+
+    if (!existingSleepLog) {
+      return NextResponse.json<ApiResponse<SleepLogResponse>>(
+        {
+          success: false,
+          error: 'Sleep log not found',
+        },
+        { status: 404 }
+      );
+    }
+
+    const startTime = body.startTime ? new Date(body.startTime) : existingSleepLog.startTime;
+    const endTime = body.endTime ? new Date(body.endTime) : existingSleepLog.endTime;
+    
+    // Calculate duration if both start and end times are present
+    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
+
     const sleepLog = await prisma.sleepLog.update({
       where: { id },
       data: {
         ...body,
-        startTime: body.startTime ? new Date(body.startTime) : undefined,
-        endTime: body.endTime ? new Date(body.endTime) : undefined,
+        startTime,
+        endTime,
+        duration,
       },
     });
 

@@ -1,4 +1,4 @@
-import { SleepLog, FeedLog, DiaperLog, MoodLog, Note } from '@prisma/client';
+import { SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings } from '@prisma/client';
 import { Card } from '@/components/ui/card';
 import {
   MoreVertical,
@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useState, useEffect } from 'react';
 
 type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
 
@@ -34,10 +35,40 @@ const getActivityIcon = (activity: ActivityType) => {
   return null;
 };
 
-const getActivityDescription = (activity: ActivityType) => {
+const getActivityTime = (activity: ActivityType): Date => {
+  if ('time' in activity) {
+    return new Date(activity.time);
+  }
+  if ('startTime' in activity) {
+    return new Date(activity.startTime);
+  }
+  return new Date(); // This should never happen as all activities should have a timestamp
+};
+
+const formatTime = (date: Date, settings: Settings | null) => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+
+  try {
+    return new Date(date).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: settings?.timezone || 'America/Chicago',
+    });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return 'Invalid Date';
+  }
+};
+
+const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      return `Slept for ${activity.duration || 'unknown'} minutes`;
+      const startTime = formatTime(new Date(activity.startTime), settings);
+      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings) : 'ongoing';
+      return `Slept for ${activity.duration || 'unknown'} minutes (${startTime} - ${endTime})`;
     }
     if ('amount' in activity) {
       return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : 'ml'}`;
@@ -55,27 +86,29 @@ const getActivityDescription = (activity: ActivityType) => {
   return 'Activity logged';
 };
 
-const getActivityTime = (activity: ActivityType): Date => {
-  if ('time' in activity) {
-    return new Date(activity.time);
-  }
-  if ('startTime' in activity) {
-    return new Date(activity.startTime);
-  }
-  return new Date(); // This should never happen as all activities should have a timestamp
-};
-
 export default function Timeline({ activities }: TimelineProps) {
+  const [settings, setSettings] = useState<Settings | null>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          setSettings(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
   // Sort activities by time, most recent first
   const sortedActivities = [...activities].sort((a, b) => 
     getActivityTime(b).getTime() - getActivityTime(a).getTime()
   );
-
-  const formatTime = (date: Date) => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
 
   return (
     <div className="space-y-4">
@@ -96,9 +129,9 @@ export default function Timeline({ activities }: TimelineProps) {
                       {getActivityIcon(activity)}
                     </div>
                     <div>
-                      <p className="font-medium">{getActivityDescription(activity)}</p>
+                      <p className="font-medium">{getActivityDescription(activity, settings)}</p>
                       <p className="text-sm text-gray-500">
-                        {formatTime(activityTime)}
+                        {formatTime(activityTime, settings)}
                       </p>
                     </div>
                   </div>

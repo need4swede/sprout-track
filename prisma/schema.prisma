@@ -170,3 +170,10 @@ model Note {
   @@index([babyId])
   @@index([deletedAt])
 }
+
+model Settings {
+  id        String   @id @default(cuid())
+  timezone  String   @default("America/Chicago")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

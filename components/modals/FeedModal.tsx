@@ -145,7 +145,7 @@ export default function FeedModal({
           {formData.type !== 'BREAST' && (
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Amount {formData.type === 'SOLIDS' ? '(g)' : '(ml)'}
+                Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
               </label>
               <Input
                 type="number"
