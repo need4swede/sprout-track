@@ -47,7 +47,9 @@ export default function BabyModal({
       setFormData({
         firstName: baby.firstName,
         lastName: baby.lastName,
-        birthDate,
+        birthDate: typeof baby.birthDate === 'string' 
+          ? baby.birthDate.split('T')[0] 
+          : new Date(baby.birthDate).toISOString().split('T')[0],
         gender: baby.gender || '',
         inactive: baby.inactive || false,
       });
