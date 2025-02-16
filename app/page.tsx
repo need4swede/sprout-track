@@ -22,6 +22,7 @@ import BabyModal from '@/components/modals/BabyModal';
 import SleepModal from '@/components/modals/SleepModal';
 import FeedModal from '@/components/modals/FeedModal';
 import DiaperModal from '@/components/modals/DiaperModal';
+import NoteModal from '@/components/modals/NoteModal';
 import Timeline from '@/components/Timeline';
 
 type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
@@ -35,6 +36,7 @@ export default function Home() {
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [showFeedModal, setShowFeedModal] = useState(false);
   const [showDiaperModal, setShowDiaperModal] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [activities, setActivities] = useState<ActivityType[]>([]);
@@ -151,6 +153,39 @@ export default function Home() {
     }
   };
 
+  const refreshActivities = async () => {
+    if (selectedBaby) {
+      try {
+        const [sleepResponse, feedResponse, diaperResponse] = await Promise.all([
+          fetch(`/api/sleep-log?babyId=${selectedBaby.id}`),
+          fetch(`/api/feed-log?babyId=${selectedBaby.id}`),
+          fetch(`/api/diaper-log?babyId=${selectedBaby.id}`)
+        ]);
+        
+        const [sleepData, feedData, diaperData] = await Promise.all([
+          sleepResponse.json(),
+          feedResponse.json(),
+          diaperResponse.json()
+        ]);
+        
+        const allActivities = [
+          ...(sleepData.success ? sleepData.data : []),
+          ...(feedData.success ? feedData.data : []),
+          ...(diaperData.success ? diaperData.data : [])
+        ].map(activity => ({
+          ...activity,
+          time: activity.time ? new Date(activity.time).toISOString() : undefined,
+          startTime: activity.startTime ? new Date(activity.startTime).toISOString() : undefined,
+          endTime: activity.endTime ? new Date(activity.endTime).toISOString() : undefined,
+        }));
+        
+        setActivities(allActivities);
+      } catch (error) {
+        console.error('Error refreshing activities:', error);
+      }
+    }
+  };
+
   return (
     <>
       <main className="w-full">
@@ -255,13 +290,15 @@ export default function Home() {
               <Button
                 variant="default"
                 size="lg"
-                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-pink-500 via-pink-600 to-pink-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
-                onClick={() => setShowDiaperModal(true)}
+                className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+                onClick={() => setShowNoteModal(true)}
               >
-                <div className="w-16 h-16 rounded-xl bg-pink-400/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-xl bg-teal-400/20 flex items-center justify-center">
                   <Edit className="h-10 w-10" />
                 </div>
-                <span className="text-base font-medium">Note</span>
+                <div className="space-y-1 text-center">
+                  <h3 className="font-semibold">Add Note</h3>
+                </div>
               </Button>
             </div>
 
@@ -332,6 +369,14 @@ export default function Home() {
         <DiaperModal
           open={showDiaperModal}
           onClose={() => setShowDiaperModal(false)}
+          babyId={selectedBaby?.id}
+        />
+        <NoteModal
+          open={showNoteModal}
+          onClose={() => {
+            setShowNoteModal(false);
+            refreshActivities();
+          }}
           babyId={selectedBaby?.id}
         />
       </main>
