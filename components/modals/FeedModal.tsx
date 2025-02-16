@@ -39,18 +39,34 @@ export default function FeedModal({
     e.preventDefault();
     if (!babyId) return;
 
+    // Validate required fields
+    if (!formData.type || !formData.time) {
+      console.error('Required fields missing');
+      return;
+    }
+
+    // Validate breast feeding side
+    if (formData.type === 'BREAST' && !formData.side) {
+      console.error('Side is required for breast feeding');
+      return;
+    }
+
+    const payload = {
+      babyId,
+      time: new Date(formData.time),
+      type: formData.type,
+      ...(formData.type === 'BREAST' && { side: formData.side }),
+      ...(formData.type !== 'BREAST' && formData.amount && { amount: parseFloat(formData.amount) }),
+      ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
+    };
+
     try {
       const response = await fetch('/api/feed-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          babyId,
-          time: new Date(formData.time),
-          amount: formData.amount ? parseFloat(formData.amount) : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -58,6 +74,14 @@ export default function FeedModal({
       }
 
       onClose();
+      // Reset form data
+      setFormData({
+        time: new Date().toISOString().slice(0, 16),
+        type: '' as FeedType | '',
+        amount: '',
+        side: '' as BreastSide | '',
+        food: '',
+      });
     } catch (error) {
       console.error('Error saving feed log:', error);
     }
@@ -95,8 +119,7 @@ export default function FeedModal({
               <SelectContent>
                 <SelectItem value="BREAST">Breast</SelectItem>
                 <SelectItem value="BOTTLE">Bottle</SelectItem>
-                <SelectItem value="FORMULA">Formula</SelectItem>
-                <SelectItem value="SOLID">Solid Food</SelectItem>
+                <SelectItem value="SOLIDS">Solid Food</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -115,7 +138,6 @@ export default function FeedModal({
                 <SelectContent>
                   <SelectItem value="LEFT">Left</SelectItem>
                   <SelectItem value="RIGHT">Right</SelectItem>
-                  <SelectItem value="BOTH">Both</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -123,7 +145,7 @@ export default function FeedModal({
           {formData.type !== 'BREAST' && (
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Amount {formData.type === 'SOLID' ? '(g)' : '(ml)'}
+                Amount {formData.type === 'SOLIDS' ? '(g)' : '(ml)'}
               </label>
               <Input
                 type="number"
@@ -136,7 +158,7 @@ export default function FeedModal({
               />
             </div>
           )}
-          {formData.type === 'SOLID' && (
+          {formData.type === 'SOLIDS' && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Food</label>
               <Input

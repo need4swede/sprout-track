@@ -29,7 +29,7 @@ export default function DiaperModal({
 }: DiaperModalProps) {
   const [formData, setFormData] = useState({
     time: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
-    type: '' as DiaperType | '',
+    type: null as DiaperType | null,
     condition: '',
     color: '',
   });
@@ -38,17 +38,27 @@ export default function DiaperModal({
     e.preventDefault();
     if (!babyId) return;
 
+    // Validate required fields
+    if (!formData.type || !formData.time) {
+      console.error('Required fields missing');
+      return;
+    }
+
+    const payload = {
+      babyId,
+      time: new Date(formData.time),
+      type: formData.type,
+      ...(formData.condition && { condition: formData.condition }),
+      ...(formData.color && { color: formData.color })
+    };
+
     try {
       const response = await fetch('/api/diaper-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          babyId,
-          time: new Date(formData.time),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -56,6 +66,13 @@ export default function DiaperModal({
       }
 
       onClose();
+      // Reset form data
+      setFormData({
+        time: new Date().toISOString().slice(0, 16),
+        type: null as DiaperType | null,
+        condition: '',
+        color: '',
+      });
     } catch (error) {
       console.error('Error saving diaper log:', error);
     }
@@ -82,7 +99,7 @@ export default function DiaperModal({
           <div className="space-y-2">
             <label className="text-sm font-medium">Type</label>
             <Select
-              value={formData.type}
+              value={formData.type || ''}
               onValueChange={(value: DiaperType) =>
                 setFormData({ ...formData, type: value })
               }
@@ -93,12 +110,11 @@ export default function DiaperModal({
               <SelectContent>
                 <SelectItem value="WET">Wet</SelectItem>
                 <SelectItem value="DIRTY">Dirty</SelectItem>
-                <SelectItem value="MIXED">Mixed</SelectItem>
-                <SelectItem value="DRY">Dry</SelectItem>
+                <SelectItem value="BOTH">Both</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {formData.type !== 'DRY' && (
+          {formData.type && (
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Condition</label>
