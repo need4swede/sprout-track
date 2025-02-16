@@ -135,29 +135,6 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  // Quick action buttons configuration
-  const quickActions = [
-    {
-      icon: <Moon className="h-6 w-6" />,
-      label: isSleeping ? 'Stop Sleep' : 'Start Sleep',
-      onClick: () => selectedBaby && setShowSleepModal(true),
-      active: isSleeping,
-      disabled: !selectedBaby,
-    },
-    {
-      icon: <Droplet className="h-6 w-6" />,
-      label: 'Feed',
-      onClick: () => selectedBaby && setShowFeedModal(true),
-      disabled: !selectedBaby,
-    },
-    {
-      icon: <BabyIcon className="h-6 w-6" />,
-      label: 'Diaper',
-      onClick: () => selectedBaby && setShowDiaperModal(true),
-      disabled: !selectedBaby,
-    },
-  ];
-
   const handleBabyModalClose = async () => {
     setShowBabyModal(false);
     // Refresh babies list
@@ -175,71 +152,135 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full max-w-4xl mx-auto p-4 space-y-6">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between gap-4 p-4 bg-white rounded-lg shadow">
-        <div className="flex-1">
-          <Select 
-            value={selectedBabyId}
-            onValueChange={handleBabySelect}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select a baby"} />
-            </SelectTrigger>
-            <SelectContent>
-              {babies.map((baby) => (
-                <SelectItem key={baby.id} value={baby.id}>
-                  {baby.firstName} {baby.lastName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-indigo-100">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Baby Tracker
+            </h1>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <Select value={selectedBabyId} onValueChange={handleBabySelect}>
+                <SelectTrigger className="w-full sm:w-[200px] bg-white">
+                  <SelectValue placeholder="Select a baby" />
+                </SelectTrigger>
+                <SelectContent>
+                  {babies.map((baby) => (
+                    <SelectItem key={baby.id} value={baby.id}>
+                      {baby.firstName} {baby.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setIsEditing(true);
+                  setShowBabyModal(true);
+                }}
+                className="bg-white hover:bg-indigo-50"
+              >
+                <Edit className="h-4 w-4 text-indigo-600" />
+              </Button>
+              <Button
+                size="icon"
+                onClick={() => {
+                  setIsEditing(false);
+                  setShowBabyModal(true);
+                }}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => {
-            setIsEditing(true);
-            setShowBabyModal(true);
-          }}
-          disabled={!selectedBaby}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          onClick={() => {
-            setIsEditing(false);
-            setShowBabyModal(true);
-          }}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
 
-      {/* Quick Actions */}
-      {!isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickActions.map((action, index) => (
-            <Card
-              key={index}
-              className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                action.active ? 'bg-primary text-primary-foreground' : ''
-              } ${action.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={action.disabled ? undefined : action.onClick}
-            >
-              <div className="flex flex-col items-center justify-center space-y-2">
-                {action.icon}
-                <span className="text-sm font-medium">{action.label}</span>
+        {/* Main Content */}
+        {selectedBaby ? (
+          <div className="space-y-8">
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              <Button
+                variant="default"
+                size="lg"
+                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                onClick={() => setShowSleepModal(true)}
+              >
+                <Moon className="h-8 w-8" />
+                <span className="text-sm font-medium">Sleep</span>
+              </Button>
+              <Button
+                variant="default"
+                size="lg"
+                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                onClick={() => setShowFeedModal(true)}
+              >
+                <Droplet className="h-8 w-8" />
+                <span className="text-sm font-medium">Feed</span>
+              </Button>
+              <Button
+                variant="default"
+                size="lg"
+                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                onClick={() => setShowDiaperModal(true)}
+              >
+                <BabyIcon className="h-8 w-8" />
+                <span className="text-sm font-medium">Diaper</span>
+              </Button>
+              <Button
+                variant="default"
+                size="lg"
+                className="h-28 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                onClick={() => setShowDiaperModal(true)}
+              >
+                <Edit className="h-8 w-8" />
+                <span className="text-sm font-medium">Note</span>
+              </Button>
+            </div>
+
+            {/* Timeline Section */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg overflow-hidden">
+              <div className="p-6 border-b border-indigo-100">
+                <h2 className="text-xl font-semibold text-indigo-950">Recent Activity</h2>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Timeline */}
-      {!isLoading && selectedBaby && <Timeline activities={activities} />}
+              <div className="p-6">
+                {activities.length > 0 ? (
+                  <Timeline activities={activities} />
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <BabyIcon className="h-8 w-8 text-indigo-600" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No activities yet</h3>
+                    <p className="text-sm text-gray-500">
+                      Start tracking your baby's activities using the buttons above
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-lg p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-indigo-100 flex items-center justify-center">
+              <BabyIcon className="h-10 w-10 text-indigo-600" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-3">Welcome to Baby Tracker!</h2>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Track your baby's daily activities including sleep, feeding, and diaper changes. Get started by adding your baby's information.
+            </p>
+            <Button
+              onClick={() => setShowBabyModal(true)}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+            >
+              Add Your Baby
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Modals */}
       <BabyModal
