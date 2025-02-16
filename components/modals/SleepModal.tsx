@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SleepType, SleepQuality } from '@prisma/client';
 
 interface SleepModalProps {
@@ -33,35 +33,101 @@ export default function SleepModal({
   babyId,
 }: SleepModalProps) {
   const [formData, setFormData] = useState({
-    startTime: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
+    startTime: new Date().toISOString().slice(0, 16),
     endTime: '',
-    type: 'NAP' as SleepType,
+    type: '' as SleepType | '',
     location: '',
-    quality: 'GOOD' as SleepQuality,
+    quality: '' as SleepQuality | '',
   });
+
+  useEffect(() => {
+    // Update time with local timezone when modal opens
+    const updateLocalTime = async () => {
+      try {
+        const response = await fetch('/api/timezone');
+        if (!response.ok) throw new Error('Failed to get local time');
+        const data = await response.json();
+        
+        if (data.success) {
+          setFormData(prev => ({
+            ...prev,
+            startTime: data.data.localTime.slice(0, 16)
+          }));
+        }
+      } catch (error) {
+        console.error('Error updating local time:', error);
+      }
+    };
+
+    if (open) {
+      updateLocalTime();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!babyId) return;
 
-    // Validate quality is a valid SleepQuality value
-    if (!Object.values(SleepQuality).includes(formData.quality)) {
-      console.error('Invalid sleep quality value');
+    // Validate required fields
+    if (!formData.type || !formData.startTime) {
+      console.error('Required fields missing');
       return;
     }
 
     try {
+      // Convert times to UTC
+      const startTimeResponse = await fetch('/api/timezone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: formData.startTime }),
+      });
+
+      if (!startTimeResponse.ok) throw new Error('Failed to convert start time');
+      const startTimeData = await startTimeResponse.json();
+      if (!startTimeData.success) throw new Error('Failed to convert start time');
+
+      let endTimeUtc = null;
+      if (formData.endTime) {
+        const endTimeResponse = await fetch('/api/timezone', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ date: formData.endTime }),
+        });
+
+        if (!endTimeResponse.ok) throw new Error('Failed to convert end time');
+        const endTimeData = await endTimeResponse.json();
+        if (!endTimeData.success) throw new Error('Failed to convert end time');
+        endTimeUtc = endTimeData.data.utcDate;
+      }
+
+      // Calculate duration if end time is provided
+      let duration = null;
+      if (endTimeUtc) {
+        duration = Math.round(
+          (new Date(endTimeUtc).getTime() - new Date(startTimeData.data.utcDate).getTime()) / (1000 * 60)
+        );
+      }
+
+      const payload = {
+        babyId,
+        startTime: startTimeData.data.utcDate,
+        endTime: endTimeUtc,
+        duration,
+        type: formData.type,
+        location: formData.location || null,
+        quality: formData.quality || null,
+      };
+
       const response = await fetch('/api/sleep-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          babyId,
-          startTime: new Date(formData.startTime),
-          endTime: formData.endTime ? new Date(formData.endTime) : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -72,6 +138,19 @@ export default function SleepModal({
       if (isSleeping) {
         onSleepToggle();
       }
+      
+      // Reset form data with current local time
+      const newTimeResponse = await fetch('/api/timezone');
+      if (!newTimeResponse.ok) throw new Error('Failed to get local time');
+      const newTimeData = await newTimeResponse.json();
+      
+      setFormData({
+        startTime: newTimeData.data.localTime.slice(0, 16),
+        endTime: '',
+        type: '' as SleepType | '',
+        location: '',
+        quality: '' as SleepQuality | '',
+      });
     } catch (error) {
       console.error('Error saving sleep log:', error);
     }

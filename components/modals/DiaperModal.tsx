@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DiaperType } from '@prisma/client';
 
 interface DiaperModalProps {
@@ -29,11 +29,35 @@ export default function DiaperModal({
   babyId,
 }: DiaperModalProps) {
   const [formData, setFormData] = useState({
-    time: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
-    type: null as DiaperType | null,
+    time: new Date().toISOString().slice(0, 16),
+    type: '' as DiaperType | '',
     condition: '',
     color: '',
   });
+
+  useEffect(() => {
+    // Update time with local timezone when modal opens
+    const updateLocalTime = async () => {
+      try {
+        const response = await fetch('/api/timezone');
+        if (!response.ok) throw new Error('Failed to get local time');
+        const data = await response.json();
+        
+        if (data.success) {
+          setFormData(prev => ({
+            ...prev,
+            time: data.data.localTime.slice(0, 16)
+          }));
+        }
+      } catch (error) {
+        console.error('Error updating local time:', error);
+      }
+    };
+
+    if (open) {
+      updateLocalTime();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,15 +69,28 @@ export default function DiaperModal({
       return;
     }
 
-    const payload = {
-      babyId,
-      time: new Date(formData.time),
-      type: formData.type,
-      ...(formData.condition && { condition: formData.condition }),
-      ...(formData.color && { color: formData.color })
-    };
-
     try {
+      // Convert time to UTC
+      const timeResponse = await fetch('/api/timezone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: formData.time }),
+      });
+
+      if (!timeResponse.ok) throw new Error('Failed to convert time');
+      const timeData = await timeResponse.json();
+      if (!timeData.success) throw new Error('Failed to convert time');
+
+      const payload = {
+        babyId,
+        time: timeData.data.utcDate,
+        type: formData.type,
+        condition: formData.condition || null,
+        color: formData.color || null,
+      };
+
       const response = await fetch('/api/diaper-log', {
         method: 'POST',
         headers: {
@@ -67,10 +104,15 @@ export default function DiaperModal({
       }
 
       onClose();
-      // Reset form data
+      
+      // Reset form data with current local time
+      const newTimeResponse = await fetch('/api/timezone');
+      if (!newTimeResponse.ok) throw new Error('Failed to get local time');
+      const newTimeData = await newTimeResponse.json();
+      
       setFormData({
-        time: new Date().toISOString().slice(0, 16),
-        type: null as DiaperType | null,
+        time: newTimeData.data.localTime.slice(0, 16),
+        type: '' as DiaperType | '',
         condition: '',
         color: '',
       });
