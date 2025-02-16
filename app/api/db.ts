@@ -5,40 +5,50 @@ const logLevels: Prisma.LogLevel[] = process.env.NODE_ENV === 'development'
   ? ['query', 'info', 'warn', 'error']
   : ['error'];
 
-// Configure Prisma Client with logging and connection options
-const prismaClientSingleton = () => {
-  return new PrismaClient({
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient({
     log: logLevels.map(level => ({
       emit: 'stdout',
       level,
-    } as Prisma.LogDefinition)),
-    // Add connection configuration for production
-    ...(process.env.NODE_ENV === 'production' && {
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL,
-        },
+    })),
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
       },
-    }),
+    },
   });
-};
-
-// Declare global type for PrismaClient
-declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
-}
-
-// Initialize singleton
-const prisma = globalThis.prisma ?? prismaClientSingleton();
-
-// Prevent multiple instances in development
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma;
+} else {
+  // In development, use global singleton to prevent multiple instances
+  if (!(global as any).prisma) {
+    (global as any).prisma = new PrismaClient({
+      log: logLevels.map(level => ({
+        emit: 'stdout',
+        level,
+      })),
+    });
+  }
+  prisma = (global as any).prisma;
 }
 
 // Handle graceful shutdown
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-});
+const handleShutdown = async () => {
+  try {
+    await prisma.$disconnect();
+  } catch (error) {
+    console.error('Error disconnecting from database:', error);
+  }
+};
+
+// Remove any existing listeners to prevent duplicates
+process.removeAllListeners('beforeExit');
+process.removeAllListeners('SIGTERM');
+process.removeAllListeners('SIGINT');
+
+// Add single listeners for each event
+process.once('beforeExit', handleShutdown);
+process.once('SIGTERM', handleShutdown);
+process.once('SIGINT', handleShutdown);
 
 export default prisma;

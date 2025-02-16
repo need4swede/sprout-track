@@ -75,7 +75,7 @@ export default function Timeline({ activities }: TimelineProps) {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Recent Activity</h2>
       <div className="space-y-2">
-        {activities.length === 0 ? (
+        {sortedActivities.length === 0 ? (
           <Card className="p-4 text-center text-gray-500">
             No activities logged yet
           </Card>

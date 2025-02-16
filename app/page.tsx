@@ -72,14 +72,29 @@ export default function Home() {
       if (!selectedBaby) return;
       
       try {
-        // TODO: Implement activity fetching
-        // const response = await fetch(`/api/activity?babyId=${selectedBaby.id}`);
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   if (data.success) {
-        //     setActivities(data.data);
-        //   }
-        // }
+        // Fetch sleep logs
+        const sleepResponse = await fetch(`/api/sleep-log?babyId=${selectedBaby.id}`);
+        const sleepData = await sleepResponse.json();
+        const sleepLogs = sleepData.success ? sleepData.data : [];
+
+        // Fetch feed logs
+        const feedResponse = await fetch(`/api/feed-log?babyId=${selectedBaby.id}`);
+        const feedData = await feedResponse.json();
+        const feedLogs = feedData.success ? feedData.data : [];
+
+        // Fetch diaper logs
+        const diaperResponse = await fetch(`/api/diaper-log?babyId=${selectedBaby.id}`);
+        const diaperData = await diaperResponse.json();
+        const diaperLogs = diaperData.success ? diaperData.data : [];
+
+        // Combine all activities
+        const allActivities = [
+          ...sleepLogs,
+          ...feedLogs,
+          ...diaperLogs,
+        ];
+
+        setActivities(allActivities);
       } catch (error) {
         console.error('Error fetching activities:', error);
       }
