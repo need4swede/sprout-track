@@ -58,6 +58,11 @@ export default function SettingsModal({
   const [showBabyModal, setShowBabyModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
+  const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
+
+  useEffect(() => {
+    setLocalSelectedBabyId(selectedBabyId);
+  }, [selectedBabyId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,7 +126,7 @@ export default function SettingsModal({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="dialog-content max-w-2xl">
           <DialogHeader className="dialog-header">
-            <DialogTitle className="dialog-title">Settings</DialogTitle>
+            <DialogTitle className="dialog-title text-slate-800">Settings</DialogTitle>
             <DialogDescription className="dialog-description">
               Configure your preferences for the Baby Tracker app
             </DialogDescription>
@@ -157,44 +162,51 @@ export default function SettingsModal({
               </Select>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">Manage Babies</h3>
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="form-label mb-4">Manage Babies</h3>
               <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <Select 
-                    value={selectedBabyId} 
-                    onValueChange={(babyId) => onBabySelect?.(babyId)}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="w-[200px]">
+                    <Select 
+                      value={localSelectedBabyId} 
+                      onValueChange={(babyId) => {
+                        setLocalSelectedBabyId(babyId);
+                        onBabySelect?.(babyId);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a baby" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {babies.map((baby) => (
+                          <SelectItem key={baby.id} value={baby.id}>
+                            {baby.firstName} {baby.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    disabled={!localSelectedBabyId}
+                    onClick={() => {
+                      const baby = babies.find(b => b.id === localSelectedBabyId);
+                      setSelectedBaby(baby || null);
+                      setIsEditing(true);
+                      setShowBabyModal(true);
+                    }}
                   >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select a baby" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {babies.map((baby) => (
-                        <SelectItem key={baby.id} value={baby.id}>
-                          {baby.firstName} {baby.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Edit className="h-4 w-3 mr-2" />
+                    Edit
+                  </Button>
                   <Button variant="outline" onClick={() => {
                     setIsEditing(false);
                     setSelectedBaby(null);
                     setShowBabyModal(true);
                   }}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Baby
+                    <Plus className="h-4 w-3 mr-2" />
+                    Add
                   </Button>
-                  {selectedBabyId && (
-                    <Button variant="outline" onClick={() => {
-                      const baby = babies.find(b => b.id === selectedBabyId);
-                      setSelectedBaby(baby || null);
-                      setIsEditing(true);
-                      setShowBabyModal(true);
-                    }}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Baby
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>

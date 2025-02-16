@@ -58,6 +58,7 @@ model Baby {
   lastName    String
   birthDate   DateTime
   gender      Gender?
+  inactive    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?

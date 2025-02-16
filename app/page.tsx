@@ -119,22 +119,23 @@ export default function Home() {
           {babies.map((baby) => (
             <Card 
               key={baby.id}
-              className={`cursor-pointer transition-all duration-200 flex-1 min-w-[200px] ${
+              className={`cursor-pointer transition-all duration-200 flex-1 min-w-[200px] text-white ${
+                baby.gender === 'MALE' 
+                  ? 'bg-gradient-to-br from-blue-400 to-blue-600'
+                  : baby.gender === 'FEMALE'
+                  ? 'bg-gradient-to-br from-pink-400 to-pink-600'
+                  : 'bg-gradient-to-br from-gray-400 to-gray-600'
+              } ${
                 selectedBabyId === baby.id 
-                  ? 'ring-2 ring-teal-500 shadow-lg transform scale-[1.02]'
+                  ? 'ring-2 ring-white shadow-lg transform scale-[1.02]'
                   : 'hover:shadow-md hover:scale-[1.01]'
               }`}
               onClick={() => handleBabySelect(baby.id)}
             >
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex text-lg items-center space-x-2 text-white">
                   <BabyIcon 
-                    className="h-5 w-5" 
-                    style={{ 
-                      color: baby.gender === 'MALE' ? '#89CFF0' : 
-                             baby.gender === 'FEMALE' ? '#FFB6C1' : 
-                             '#A9A9A9'
-                    }} 
+                    className="h-5 w-5 text-white" 
                   />
                   <span>{baby.firstName}</span>
                 </CardTitle>
