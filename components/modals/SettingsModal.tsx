@@ -99,7 +99,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
               value={settings?.timezone || 'America/Chicago'}
               onValueChange={handleTimezoneChange}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select timezone" />
               </SelectTrigger>
               <SelectContent>
@@ -113,10 +113,18 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
           </div>
           <div className="flex justify-end gap-3 mt-8">
             <Button 
+              type="button" 
+              variant="outline" 
               onClick={onClose}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+              className="hover:bg-slate-50"
             >
-              Save & Close
+              Cancel
+            </Button>
+            <Button 
+              onClick={onClose}
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
+            >
+              Save Changes
             </Button>
           </div>
         </div>

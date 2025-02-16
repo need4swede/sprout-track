@@ -1,14 +1,21 @@
 @import "tailwindcss";
 
 /* Mountain background */
+html {
+  height: 100%;
+}
+
 body {
+  min-height: 100vh;
   background-image: url('/snow-6071475_1920.jpg');
   background-repeat: no-repeat;
-  background-size: auto 100vh;
+  background-size: cover;
   background-position: center;
   background-attachment: fixed;
   background-color: rgba(255, 255, 255, 0.5);
   position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 body::before {
