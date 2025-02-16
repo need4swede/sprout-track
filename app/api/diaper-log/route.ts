@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, DiaperLogCreate, DiaperLogResponse } from '../types';
 import { DiaperType } from '@prisma/client';
+import { convertToUTC, formatLocalTime } from '../utils/timezone';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,13 +11,22 @@ export async function POST(req: NextRequest) {
     const diaperLog = await prisma.diaperLog.create({
       data: {
         ...body,
-        time: new Date(body.time),
+        time: await convertToUTC(body.time),
       },
     });
 
+    // Format response with local timezone
+    const response: DiaperLogResponse = {
+      ...diaperLog,
+      time: await formatLocalTime(diaperLog.time),
+      createdAt: await formatLocalTime(diaperLog.createdAt),
+      updatedAt: await formatLocalTime(diaperLog.updatedAt),
+      deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
       success: true,
-      data: diaperLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error creating diaper log:', error);
@@ -46,17 +56,40 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const existingDiaperLog = await prisma.diaperLog.findUnique({
+      where: { id },
+    });
+
+    if (!existingDiaperLog) {
+      return NextResponse.json<ApiResponse<DiaperLogResponse>>(
+        {
+          success: false,
+          error: 'Diaper log not found',
+        },
+        { status: 404 }
+      );
+    }
+
     const diaperLog = await prisma.diaperLog.update({
       where: { id },
       data: {
         ...body,
-        time: body.time ? new Date(body.time) : undefined,
+        time: body.time ? await convertToUTC(body.time) : existingDiaperLog.time,
       },
     });
 
+    // Format response with local timezone
+    const response: DiaperLogResponse = {
+      ...diaperLog,
+      time: await formatLocalTime(diaperLog.time),
+      createdAt: await formatLocalTime(diaperLog.createdAt),
+      updatedAt: await formatLocalTime(diaperLog.updatedAt),
+      deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
       success: true,
-      data: diaperLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error updating diaper log:', error);
@@ -64,41 +97,6 @@ export async function PUT(req: NextRequest) {
       {
         success: false,
         error: 'Failed to update diaper log',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'Diaper log ID is required',
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.diaperLog.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json<ApiResponse>({
-      success: true,
-    });
-  } catch (error) {
-    console.error('Error deleting diaper log:', error);
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: 'Failed to delete diaper log',
       },
       { status: 500 }
     );
@@ -114,22 +112,20 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get('endDate');
     const typeParam = searchParams.get('type');
 
-    const where = {
-      deletedAt: null,
-      ...(id && { id }),
+    const queryParams = {
       ...(babyId && { babyId }),
       ...(typeParam && { type: typeParam as DiaperType }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: await convertToUTC(startDate),
+          lte: await convertToUTC(endDate),
         },
       }),
     };
 
     if (id) {
-      const diaperLog = await prisma.diaperLog.findFirst({
-        where,
+      const diaperLog = await prisma.diaperLog.findUnique({
+        where: { id },
       });
 
       if (!diaperLog) {
@@ -142,22 +138,42 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      // Format response with local timezone
+      const response: DiaperLogResponse = {
+        ...diaperLog,
+        time: await formatLocalTime(diaperLog.time),
+        createdAt: await formatLocalTime(diaperLog.createdAt),
+        updatedAt: await formatLocalTime(diaperLog.updatedAt),
+        deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+      };
+
       return NextResponse.json<ApiResponse<DiaperLogResponse>>({
         success: true,
-        data: diaperLog,
+        data: response,
       });
     }
 
     const diaperLogs = await prisma.diaperLog.findMany({
-      where,
+      where: queryParams,
       orderBy: {
         time: 'desc',
       },
     });
 
+    // Format response with local timezone
+    const response: DiaperLogResponse[] = await Promise.all(
+      diaperLogs.map(async (diaperLog) => ({
+        ...diaperLog,
+        time: await formatLocalTime(diaperLog.time),
+        createdAt: await formatLocalTime(diaperLog.createdAt),
+        updatedAt: await formatLocalTime(diaperLog.updatedAt),
+        deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+      }))
+    );
+
     return NextResponse.json<ApiResponse<DiaperLogResponse[]>>({
       success: true,
-      data: diaperLogs,
+      data: response,
     });
   } catch (error) {
     console.error('Error fetching diaper logs:', error);
@@ -165,6 +181,40 @@ export async function GET(req: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch diaper logs',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json<ApiResponse<void>>(
+        {
+          success: false,
+          error: 'Diaper log ID is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.diaperLog.delete({
+      where: { id },
+    });
+
+    return NextResponse.json<ApiResponse<void>>({
+      success: true,
+    });
+  } catch (error) {
+    console.error('Error deleting diaper log:', error);
+    return NextResponse.json<ApiResponse<void>>(
+      {
+        success: false,
+        error: 'Failed to delete diaper log',
       },
       { status: 500 }
     );

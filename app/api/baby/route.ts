@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, BabyCreate, BabyUpdate, BabyResponse } from '../types';
+import { Gender } from '@prisma/client';
+import { convertToUTC, formatLocalTime } from '../utils/timezone';
 
 export async function POST(req: NextRequest) {
   try {
     const body: BabyCreate = await req.json();
-    
+
     const baby = await prisma.baby.create({
       data: {
         ...body,
-        birthDate: new Date(body.birthDate),
+        birthDate: await convertToUTC(body.birthDate),
       },
     });
 
+    // Format response with local timezone
+    const response: BabyResponse = {
+      ...baby,
+      birthDate: await formatLocalTime(baby.birthDate),
+      createdAt: await formatLocalTime(baby.createdAt),
+      updatedAt: await formatLocalTime(baby.updatedAt),
+      deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<BabyResponse>>({
       success: true,
-      data: baby,
+      data: response,
     });
   } catch (error) {
     console.error('Error creating baby:', error);
@@ -34,17 +45,40 @@ export async function PUT(req: NextRequest) {
     const body: BabyUpdate = await req.json();
     const { id, ...updateData } = body;
 
+    const existingBaby = await prisma.baby.findUnique({
+      where: { id },
+    });
+
+    if (!existingBaby) {
+      return NextResponse.json<ApiResponse<BabyResponse>>(
+        {
+          success: false,
+          error: 'Baby not found',
+        },
+        { status: 404 }
+      );
+    }
+
     const baby = await prisma.baby.update({
       where: { id },
       data: {
         ...updateData,
-        birthDate: updateData.birthDate ? new Date(updateData.birthDate) : undefined,
+        birthDate: updateData.birthDate ? await convertToUTC(updateData.birthDate) : existingBaby.birthDate,
       },
     });
 
+    // Format response with local timezone
+    const response: BabyResponse = {
+      ...baby,
+      birthDate: await formatLocalTime(baby.birthDate),
+      createdAt: await formatLocalTime(baby.createdAt),
+      updatedAt: await formatLocalTime(baby.updatedAt),
+      deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<BabyResponse>>({
       success: true,
-      data: baby,
+      data: response,
     });
   } catch (error) {
     console.error('Error updating baby:', error);
@@ -117,9 +151,18 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      // Format response with local timezone
+      const response: BabyResponse = {
+        ...baby,
+        birthDate: await formatLocalTime(baby.birthDate),
+        createdAt: await formatLocalTime(baby.createdAt),
+        updatedAt: await formatLocalTime(baby.updatedAt),
+        deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+      };
+
       return NextResponse.json<ApiResponse<BabyResponse>>({
         success: true,
-        data: baby,
+        data: response,
       });
     }
 
@@ -132,9 +175,20 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Format response with local timezone
+    const response: BabyResponse[] = await Promise.all(
+      babies.map(async (baby) => ({
+        ...baby,
+        birthDate: await formatLocalTime(baby.birthDate),
+        createdAt: await formatLocalTime(baby.createdAt),
+        updatedAt: await formatLocalTime(baby.updatedAt),
+        deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+      }))
+    );
+
     return NextResponse.json<ApiResponse<BabyResponse[]>>({
       success: true,
-      data: babies,
+      data: response,
     });
   } catch (error) {
     console.error('Error fetching babies:', error);

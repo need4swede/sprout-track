@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, FeedLogCreate, FeedLogResponse } from '../types';
 import { FeedType } from '@prisma/client';
+import { convertToUTC, formatLocalTime } from '../utils/timezone';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,13 +11,22 @@ export async function POST(req: NextRequest) {
     const feedLog = await prisma.feedLog.create({
       data: {
         ...body,
-        time: new Date(body.time),
+        time: await convertToUTC(body.time),
       },
     });
 
+    // Format response with local timezone
+    const response: FeedLogResponse = {
+      ...feedLog,
+      time: await formatLocalTime(feedLog.time),
+      createdAt: await formatLocalTime(feedLog.createdAt),
+      updatedAt: await formatLocalTime(feedLog.updatedAt),
+      deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
       success: true,
-      data: feedLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error creating feed log:', error);
@@ -46,17 +56,40 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const existingFeedLog = await prisma.feedLog.findUnique({
+      where: { id },
+    });
+
+    if (!existingFeedLog) {
+      return NextResponse.json<ApiResponse<FeedLogResponse>>(
+        {
+          success: false,
+          error: 'Feed log not found',
+        },
+        { status: 404 }
+      );
+    }
+
     const feedLog = await prisma.feedLog.update({
       where: { id },
       data: {
         ...body,
-        time: body.time ? new Date(body.time) : undefined,
+        time: body.time ? await convertToUTC(body.time) : existingFeedLog.time,
       },
     });
 
+    // Format response with local timezone
+    const response: FeedLogResponse = {
+      ...feedLog,
+      time: await formatLocalTime(feedLog.time),
+      createdAt: await formatLocalTime(feedLog.createdAt),
+      updatedAt: await formatLocalTime(feedLog.updatedAt),
+      deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
       success: true,
-      data: feedLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error updating feed log:', error);
@@ -64,41 +97,6 @@ export async function PUT(req: NextRequest) {
       {
         success: false,
         error: 'Failed to update feed log',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'Feed log ID is required',
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.feedLog.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json<ApiResponse>({
-      success: true,
-    });
-  } catch (error) {
-    console.error('Error deleting feed log:', error);
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: 'Failed to delete feed log',
       },
       { status: 500 }
     );
@@ -114,22 +112,20 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get('endDate');
     const typeParam = searchParams.get('type');
 
-    const where = {
-      deletedAt: null,
-      ...(id && { id }),
+    const queryParams = {
       ...(babyId && { babyId }),
       ...(typeParam && { type: typeParam as FeedType }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: await convertToUTC(startDate),
+          lte: await convertToUTC(endDate),
         },
       }),
     };
 
     if (id) {
-      const feedLog = await prisma.feedLog.findFirst({
-        where,
+      const feedLog = await prisma.feedLog.findUnique({
+        where: { id },
       });
 
       if (!feedLog) {
@@ -142,22 +138,42 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      // Format response with local timezone
+      const response: FeedLogResponse = {
+        ...feedLog,
+        time: await formatLocalTime(feedLog.time),
+        createdAt: await formatLocalTime(feedLog.createdAt),
+        updatedAt: await formatLocalTime(feedLog.updatedAt),
+        deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+      };
+
       return NextResponse.json<ApiResponse<FeedLogResponse>>({
         success: true,
-        data: feedLog,
+        data: response,
       });
     }
 
     const feedLogs = await prisma.feedLog.findMany({
-      where,
+      where: queryParams,
       orderBy: {
         time: 'desc',
       },
     });
 
+    // Format response with local timezone
+    const response: FeedLogResponse[] = await Promise.all(
+      feedLogs.map(async (feedLog) => ({
+        ...feedLog,
+        time: await formatLocalTime(feedLog.time),
+        createdAt: await formatLocalTime(feedLog.createdAt),
+        updatedAt: await formatLocalTime(feedLog.updatedAt),
+        deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+      }))
+    );
+
     return NextResponse.json<ApiResponse<FeedLogResponse[]>>({
       success: true,
-      data: feedLogs,
+      data: response,
     });
   } catch (error) {
     console.error('Error fetching feed logs:', error);
@@ -165,6 +181,40 @@ export async function GET(req: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch feed logs',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json<ApiResponse<void>>(
+        {
+          success: false,
+          error: 'Feed log ID is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.feedLog.delete({
+      where: { id },
+    });
+
+    return NextResponse.json<ApiResponse<void>>({
+      success: true,
+    });
+  } catch (error) {
+    console.error('Error deleting feed log:', error);
+    return NextResponse.json<ApiResponse<void>>(
+      {
+        success: false,
+        error: 'Failed to delete feed log',
       },
       { status: 500 }
     );

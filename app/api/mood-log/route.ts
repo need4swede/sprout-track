@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, MoodLogCreate, MoodLogResponse } from '../types';
 import { Mood } from '@prisma/client';
+import { convertToUTC, formatLocalTime } from '../utils/timezone';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,13 +11,22 @@ export async function POST(req: NextRequest) {
     const moodLog = await prisma.moodLog.create({
       data: {
         ...body,
-        time: new Date(body.time),
+        time: await convertToUTC(body.time),
       },
     });
 
+    // Format response with local timezone
+    const response: MoodLogResponse = {
+      ...moodLog,
+      time: await formatLocalTime(moodLog.time),
+      createdAt: await formatLocalTime(moodLog.createdAt),
+      updatedAt: await formatLocalTime(moodLog.updatedAt),
+      deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<MoodLogResponse>>({
       success: true,
-      data: moodLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error creating mood log:', error);
@@ -46,17 +56,40 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const existingMoodLog = await prisma.moodLog.findUnique({
+      where: { id },
+    });
+
+    if (!existingMoodLog) {
+      return NextResponse.json<ApiResponse<MoodLogResponse>>(
+        {
+          success: false,
+          error: 'Mood log not found',
+        },
+        { status: 404 }
+      );
+    }
+
     const moodLog = await prisma.moodLog.update({
       where: { id },
       data: {
         ...body,
-        time: body.time ? new Date(body.time) : undefined,
+        time: body.time ? await convertToUTC(body.time) : existingMoodLog.time,
       },
     });
 
+    // Format response with local timezone
+    const response: MoodLogResponse = {
+      ...moodLog,
+      time: await formatLocalTime(moodLog.time),
+      createdAt: await formatLocalTime(moodLog.createdAt),
+      updatedAt: await formatLocalTime(moodLog.updatedAt),
+      deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<MoodLogResponse>>({
       success: true,
-      data: moodLog,
+      data: response,
     });
   } catch (error) {
     console.error('Error updating mood log:', error);
@@ -76,7 +109,7 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json<ApiResponse>(
+      return NextResponse.json<ApiResponse<void>>(
         {
           success: false,
           error: 'Mood log ID is required',
@@ -90,12 +123,12 @@ export async function DELETE(req: NextRequest) {
       data: { deletedAt: new Date() },
     });
 
-    return NextResponse.json<ApiResponse>({
+    return NextResponse.json<ApiResponse<void>>({
       success: true,
     });
   } catch (error) {
     console.error('Error deleting mood log:', error);
-    return NextResponse.json<ApiResponse>(
+    return NextResponse.json<ApiResponse<void>>(
       {
         success: false,
         error: 'Failed to delete mood log',
@@ -114,22 +147,21 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get('endDate');
     const moodParam = searchParams.get('mood');
 
-    const where = {
+    const queryParams = {
       deletedAt: null,
-      ...(id && { id }),
       ...(babyId && { babyId }),
       ...(moodParam && { mood: moodParam as Mood }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: await convertToUTC(startDate),
+          lte: await convertToUTC(endDate),
         },
       }),
     };
 
     if (id) {
       const moodLog = await prisma.moodLog.findFirst({
-        where,
+        where: { ...queryParams, id },
       });
 
       if (!moodLog) {
@@ -142,22 +174,42 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      // Format response with local timezone
+      const response: MoodLogResponse = {
+        ...moodLog,
+        time: await formatLocalTime(moodLog.time),
+        createdAt: await formatLocalTime(moodLog.createdAt),
+        updatedAt: await formatLocalTime(moodLog.updatedAt),
+        deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+      };
+
       return NextResponse.json<ApiResponse<MoodLogResponse>>({
         success: true,
-        data: moodLog,
+        data: response,
       });
     }
 
     const moodLogs = await prisma.moodLog.findMany({
-      where,
+      where: queryParams,
       orderBy: {
         time: 'desc',
       },
     });
 
+    // Format response with local timezone
+    const response: MoodLogResponse[] = await Promise.all(
+      moodLogs.map(async (moodLog) => ({
+        ...moodLog,
+        time: await formatLocalTime(moodLog.time),
+        createdAt: await formatLocalTime(moodLog.createdAt),
+        updatedAt: await formatLocalTime(moodLog.updatedAt),
+        deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+      }))
+    );
+
     return NextResponse.json<ApiResponse<MoodLogResponse[]>>({
       success: true,
-      data: moodLogs,
+      data: response,
     });
   } catch (error) {
     console.error('Error fetching mood logs:', error);

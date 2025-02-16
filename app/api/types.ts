@@ -7,7 +7,12 @@ export interface ApiResponse<T = void> {
 }
 
 // Baby types
-export type BabyResponse = Baby;
+export type BabyResponse = Omit<Baby, 'birthDate' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  birthDate: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface BabyCreate {
   firstName: string;
@@ -21,7 +26,13 @@ export interface BabyUpdate extends Partial<BabyCreate> {
 }
 
 // Sleep log types
-export type SleepLogResponse = SleepLog;
+export type SleepLogResponse = Omit<SleepLog, 'startTime' | 'endTime' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  startTime: string;
+  endTime: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface SleepLogCreate {
   babyId: string;
@@ -34,7 +45,12 @@ export interface SleepLogCreate {
 }
 
 // Feed log types
-export type FeedLogResponse = FeedLog;
+export type FeedLogResponse = Omit<FeedLog, 'time' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface FeedLogCreate {
   babyId: string;
@@ -46,7 +62,12 @@ export interface FeedLogCreate {
 }
 
 // Diaper log types
-export type DiaperLogResponse = DiaperLog;
+export type DiaperLogResponse = Omit<DiaperLog, 'time' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface DiaperLogCreate {
   babyId: string;
@@ -57,7 +78,12 @@ export interface DiaperLogCreate {
 }
 
 // Mood log types
-export type MoodLogResponse = MoodLog;
+export type MoodLogResponse = Omit<MoodLog, 'time' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface MoodLogCreate {
   babyId: string;
@@ -68,7 +94,12 @@ export interface MoodLogCreate {
 }
 
 // Note types
-export type NoteResponse = Note;
+export type NoteResponse = Omit<Note, 'time' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export interface NoteCreate {
   babyId: string;

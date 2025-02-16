@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, NoteCreate, NoteResponse } from '../types';
+import { convertToUTC, formatLocalTime } from '../utils/timezone';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,13 +10,22 @@ export async function POST(req: NextRequest) {
     const note = await prisma.note.create({
       data: {
         ...body,
-        time: new Date(body.time),
+        time: await convertToUTC(body.time),
       },
     });
 
+    // Format response with local timezone
+    const response: NoteResponse = {
+      ...note,
+      time: await formatLocalTime(note.time),
+      createdAt: await formatLocalTime(note.createdAt),
+      updatedAt: await formatLocalTime(note.updatedAt),
+      deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<NoteResponse>>({
       success: true,
-      data: note,
+      data: response,
     });
   } catch (error) {
     console.error('Error creating note:', error);
@@ -45,17 +55,40 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const existingNote = await prisma.note.findUnique({
+      where: { id },
+    });
+
+    if (!existingNote) {
+      return NextResponse.json<ApiResponse<NoteResponse>>(
+        {
+          success: false,
+          error: 'Note not found',
+        },
+        { status: 404 }
+      );
+    }
+
     const note = await prisma.note.update({
       where: { id },
       data: {
         ...body,
-        time: body.time ? new Date(body.time) : undefined,
+        time: body.time ? await convertToUTC(body.time) : existingNote.time,
       },
     });
 
+    // Format response with local timezone
+    const response: NoteResponse = {
+      ...note,
+      time: await formatLocalTime(note.time),
+      createdAt: await formatLocalTime(note.createdAt),
+      updatedAt: await formatLocalTime(note.updatedAt),
+      deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+    };
+
     return NextResponse.json<ApiResponse<NoteResponse>>({
       success: true,
-      data: note,
+      data: response,
     });
   } catch (error) {
     console.error('Error updating note:', error);
@@ -63,41 +96,6 @@ export async function PUT(req: NextRequest) {
       {
         success: false,
         error: 'Failed to update note',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'Note ID is required',
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.note.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json<ApiResponse>({
-      success: true,
-    });
-  } catch (error) {
-    console.error('Error deleting note:', error);
-    return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: 'Failed to delete note',
       },
       { status: 500 }
     );
@@ -113,22 +111,20 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get('endDate');
     const category = searchParams.get('category');
 
-    const where = {
-      deletedAt: null,
-      ...(id && { id }),
+    const queryParams = {
       ...(babyId && { babyId }),
       ...(category && { category }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: await convertToUTC(startDate),
+          lte: await convertToUTC(endDate),
         },
       }),
     };
 
     if (id) {
-      const note = await prisma.note.findFirst({
-        where,
+      const note = await prisma.note.findUnique({
+        where: { id },
       });
 
       if (!note) {
@@ -141,22 +137,42 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      // Format response with local timezone
+      const response: NoteResponse = {
+        ...note,
+        time: await formatLocalTime(note.time),
+        createdAt: await formatLocalTime(note.createdAt),
+        updatedAt: await formatLocalTime(note.updatedAt),
+        deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+      };
+
       return NextResponse.json<ApiResponse<NoteResponse>>({
         success: true,
-        data: note,
+        data: response,
       });
     }
 
     const notes = await prisma.note.findMany({
-      where,
+      where: queryParams,
       orderBy: {
         time: 'desc',
       },
     });
 
+    // Format response with local timezone
+    const response: NoteResponse[] = await Promise.all(
+      notes.map(async (note) => ({
+        ...note,
+        time: await formatLocalTime(note.time),
+        createdAt: await formatLocalTime(note.createdAt),
+        updatedAt: await formatLocalTime(note.updatedAt),
+        deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+      }))
+    );
+
     return NextResponse.json<ApiResponse<NoteResponse[]>>({
       success: true,
-      data: notes,
+      data: response,
     });
   } catch (error) {
     console.error('Error fetching notes:', error);
@@ -164,6 +180,40 @@ export async function GET(req: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch notes',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json<ApiResponse<void>>(
+        {
+          success: false,
+          error: 'Note ID is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.note.delete({
+      where: { id },
+    });
+
+    return NextResponse.json<ApiResponse<void>>({
+      success: true,
+    });
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    return NextResponse.json<ApiResponse<void>>(
+      {
+        success: false,
+        error: 'Failed to delete note',
       },
       { status: 500 }
     );
