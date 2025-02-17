@@ -60,12 +60,21 @@ export default function FeedModal({
     }
   };
 
+  // Format date string to be compatible with datetime-local input
+  const formatDateForInput = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    
+    // Format to YYYY-MM-DDThh:mm
+    return date.toISOString().slice(0, 16);
+  };
+
   useEffect(() => {
     if (open) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: initialTime,
+          time: formatDateForInput(initialTime),
           type: activity.type,
           amount: activity.amount?.toString() || '',
           side: activity.side || '',
@@ -75,7 +84,7 @@ export default function FeedModal({
         // New entry mode
         setFormData(prev => ({
           ...prev,
-          time: initialTime
+          time: formatDateForInput(initialTime)
         }));
       }
     }
@@ -133,9 +142,16 @@ export default function FeedModal({
     }
 
     try {
+      // Convert the datetime-local value to a full ISO string
+      const timeDate = new Date(formData.time);
+      if (isNaN(timeDate.getTime())) {
+        console.error('Invalid time format');
+        return;
+      }
+
       const payload = {
         babyId,
-        time: formData.time,
+        time: timeDate.toISOString(),
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
         ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
@@ -151,7 +167,8 @@ export default function FeedModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save feed log');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save feed log');
       }
 
       onClose();
