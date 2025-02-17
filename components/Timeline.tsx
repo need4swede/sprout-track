@@ -283,29 +283,6 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                     <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
                       {formatTime(getActivityTime(activity), settings)}
                     </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
-                        <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(activity);
-                          }}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </div>
               </div>
@@ -329,10 +306,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
       {/* Activity Details Dialog */}
       <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="overflow-hidden p-4 w-[95%] max-w-[400px] rounded-xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
+            <DialogTitle className="flex items-center gap-3">
               <Button
                 variant="destructive"
                 size="icon"
@@ -341,6 +317,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
+              <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
             </DialogTitle>
           </DialogHeader>
           {selectedActivity && (

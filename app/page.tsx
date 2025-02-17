@@ -119,11 +119,11 @@ export default function Home() {
     <div className="space-y-6 mx-4 my-4">
       {/* Baby Selector */}
       {!isLoading && babies.length > 0 && (
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-2">
           {babies.map((baby) => (
             <Card 
               key={baby.id}
-              className={`cursor-pointer transition-all duration-200 flex-1 min-w-[200px] text-white ${
+              className={`cursor-pointer transition-all duration-200 rounded-full text-white p-1 ${
                 baby.gender === 'MALE' 
                   ? 'bg-gradient-to-br from-blue-400 to-blue-600'
                   : baby.gender === 'FEMALE'
@@ -132,14 +132,14 @@ export default function Home() {
               } ${
                 selectedBabyId === baby.id 
                   ? 'ring-2 ring-white shadow-lg transform scale-[1.02]'
-                  : 'hover:shadow-md hover:scale-[1.01]'
+                  : 'hover:shadow-md hover:scale-[1.01] px-1 py-1'
               }`}
               onClick={() => handleBabySelect(baby.id)}
             >
-              <CardHeader>
-                <CardTitle className="flex text-lg items-center space-x-2 text-white">
+              <CardHeader className="p-2">
+                <CardTitle className="flex text-sm items-center space-x-2 text-lg text-white">
                   <BabyIcon 
-                    className="h-5 w-5 text-white" 
+                    className="h-5 w-5 text-lg text-white" 
                   />
                   <span>{baby.firstName}</span>
                 </CardTitle>
