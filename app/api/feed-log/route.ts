@@ -2,26 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, FeedLogCreate, FeedLogResponse } from '../types';
 import { FeedType } from '@prisma/client';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
-
 export async function POST(req: NextRequest) {
   try {
     const body: FeedLogCreate = await req.json();
     
     const feedLog = await prisma.feedLog.create({
-      data: {
-        ...body,
-        time: await convertToUTC(body.time),
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: FeedLogResponse = {
       ...feedLog,
-      time: await formatLocalTime(feedLog.time),
-      createdAt: await formatLocalTime(feedLog.createdAt),
-      updatedAt: await formatLocalTime(feedLog.updatedAt),
-      deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+      time: feedLog.time.toISOString(),
+      createdAt: feedLog.createdAt.toISOString(),
+      updatedAt: feedLog.updatedAt.toISOString(),
+      deletedAt: feedLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -72,19 +66,15 @@ export async function PUT(req: NextRequest) {
 
     const feedLog = await prisma.feedLog.update({
       where: { id },
-      data: {
-        ...body,
-        time: body.time ? await convertToUTC(body.time) : existingFeedLog.time,
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: FeedLogResponse = {
       ...feedLog,
-      time: await formatLocalTime(feedLog.time),
-      createdAt: await formatLocalTime(feedLog.createdAt),
-      updatedAt: await formatLocalTime(feedLog.updatedAt),
-      deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+      time: feedLog.time.toISOString(),
+      createdAt: feedLog.createdAt.toISOString(),
+      updatedAt: feedLog.updatedAt.toISOString(),
+      deletedAt: feedLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -117,8 +107,8 @@ export async function GET(req: NextRequest) {
       ...(typeParam && { type: typeParam as FeedType }),
       ...(startDate && endDate && {
         time: {
-          gte: await convertToUTC(startDate),
-          lte: await convertToUTC(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       }),
     };
@@ -138,13 +128,12 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
       const response: FeedLogResponse = {
         ...feedLog,
-        time: await formatLocalTime(feedLog.time),
-        createdAt: await formatLocalTime(feedLog.createdAt),
-        updatedAt: await formatLocalTime(feedLog.updatedAt),
-        deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
+        time: feedLog.time.toISOString(),
+        createdAt: feedLog.createdAt.toISOString(),
+        updatedAt: feedLog.updatedAt.toISOString(),
+        deletedAt: feedLog.deletedAt?.toISOString() || null,
       };
 
       return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -160,16 +149,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: FeedLogResponse[] = await Promise.all(
-      feedLogs.map(async (feedLog) => ({
-        ...feedLog,
-        time: await formatLocalTime(feedLog.time),
-        createdAt: await formatLocalTime(feedLog.createdAt),
-        updatedAt: await formatLocalTime(feedLog.updatedAt),
-        deletedAt: feedLog.deletedAt ? await formatLocalTime(feedLog.deletedAt) : null,
-      }))
-    );
+    const response: FeedLogResponse[] = feedLogs.map(feedLog => ({
+      ...feedLog,
+      time: feedLog.time.toISOString(),
+      createdAt: feedLog.createdAt.toISOString(),
+      updatedAt: feedLog.updatedAt.toISOString(),
+      deletedAt: feedLog.deletedAt?.toISOString() || null,
+    }));
 
     return NextResponse.json<ApiResponse<FeedLogResponse[]>>({
       success: true,

@@ -117,48 +117,21 @@ export default function SleepModal({
     }
 
     try {
-      // Convert times to UTC
-      const startTimeResponse = await fetch('/api/timezone', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: formData.startTime }),
-      });
-
-      if (!startTimeResponse.ok) throw new Error('Failed to convert start time');
-      const startTimeData = await startTimeResponse.json();
-      if (!startTimeData.success) throw new Error('Failed to convert start time');
-
-      let endTimeUtc = null;
-      if (formData.endTime) {
-        const endTimeResponse = await fetch('/api/timezone', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ date: formData.endTime }),
-        });
-
-        if (!endTimeResponse.ok) throw new Error('Failed to convert end time');
-        const endTimeData = await endTimeResponse.json();
-        if (!endTimeData.success) throw new Error('Failed to convert end time');
-        endTimeUtc = endTimeData.data.utcDate;
-      }
+      const startTime = new Date(formData.startTime);
+      const endTime = formData.endTime ? new Date(formData.endTime) : null;
+      const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60)) : null;
 
       let response;
       
       if (activity) {
         // Editing mode - update existing record
         const payload = {
-          startTime: startTimeData.data.utcDate,
-          endTime: endTimeUtc,
+          startTime,
+          endTime,
+          duration,
           type: formData.type,
           location: formData.location || null,
           quality: formData.quality || null,
-          duration: endTimeUtc ? Math.round(
-            (new Date(endTimeUtc).getTime() - new Date(startTimeData.data.utcDate).getTime()) / (1000 * 60)
-          ) : null,
         };
 
         response = await fetch(`/api/sleep-log?id=${activity.id}`, {
@@ -178,19 +151,14 @@ export default function SleepModal({
         const currentSleep = sleepData.data.find((log: any) => !log.endTime);
         if (!currentSleep) throw new Error('No ongoing sleep record found');
 
-        const startTimeUtc = new Date(currentSleep.startTime);
-        const sleepDuration = Math.round(
-          (new Date(endTimeUtc).getTime() - startTimeUtc.getTime()) / (1000 * 60)
-        );
-
         response = await fetch(`/api/sleep-log?id=${currentSleep.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            endTime: endTimeUtc,
-            duration: sleepDuration,
+            endTime,
+            duration,
             quality: formData.quality || null,
           }),
         });
@@ -198,7 +166,7 @@ export default function SleepModal({
         // Starting new sleep
         const payload = {
           babyId,
-          startTime: startTimeData.data.utcDate,
+          startTime,
           endTime: null,
           duration: null,
           type: formData.type,
@@ -222,13 +190,9 @@ export default function SleepModal({
       onClose();
       if (!activity) onSleepToggle(); // Only toggle sleep state when not editing
       
-      // Reset form data with current local time
-      const newTimeResponse = await fetch('/api/timezone');
-      if (!newTimeResponse.ok) throw new Error('Failed to get local time');
-      const newTimeData = await newTimeResponse.json();
-      
+      // Reset form data
       setFormData({
-        startTime: newTimeData.data.localTime.slice(0, 16),
+        startTime: new Date().toISOString().slice(0, 16),
         endTime: '',
         type: '' as SleepType | '',
         location: '',

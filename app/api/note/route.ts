@@ -1,26 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, NoteCreate, NoteResponse } from '../types';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
-
 export async function POST(req: NextRequest) {
   try {
     const body: NoteCreate = await req.json();
     
     const note = await prisma.note.create({
-      data: {
-        ...body,
-        time: await convertToUTC(body.time),
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: NoteResponse = {
       ...note,
-      time: await formatLocalTime(note.time),
-      createdAt: await formatLocalTime(note.createdAt),
-      updatedAt: await formatLocalTime(note.updatedAt),
-      deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+      time: note.time.toISOString(),
+      createdAt: note.createdAt.toISOString(),
+      updatedAt: note.updatedAt.toISOString(),
+      deletedAt: note.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -71,19 +65,15 @@ export async function PUT(req: NextRequest) {
 
     const note = await prisma.note.update({
       where: { id },
-      data: {
-        ...body,
-        time: body.time ? await convertToUTC(body.time) : existingNote.time,
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: NoteResponse = {
       ...note,
-      time: await formatLocalTime(note.time),
-      createdAt: await formatLocalTime(note.createdAt),
-      updatedAt: await formatLocalTime(note.updatedAt),
-      deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+      time: note.time.toISOString(),
+      createdAt: note.createdAt.toISOString(),
+      updatedAt: note.updatedAt.toISOString(),
+      deletedAt: note.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -116,8 +106,8 @@ export async function GET(req: NextRequest) {
       ...(category && { category }),
       ...(startDate && endDate && {
         time: {
-          gte: await convertToUTC(startDate),
-          lte: await convertToUTC(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       }),
     };
@@ -137,13 +127,12 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
       const response: NoteResponse = {
         ...note,
-        time: await formatLocalTime(note.time),
-        createdAt: await formatLocalTime(note.createdAt),
-        updatedAt: await formatLocalTime(note.updatedAt),
-        deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
+        time: note.time.toISOString(),
+        createdAt: note.createdAt.toISOString(),
+        updatedAt: note.updatedAt.toISOString(),
+        deletedAt: note.deletedAt?.toISOString() || null,
       };
 
       return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -159,16 +148,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: NoteResponse[] = await Promise.all(
-      notes.map(async (note) => ({
-        ...note,
-        time: await formatLocalTime(note.time),
-        createdAt: await formatLocalTime(note.createdAt),
-        updatedAt: await formatLocalTime(note.updatedAt),
-        deletedAt: note.deletedAt ? await formatLocalTime(note.deletedAt) : null,
-      }))
-    );
+    const response: NoteResponse[] = notes.map(note => ({
+      ...note,
+      time: note.time.toISOString(),
+      createdAt: note.createdAt.toISOString(),
+      updatedAt: note.updatedAt.toISOString(),
+      deletedAt: note.deletedAt?.toISOString() || null,
+    }));
 
     return NextResponse.json<ApiResponse<NoteResponse[]>>({
       success: true,

@@ -70,22 +70,9 @@ export default function DiaperModal({
     }
 
     try {
-      // Convert time to UTC
-      const timeResponse = await fetch('/api/timezone', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: formData.time }),
-      });
-
-      if (!timeResponse.ok) throw new Error('Failed to convert time');
-      const timeData = await timeResponse.json();
-      if (!timeData.success) throw new Error('Failed to convert time');
-
       const payload = {
         babyId,
-        time: timeData.data.utcDate,
+        time: new Date(formData.time),
         type: formData.type,
         condition: formData.condition || null,
         color: formData.color || null,
@@ -105,13 +92,9 @@ export default function DiaperModal({
 
       onClose();
       
-      // Reset form data with current local time
-      const newTimeResponse = await fetch('/api/timezone');
-      if (!newTimeResponse.ok) throw new Error('Failed to get local time');
-      const newTimeData = await newTimeResponse.json();
-      
+      // Reset form data
       setFormData({
-        time: newTimeData.data.localTime.slice(0, 16),
+        time: new Date().toISOString().slice(0, 16),
         type: '' as DiaperType | '',
         condition: '',
         color: '',
@@ -167,7 +150,7 @@ export default function DiaperModal({
             </div>
           </div>
           
-          {formData.type && (
+          {formData.type && formData.type !== 'WET' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="form-label">Condition</label>

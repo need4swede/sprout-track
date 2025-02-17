@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, SleepLogCreate, SleepLogResponse } from '../types';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
-
 export async function POST(req: NextRequest) {
   try {
     const body: SleepLogCreate = await req.json();
     
-    // Convert times to UTC before storing
-    const startTime = await convertToUTC(body.startTime);
-    const endTime = body.endTime ? await convertToUTC(body.endTime) : undefined;
-    
     // Calculate duration if both start and end times are present
+    const startTime = new Date(body.startTime);
+    const endTime = body.endTime ? new Date(body.endTime) : undefined;
     const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.create({
@@ -23,14 +19,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: await formatLocalTime(sleepLog.startTime),
-      endTime: sleepLog.endTime ? await formatLocalTime(sleepLog.endTime) : null,
-      createdAt: await formatLocalTime(sleepLog.createdAt),
-      updatedAt: await formatLocalTime(sleepLog.updatedAt),
-      deletedAt: sleepLog.deletedAt ? await formatLocalTime(sleepLog.deletedAt) : null,
+      startTime: sleepLog.startTime.toISOString(),
+      endTime: sleepLog.endTime?.toISOString() || null,
+      createdAt: sleepLog.createdAt.toISOString(),
+      updatedAt: sleepLog.updatedAt.toISOString(),
+      deletedAt: sleepLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -79,11 +74,9 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Convert times to UTC before storing
-    const startTime = body.startTime ? await convertToUTC(body.startTime) : existingSleepLog.startTime;
-    const endTime = body.endTime ? await convertToUTC(body.endTime) : existingSleepLog.endTime;
-    
     // Calculate duration if both start and end times are present
+    const startTime = new Date(body.startTime || existingSleepLog.startTime);
+    const endTime = body.endTime ? new Date(body.endTime) : existingSleepLog.endTime;
     const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.update({
@@ -96,14 +89,13 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: await formatLocalTime(sleepLog.startTime),
-      endTime: sleepLog.endTime ? await formatLocalTime(sleepLog.endTime) : null,
-      createdAt: await formatLocalTime(sleepLog.createdAt),
-      updatedAt: await formatLocalTime(sleepLog.updatedAt),
-      deletedAt: sleepLog.deletedAt ? await formatLocalTime(sleepLog.deletedAt) : null,
+      startTime: sleepLog.startTime.toISOString(),
+      endTime: sleepLog.endTime?.toISOString() || null,
+      createdAt: sleepLog.createdAt.toISOString(),
+      updatedAt: sleepLog.updatedAt.toISOString(),
+      deletedAt: sleepLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -134,8 +126,8 @@ export async function GET(req: NextRequest) {
       ...(babyId && { babyId }),
       ...(startDate && endDate && {
         startTime: {
-          gte: await convertToUTC(startDate),
-          lte: await convertToUTC(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       }),
     };
@@ -155,14 +147,13 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
       const response: SleepLogResponse = {
         ...sleepLog,
-        startTime: await formatLocalTime(sleepLog.startTime),
-        endTime: sleepLog.endTime ? await formatLocalTime(sleepLog.endTime) : null,
-        createdAt: await formatLocalTime(sleepLog.createdAt),
-        updatedAt: await formatLocalTime(sleepLog.updatedAt),
-        deletedAt: sleepLog.deletedAt ? await formatLocalTime(sleepLog.deletedAt) : null,
+        startTime: sleepLog.startTime.toISOString(),
+        endTime: sleepLog.endTime?.toISOString() || null,
+        createdAt: sleepLog.createdAt.toISOString(),
+        updatedAt: sleepLog.updatedAt.toISOString(),
+        deletedAt: sleepLog.deletedAt?.toISOString() || null,
       };
 
       return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -178,17 +169,14 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: SleepLogResponse[] = await Promise.all(
-      sleepLogs.map(async (sleepLog) => ({
-        ...sleepLog,
-        startTime: await formatLocalTime(sleepLog.startTime),
-        endTime: sleepLog.endTime ? await formatLocalTime(sleepLog.endTime) : null,
-        createdAt: await formatLocalTime(sleepLog.createdAt),
-        updatedAt: await formatLocalTime(sleepLog.updatedAt),
-        deletedAt: sleepLog.deletedAt ? await formatLocalTime(sleepLog.deletedAt) : null,
-      }))
-    );
+    const response: SleepLogResponse[] = sleepLogs.map(sleepLog => ({
+      ...sleepLog,
+      startTime: sleepLog.startTime.toISOString(),
+      endTime: sleepLog.endTime?.toISOString() || null,
+      createdAt: sleepLog.createdAt.toISOString(),
+      updatedAt: sleepLog.updatedAt.toISOString(),
+      deletedAt: sleepLog.deletedAt?.toISOString() || null,
+    }));
 
     return NextResponse.json<ApiResponse<SleepLogResponse[]>>({
       success: true,

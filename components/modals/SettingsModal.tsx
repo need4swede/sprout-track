@@ -21,23 +21,6 @@ import {
 } from '@/components/ui/select';
 import BabyModal from '@/components/modals/BabyModal';
 
-// List of common timezones
-const TIMEZONES = [
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Anchorage',
-  'America/Honolulu',
-  'America/Puerto_Rico',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Berlin',
-  'Asia/Tokyo',
-  'Asia/Shanghai',
-  'Australia/Sydney',
-  'Pacific/Auckland',
-].sort();
 
 interface SettingsModalProps {
   open: boolean;
@@ -151,26 +134,6 @@ export default function SettingsModal({
                 className="w-full"
               />
             </div>
-            <div>
-              <label className="form-label">Timezone</label>
-              <Select
-                disabled={loading}
-                value={settings?.timezone || 'America/Chicago'}
-                onValueChange={(timezone) => handleSettingsChange({ timezone })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEZONES.map((timezone) => (
-                    <SelectItem key={timezone} value={timezone}>
-                      {timezone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Manage Babies</h3>
               <div className="space-y-4">

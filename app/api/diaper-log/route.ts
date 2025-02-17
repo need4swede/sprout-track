@@ -2,26 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, DiaperLogCreate, DiaperLogResponse } from '../types';
 import { DiaperType } from '@prisma/client';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
-
 export async function POST(req: NextRequest) {
   try {
     const body: DiaperLogCreate = await req.json();
     
     const diaperLog = await prisma.diaperLog.create({
-      data: {
-        ...body,
-        time: await convertToUTC(body.time),
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: DiaperLogResponse = {
       ...diaperLog,
-      time: await formatLocalTime(diaperLog.time),
-      createdAt: await formatLocalTime(diaperLog.createdAt),
-      updatedAt: await formatLocalTime(diaperLog.updatedAt),
-      deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+      time: diaperLog.time.toISOString(),
+      createdAt: diaperLog.createdAt.toISOString(),
+      updatedAt: diaperLog.updatedAt.toISOString(),
+      deletedAt: diaperLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -72,19 +66,15 @@ export async function PUT(req: NextRequest) {
 
     const diaperLog = await prisma.diaperLog.update({
       where: { id },
-      data: {
-        ...body,
-        time: body.time ? await convertToUTC(body.time) : existingDiaperLog.time,
-      },
+      data: body,
     });
 
-    // Format response with local timezone
     const response: DiaperLogResponse = {
       ...diaperLog,
-      time: await formatLocalTime(diaperLog.time),
-      createdAt: await formatLocalTime(diaperLog.createdAt),
-      updatedAt: await formatLocalTime(diaperLog.updatedAt),
-      deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+      time: diaperLog.time.toISOString(),
+      createdAt: diaperLog.createdAt.toISOString(),
+      updatedAt: diaperLog.updatedAt.toISOString(),
+      deletedAt: diaperLog.deletedAt?.toISOString() || null,
     };
 
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -117,8 +107,8 @@ export async function GET(req: NextRequest) {
       ...(typeParam && { type: typeParam as DiaperType }),
       ...(startDate && endDate && {
         time: {
-          gte: await convertToUTC(startDate),
-          lte: await convertToUTC(endDate),
+          gte: new Date(startDate),
+          lte: new Date(endDate),
         },
       }),
     };
@@ -138,13 +128,12 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
       const response: DiaperLogResponse = {
         ...diaperLog,
-        time: await formatLocalTime(diaperLog.time),
-        createdAt: await formatLocalTime(diaperLog.createdAt),
-        updatedAt: await formatLocalTime(diaperLog.updatedAt),
-        deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
+        time: diaperLog.time.toISOString(),
+        createdAt: diaperLog.createdAt.toISOString(),
+        updatedAt: diaperLog.updatedAt.toISOString(),
+        deletedAt: diaperLog.deletedAt?.toISOString() || null,
       };
 
       return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -160,16 +149,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: DiaperLogResponse[] = await Promise.all(
-      diaperLogs.map(async (diaperLog) => ({
-        ...diaperLog,
-        time: await formatLocalTime(diaperLog.time),
-        createdAt: await formatLocalTime(diaperLog.createdAt),
-        updatedAt: await formatLocalTime(diaperLog.updatedAt),
-        deletedAt: diaperLog.deletedAt ? await formatLocalTime(diaperLog.deletedAt) : null,
-      }))
-    );
+    const response: DiaperLogResponse[] = diaperLogs.map(diaperLog => ({
+      ...diaperLog,
+      time: diaperLog.time.toISOString(),
+      createdAt: diaperLog.createdAt.toISOString(),
+      updatedAt: diaperLog.updatedAt.toISOString(),
+      deletedAt: diaperLog.deletedAt?.toISOString() || null,
+    }));
 
     return NextResponse.json<ApiResponse<DiaperLogResponse[]>>({
       success: true,

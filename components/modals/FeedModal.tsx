@@ -132,22 +132,9 @@ export default function FeedModal({
     }
 
     try {
-      // Convert time to UTC
-      const timeResponse = await fetch('/api/timezone', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: formData.time }),
-      });
-
-      if (!timeResponse.ok) throw new Error('Failed to convert time');
-      const timeData = await timeResponse.json();
-      if (!timeData.success) throw new Error('Failed to convert time');
-
       const payload = {
         babyId,
-        time: timeData.data.utcDate,
+        time: new Date(formData.time),
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
         ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
@@ -168,13 +155,9 @@ export default function FeedModal({
 
       onClose();
       
-      // Reset form data with current local time
-      const newTimeResponse = await fetch('/api/timezone');
-      if (!newTimeResponse.ok) throw new Error('Failed to get local time');
-      const newTimeData = await newTimeResponse.json();
-      
+      // Reset form data
       setFormData({
-        time: newTimeData.data.localTime.slice(0, 16),
+        time: new Date().toISOString().slice(0, 16),
         type: '' as FeedType | '',
         amount: '',
         side: '' as BreastSide | '',
