@@ -15,13 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { DiaperType } from '@prisma/client';
+import { DiaperType, DiaperLog } from '@prisma/client';
 
 interface DiaperModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
+  activity?: DiaperLog;
 }
 
 export default function DiaperModal({
@@ -29,6 +30,7 @@ export default function DiaperModal({
   onClose,
   babyId,
   initialTime,
+  activity,
 }: DiaperModalProps) {
   const [formData, setFormData] = useState({
     time: new Date().toISOString().slice(0, 16),
@@ -39,12 +41,23 @@ export default function DiaperModal({
 
   useEffect(() => {
     if (open) {
-      setFormData(prev => ({
-        ...prev,
-        time: initialTime
-      }));
+      if (activity) {
+        // Editing mode - populate with activity data
+        setFormData({
+          time: new Date(activity.time).toISOString().slice(0, 16),
+          type: activity.type,
+          condition: activity.condition || '',
+          color: activity.color || '',
+        });
+      } else {
+        // New entry mode
+        setFormData(prev => ({
+          ...prev,
+          time: initialTime
+        }));
+      }
     }
-  }, [open, initialTime]);
+  }, [open, initialTime, activity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,8 +91,8 @@ export default function DiaperModal({
         color: formData.color || null,
       };
 
-      const response = await fetch('/api/diaper-log', {
-        method: 'POST',
+      const response = await fetch(`/api/diaper-log${activity ? `?id=${activity.id}` : ''}`, {
+        method: activity ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -112,9 +125,11 @@ export default function DiaperModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="dialog-content">
         <DialogHeader className="dialog-header">
-          <DialogTitle className="dialog-title">Log Diaper Change</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {activity ? 'Edit Diaper Change' : 'Log Diaper Change'}
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            Record details about your baby's diaper change
+            {activity ? 'Update details about your baby\'s diaper change' : 'Record details about your baby\'s diaper change'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -208,7 +223,7 @@ export default function DiaperModal({
               type="submit"
               className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
             >
-              Save Change
+              {activity ? 'Update Change' : 'Save Change'}
             </Button>
           </div>
         </form>

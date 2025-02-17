@@ -6,6 +6,7 @@ import {
   Trash2,
   Icon,
   Edit,
+  Pencil,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import {
@@ -15,9 +16,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import SleepModal from '@/components/modals/SleepModal';
+import FeedModal from '@/components/modals/FeedModal';
+import DiaperModal from '@/components/modals/DiaperModal';
+import NoteModal from '@/components/modals/NoteModal';
 
 type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
+type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface TimelineProps {
   activities: ActivityType[];
@@ -208,6 +214,8 @@ const getActivityStyle = (activity: ActivityType): { bg: string, textColor: stri
 const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>(null);
+  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -222,7 +230,26 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     fetchSettings();
   }, []);
 
-  const sortedActivities = [...activities]
+  const filteredActivities = useMemo(() => {
+    if (!activeFilter) return activities;
+
+    return activities.filter(activity => {
+      switch (activeFilter) {
+        case 'sleep':
+          return 'duration' in activity;
+        case 'feed':
+          return 'amount' in activity;
+        case 'diaper':
+          return 'condition' in activity;
+        case 'note':
+          return 'content' in activity;
+        default:
+          return true;
+      }
+    });
+  }, [activities, activeFilter]);
+
+  const sortedActivities = [...filteredActivities]
     .sort((a, b) => {
       const timeA = getActivityTime(a);
       const timeB = getActivityTime(b);
@@ -250,6 +277,62 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
   return (
     <div>
+      {/* Filter Buttons */}
+      <div className="flex gap-2 mb-4 px-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setActiveFilter(activeFilter === 'sleep' ? null : 'sleep')}
+          className={`${
+            activeFilter === 'sleep'
+              ? 'border-2 border-blue-500 bg-white'
+              : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          <Moon className="h-4 w-4 mr-2" />
+          Sleep
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setActiveFilter(activeFilter === 'feed' ? null : 'feed')}
+          className={`${
+            activeFilter === 'feed'
+              ? 'border-2 border-blue-500 bg-white'
+              : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          <Icon iconNode={bottleBaby} className="h-4 w-4 mr-2" />
+          Feed
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setActiveFilter(activeFilter === 'diaper' ? null : 'diaper')}
+          className={`${
+            activeFilter === 'diaper'
+              ? 'border-2 border-blue-500 bg-white'
+              : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          <Icon iconNode={diaper} className="h-4 w-4 mr-2" />
+          Diaper
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setActiveFilter(activeFilter === 'note' ? null : 'note')}
+          className={`${
+            activeFilter === 'note'
+              ? 'border-2 border-blue-500 bg-white'
+              : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          <Edit className="h-4 w-4 mr-2" />
+          Notes
+        </Button>
+      </div>
+
       <div className="divide-y divide-gray-100">
         {sortedActivities.map((activity) => {
           const style = getActivityStyle(activity);
@@ -308,14 +391,32 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         <DialogContent className="overflow-hidden p-4 w-[95%] max-w-[400px] rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <Button
-                variant="destructive"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => handleDelete(selectedActivity!)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleDelete(selectedActivity!)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedActivity) {
+                      if ('duration' in selectedActivity) setEditModalType('sleep');
+                      else if ('amount' in selectedActivity) setEditModalType('feed');
+                      else if ('condition' in selectedActivity) setEditModalType('diaper');
+                      else if ('content' in selectedActivity) setEditModalType('note');
+                    }
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
               <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
             </DialogTitle>
           </DialogHeader>
@@ -331,6 +432,58 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Modals */}
+      {selectedActivity && (
+        <>
+          <SleepModal
+            open={editModalType === 'sleep'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+            isSleeping={false}
+            onSleepToggle={() => {}}
+            babyId={selectedActivity.babyId}
+            initialTime={new Date().toISOString()}
+            activity={'duration' in selectedActivity && 'startTime' in selectedActivity ? selectedActivity as SleepLog : undefined}
+          />
+          <FeedModal
+            open={editModalType === 'feed'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
+            activity={'amount' in selectedActivity && 'time' in selectedActivity ? selectedActivity as FeedLog : undefined}
+          />
+          <DiaperModal
+            open={editModalType === 'diaper'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
+            activity={'condition' in selectedActivity && 'time' in selectedActivity ? selectedActivity as DiaperLog : undefined}
+          />
+          <NoteModal
+            open={editModalType === 'note'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
+            activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity as Note : undefined}
+          />
+        </>
+      )}
     </div>
   );
 };

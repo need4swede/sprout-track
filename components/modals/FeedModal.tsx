@@ -15,13 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { FeedType, BreastSide } from '@prisma/client';
+import { FeedType, BreastSide, FeedLog } from '@prisma/client';
 
 interface FeedModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
+  activity?: FeedLog;
 }
 
 export default function FeedModal({
@@ -29,6 +30,7 @@ export default function FeedModal({
   onClose,
   babyId,
   initialTime,
+  activity,
 }: FeedModalProps) {
   const [formData, setFormData] = useState({
     time: new Date().toISOString().slice(0, 16),
@@ -59,12 +61,24 @@ export default function FeedModal({
 
   useEffect(() => {
     if (open) {
-      setFormData(prev => ({
-        ...prev,
-        time: initialTime
-      }));
+      if (activity) {
+        // Editing mode - populate with activity data
+        setFormData({
+          time: new Date(activity.time).toISOString().slice(0, 16),
+          type: activity.type,
+          amount: activity.amount?.toString() || '',
+          side: activity.side || '',
+          food: activity.food || '',
+        });
+      } else {
+        // New entry mode
+        setFormData(prev => ({
+          ...prev,
+          time: initialTime
+        }));
+      }
     }
-  }, [open, initialTime]);
+  }, [open, initialTime, activity]);
 
   useEffect(() => {
     if (formData.type && formData.type !== 'BREAST') {
@@ -140,8 +154,8 @@ export default function FeedModal({
         ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
       };
 
-      const response = await fetch('/api/feed-log', {
-        method: 'POST',
+      const response = await fetch(`/api/feed-log${activity ? `?id=${activity.id}` : ''}`, {
+        method: activity ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -175,9 +189,11 @@ export default function FeedModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="dialog-content">
         <DialogHeader className="dialog-header">
-          <DialogTitle className="dialog-title">Log Feeding</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {activity ? 'Edit Feeding' : 'Log Feeding'}
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            Record what and when your baby ate
+            {activity ? 'Update what and when your baby ate' : 'Record what and when your baby ate'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -305,7 +321,7 @@ export default function FeedModal({
               type="submit"
               className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
             >
-              Save Feed
+              {activity ? 'Update Feed' : 'Save Feed'}
             </Button>
           </div>
         </form>

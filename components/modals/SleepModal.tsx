@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { SleepType, SleepQuality } from '@prisma/client';
+import { SleepType, SleepQuality, SleepLog } from '@prisma/client';
 
 interface SleepModalProps {
   open: boolean;
@@ -24,6 +24,7 @@ interface SleepModalProps {
   onSleepToggle: () => void;
   babyId: string | undefined;
   initialTime: string;
+  activity?: SleepLog;
 }
 
 export default function SleepModal({
@@ -33,6 +34,7 @@ export default function SleepModal({
   onSleepToggle,
   babyId,
   initialTime,
+  activity,
 }: SleepModalProps) {
   const [formData, setFormData] = useState({
     startTime: new Date().toISOString().slice(0, 16),
@@ -44,8 +46,18 @@ export default function SleepModal({
 
   useEffect(() => {
     if (open) {
-      const fetchCurrentSleep = async () => {
-        if (isSleeping && babyId) {
+      if (activity) {
+        // Editing mode - populate with activity data
+        setFormData({
+          startTime: new Date(activity.startTime).toISOString().slice(0, 16),
+          endTime: activity.endTime ? new Date(activity.endTime).toISOString().slice(0, 16) : '',
+          type: activity.type,
+          location: activity.location || '',
+          quality: activity.quality || '',
+        });
+      } else if (isSleeping && babyId) {
+        // Ending sleep mode - fetch current sleep
+        const fetchCurrentSleep = async () => {
           try {
             const response = await fetch(`/api/sleep-log?babyId=${babyId}`);
             if (!response.ok) return;
@@ -69,9 +81,10 @@ export default function SleepModal({
           } catch (error) {
             console.error('Error fetching current sleep:', error);
           }
-        }
-
-        // If not sleeping or no current sleep found, set defaults
+        };
+        fetchCurrentSleep();
+      } else {
+        // Starting new sleep
         setFormData(prev => ({
           ...prev,
           startTime: initialTime,
@@ -80,9 +93,7 @@ export default function SleepModal({
           location: prev.location,
           quality: isSleeping ? 'GOOD' : prev.quality,
         }));
-      };
-
-      fetchCurrentSleep();
+      }
     } else {
       // Reset form when modal closes
       setFormData({
@@ -93,7 +104,7 @@ export default function SleepModal({
         quality: '' as SleepQuality | '',
       });
     }
-  }, [open, initialTime, isSleeping, babyId]);
+  }, [open, initialTime, isSleeping, babyId, activity?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,25 +148,41 @@ export default function SleepModal({
 
       let response;
       
-      // When ending sleep, update the existing record instead of creating a new one
-      if (isSleeping) {
-        // Find the current sleep record to update
+      if (activity) {
+        // Editing mode - update existing record
+        const payload = {
+          startTime: startTimeData.data.utcDate,
+          endTime: endTimeUtc,
+          type: formData.type,
+          location: formData.location || null,
+          quality: formData.quality || null,
+          duration: endTimeUtc ? Math.round(
+            (new Date(endTimeUtc).getTime() - new Date(startTimeData.data.utcDate).getTime()) / (1000 * 60)
+          ) : null,
+        };
+
+        response = await fetch(`/api/sleep-log?id=${activity.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      } else if (isSleeping) {
+        // Ending sleep - update existing record
         const sleepResponse = await fetch(`/api/sleep-log?babyId=${babyId}`);
         if (!sleepResponse.ok) throw new Error('Failed to fetch sleep logs');
         const sleepData = await sleepResponse.json();
         if (!sleepData.success) throw new Error('Failed to fetch sleep logs');
         
-        // Find the most recent sleep record without an end time
         const currentSleep = sleepData.data.find((log: any) => !log.endTime);
         if (!currentSleep) throw new Error('No ongoing sleep record found');
 
-        // Calculate duration using the original start time
         const startTimeUtc = new Date(currentSleep.startTime);
         const sleepDuration = Math.round(
           (new Date(endTimeUtc).getTime() - startTimeUtc.getTime()) / (1000 * 60)
         );
 
-        // Update the existing record
         response = await fetch(`/api/sleep-log?id=${currentSleep.id}`, {
           method: 'PUT',
           headers: {
@@ -168,7 +195,7 @@ export default function SleepModal({
           }),
         });
       } else {
-        // Create a new sleep record when starting sleep
+        // Starting new sleep
         const payload = {
           babyId,
           startTime: startTimeData.data.utcDate,
@@ -193,7 +220,7 @@ export default function SleepModal({
       }
 
       onClose();
-      onSleepToggle(); // Toggle sleep state for both start and end
+      if (!activity) onSleepToggle(); // Only toggle sleep state when not editing
       
       // Reset form data with current local time
       const newTimeResponse = await fetch('/api/timezone');
@@ -212,19 +239,18 @@ export default function SleepModal({
     }
   };
 
+  const isEditMode = !!activity;
+  const title = isEditMode ? 'Edit Sleep Record' : (isSleeping ? 'End Sleep Session' : 'Start Sleep Session');
+  const description = isEditMode 
+    ? 'Update sleep record details'
+    : (isSleeping ? 'Record when your baby woke up and how well they slept' : 'Record when your baby is going to sleep');
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="dialog-content">
         <DialogHeader className="dialog-header">
-          <DialogTitle className="dialog-title">
-            {isSleeping ? 'End Sleep Session' : 'Start Sleep Session'}
-          </DialogTitle>
-          <DialogDescription className="dialog-description">
-            {isSleeping 
-              ? "Record when your baby woke up and how well they slept" 
-              : "Record when your baby is going to sleep"
-            }
-          </DialogDescription>
+          <DialogTitle className="dialog-title">{title}</DialogTitle>
+          <DialogDescription className="dialog-description">{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -239,10 +265,10 @@ export default function SleepModal({
                 className="w-full"
                 required
                 tabIndex={-1}
-                disabled={isSleeping} // Can't change start time when ending sleep
+                disabled={isSleeping && !isEditMode} // Only disabled when ending sleep and not editing
               />
             </div>
-            {isSleeping ? (
+            {(isSleeping || isEditMode) && (
               <div>
                 <label className="form-label">End Time</label>
                 <Input
@@ -252,11 +278,11 @@ export default function SleepModal({
                     setFormData({ ...formData, endTime: e.target.value })
                   }
                   className="w-full"
-                  required
+                  required={isSleeping}
                   tabIndex={-1}
                 />
               </div>
-            ) : null}
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -266,7 +292,7 @@ export default function SleepModal({
                 onValueChange={(value: SleepType) =>
                   setFormData({ ...formData, type: value })
                 }
-                disabled={isSleeping} // Can't change type when ending sleep
+                disabled={isSleeping && !isEditMode} // Only disabled when ending sleep and not editing
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select type" />
@@ -284,7 +310,7 @@ export default function SleepModal({
                 onValueChange={(value: string) =>
                   setFormData({ ...formData, location: value })
                 }
-                disabled={isSleeping}
+                disabled={isSleeping && !isEditMode} // Only disabled when ending sleep and not editing
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select location" />
@@ -298,7 +324,7 @@ export default function SleepModal({
               </Select>
             </div>
           </div>
-          {isSleeping && (
+          {(isSleeping || (isEditMode && formData.endTime)) && (
             <div>
               <label className="form-label">Sleep Quality</label>
               <Select
@@ -332,7 +358,7 @@ export default function SleepModal({
               type="submit"
               className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
             >
-              {isSleeping ? 'End Sleep' : 'Start Sleep'}
+              {isEditMode ? 'Update Sleep' : (isSleeping ? 'End Sleep' : 'Start Sleep')}
             </Button>
           </div>
         </form>

@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
+import { Note } from '@prisma/client';
 
 interface NoteModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
+  activity?: Note;
 }
 
 export default function NoteModal({
@@ -22,6 +24,7 @@ export default function NoteModal({
   onClose,
   babyId,
   initialTime,
+  activity,
 }: NoteModalProps) {
   const [formData, setFormData] = useState({
     time: new Date().toISOString().slice(0, 16),
@@ -31,12 +34,22 @@ export default function NoteModal({
 
   useEffect(() => {
     if (open) {
-      setFormData(prev => ({
-        ...prev,
-        time: initialTime
-      }));
+      if (activity) {
+        // Editing mode - populate with activity data
+        setFormData({
+          time: new Date(activity.time).toISOString().slice(0, 16),
+          content: activity.content,
+          category: activity.category || '',
+        });
+      } else {
+        // New entry mode
+        setFormData(prev => ({
+          ...prev,
+          time: initialTime
+        }));
+      }
     }
-  }, [open, initialTime]);
+  }, [open, initialTime, activity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +82,8 @@ export default function NoteModal({
         category: formData.category || null,
       };
 
-      const response = await fetch('/api/note', {
-        method: 'POST',
+      const response = await fetch(`/api/note${activity ? `?id=${activity.id}` : ''}`, {
+        method: activity ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -102,9 +115,11 @@ export default function NoteModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="dialog-content">
         <DialogHeader className="dialog-header">
-          <DialogTitle className="dialog-title">Add Note</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {activity ? 'Edit Note' : 'Add Note'}
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            Record a note about your baby
+            {activity ? 'Update your note about your baby' : 'Record a note about your baby'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -163,7 +178,7 @@ export default function NoteModal({
               type="submit"
               className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
             >
-              Save Note
+              {activity ? 'Update Note' : 'Save Note'}
             </Button>
           </div>
         </form>
