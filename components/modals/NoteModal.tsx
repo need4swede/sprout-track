@@ -108,44 +108,46 @@ export default function NoteModal({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="form-label">Time</label>
-              <Input
-                type="datetime-local"
-                value={formData.time}
-                onChange={(e) =>
-                  setFormData({ ...formData, time: e.target.value })
-                }
-                className="w-full"
-                required
-                tabIndex={-1}
-              />
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="form-label">Time</label>
+                <Input
+                  type="datetime-local"
+                  value={formData.time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, time: e.target.value })
+                  }
+                  className="w-full"
+                  required
+                  tabIndex={-1}
+                />
+              </div>
+              <div>
+                <label className="form-label">Category</label>
+                <Input
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  className="w-full"
+                  placeholder="e.g., Milestone, Health, General"
+                />
+              </div>
             </div>
-            <div>
-              <label className="form-label">Category</label>
-              <Input
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full"
-                placeholder="e.g., Milestone, Health, General"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="form-label">Note Content</label>
-            <Textarea
-              value={formData.content}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
-              className="w-full min-h-[100px]"
-              placeholder="Enter your note here..."
-              required
-            />
+            <div>
+              <label className="form-label">Note Content</label>
+              <Textarea
+                value={formData.content}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
+                className="w-full min-h-[100px] resize-none"
+                placeholder="Enter your note here..."
+                required
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 mt-8">
