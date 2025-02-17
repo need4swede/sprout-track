@@ -9,7 +9,9 @@ import {
   Moon, 
   Droplet,
   Edit,
+  Icon,
 } from 'lucide-react';
+import { diaper, bottleBaby } from '@lucide/lab';
 import SleepModal from '@/components/modals/SleepModal';
 import FeedModal from '@/components/modals/FeedModal';
 import DiaperModal from '@/components/modals/DiaperModal';
@@ -167,8 +169,8 @@ export default function Home() {
             className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
             onClick={() => setShowFeedModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-sky-400/20 flex items-center justify-center">
-              <Droplet className="h-10 w-10" />
+            <div className="w-16 h-16 rounded-xl bg-blue-400/20 flex items-center justify-center">
+              <Icon iconNode={bottleBaby} className="h-10 w-10" />
             </div>
             <span className="text-base font-medium">Feed</span>
           </Button>
@@ -179,7 +181,7 @@ export default function Home() {
             onClick={() => setShowDiaperModal(true)}
           >
             <div className="w-16 h-16 rounded-xl bg-emerald-400/20 flex items-center justify-center">
-              <BabyIcon className="h-10 w-10" />
+              <Icon iconNode={diaper} className="h-10 w-10" />
             </div>
             <span className="text-base font-medium">Diaper</span>
           </Button>

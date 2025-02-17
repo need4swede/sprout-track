@@ -5,7 +5,15 @@ import {
   Moon,
   Droplet,
   Baby as BabyIcon,
+  Trash2,
+  X,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +50,11 @@ const getActivityTime = (activity: ActivityType): Date => {
     return new Date(activity.time);
   }
   if ('startTime' in activity) {
-    return new Date(activity.startTime);
+    const date = new Date(activity.startTime);
+    // Check if the date is valid
+    return isNaN(date.getTime()) ? new Date() : date;
   }
-  return new Date(); // This should never happen as all activities should have a timestamp
+  return new Date();
 };
 
 const formatTime = (date: Date, settings: Settings | null) => {
@@ -63,6 +73,67 @@ const formatTime = (date: Date, settings: Settings | null) => {
     console.error('Error formatting time:', error);
     return 'Invalid Date';
   }
+};
+
+const getActivityDetails = (activity: ActivityType, settings: Settings | null) => {
+  if ('type' in activity) {
+    if ('duration' in activity) {
+      const startTime = formatTime(new Date(activity.startTime), settings);
+      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings) : 'ongoing';
+      return {
+        title: 'Sleep Record',
+        details: [
+          { label: 'Type', value: activity.type },
+          { label: 'Start Time', value: startTime },
+          { label: 'End Time', value: endTime },
+          { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` },
+          { label: 'Quality', value: activity.quality || 'Not specified' },
+          { label: 'Location', value: activity.location || 'Not specified' },
+        ],
+      };
+    }
+    if ('amount' in activity) {
+      return {
+        title: 'Feed Record',
+        details: [
+          { label: 'Type', value: activity.type },
+          { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : 'ml'}` },
+          { label: 'Side', value: activity.side || 'Not specified' },
+          { label: 'Food', value: activity.food || 'Not specified' },
+        ],
+      };
+    }
+    if ('condition' in activity) {
+      return {
+        title: 'Diaper Record',
+        details: [
+          { label: 'Type', value: activity.type },
+          { label: 'Condition', value: activity.condition || 'Not specified' },
+          { label: 'Color', value: activity.color || 'Not specified' },
+        ],
+      };
+    }
+  }
+  if ('content' in activity) {
+    return {
+      title: 'Note',
+      details: [
+        { label: 'Content', value: activity.content },
+        { label: 'Category', value: activity.category || 'Not specified' },
+      ],
+    };
+  }
+  if ('mood' in activity) {
+    return {
+      title: 'Mood Record',
+      details: [
+        { label: 'Mood', value: activity.mood },
+        { label: 'Intensity', value: activity.intensity?.toString() || 'Not specified' },
+        { label: 'Duration', value: activity.duration ? `${activity.duration} minutes` : 'Not specified' },
+      ],
+    };
+  }
+  return { title: 'Activity', details: [] };
 };
 
 const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
@@ -108,45 +179,44 @@ const getActivityEndpoint = (activity: ActivityType): string => {
 };
 
 const getActivityColor = (activity: ActivityType): { bg: string, text: string, icon: string } => {
-  if ('type' in activity) {
-    if ('duration' in activity) {
-      return {
-        bg: 'bg-indigo-100',
-        text: 'text-indigo-600',
-        icon: 'text-indigo-500'
-      };
-    }
-    if ('amount' in activity) {
-      return {
-        bg: 'bg-blue-100',
-        text: 'text-blue-600',
-        icon: 'text-blue-500'
-      };
-    }
-    if ('condition' in activity) {
-      return {
-        bg: 'bg-purple-100',
-        text: 'text-purple-600',
-        icon: 'text-purple-500'
-      };
-    }
-  }
-  if ('content' in activity) {
+  if ('duration' in activity) {
     return {
-      bg: 'bg-pink-100',
-      text: 'text-pink-600',
-      icon: 'text-pink-500'
+      bg: 'bg-indigo-100',
+      text: 'text-indigo-700',
+      icon: 'text-indigo-500',
+    };
+  }
+  if ('amount' in activity) {
+    return {
+      bg: 'bg-blue-100',
+      text: 'text-blue-700',
+      icon: 'text-blue-500',
+    };
+  }
+  if ('condition' in activity) {
+    return {
+      bg: 'bg-green-100',
+      text: 'text-green-700',
+      icon: 'text-green-500',
+    };
+  }
+  if ('mood' in activity) {
+    return {
+      bg: 'bg-yellow-100',
+      text: 'text-yellow-700',
+      icon: 'text-yellow-500',
     };
   }
   return {
     bg: 'bg-gray-100',
-    text: 'text-gray-600',
-    icon: 'text-gray-500'
+    text: 'text-gray-700',
+    icon: 'text-gray-500',
   };
 };
 
 const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -161,22 +231,25 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     fetchSettings();
   }, []);
 
-  const sortedActivities = [...activities].sort((a, b) => {
-    const timeA = getActivityTime(a);
-    const timeB = getActivityTime(b);
-    return timeB.getTime() - timeA.getTime();
-  });
+  const sortedActivities = [...activities]
+    .sort((a, b) => {
+      const timeA = getActivityTime(a);
+      const timeB = getActivityTime(b);
+      return timeB.getTime() - timeA.getTime();
+    })
+    .slice(0, 5); // Only show the 5 most recent activities
 
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
 
     const endpoint = getActivityEndpoint(activity);
     try {
-      const response = await fetch(`/api/${endpoint}/${activity.id}`, {
+      const response = await fetch(`/api/${endpoint}?id=${activity.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
+        setSelectedActivity(null);
         onActivityDeleted?.();
       }
     } catch (error) {
@@ -192,7 +265,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           return (
             <div
               key={activity.id}
-              className="group hover:bg-gray-50/50 transition-colors duration-200"
+              className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
+              onClick={() => setSelectedActivity(activity)}
             >
               <div className="flex items-center px-6 py-4">
                 {/* Icon */}
@@ -202,11 +276,11 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                 
                 {/* Content */}
                 <div className="min-w-0 flex-1 flex items-center justify-between">
-                <p className="timeline-text">
-                  {getActivityDescription(activity, settings)}
-                </p>
-                <div className="flex items-center gap-4">
-                  <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
+                  <p className="timeline-text">
+                    {getActivityDescription(activity, settings)}
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
                       {formatTime(getActivityTime(activity), settings)}
                     </span>
                     <DropdownMenu>
@@ -215,6 +289,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
@@ -222,7 +297,10 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                       <DropdownMenuContent align="end" className="w-36">
                         <DropdownMenuItem
                           className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                          onClick={() => handleDelete(activity)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(activity);
+                          }}
                         >
                           Delete
                         </DropdownMenuItem>
@@ -248,6 +326,35 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           </p>
         </div>
       )}
+
+      {/* Activity Details Dialog */}
+      <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleDelete(selectedActivity!)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          {selectedActivity && (
+            <div className="mt-4 space-y-4">
+              {getActivityDetails(selectedActivity, settings).details.map((detail, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">{detail.label}:</span>
+                  <span className="text-sm text-gray-900">{detail.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
