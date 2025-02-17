@@ -135,26 +135,9 @@ export default function SleepModal({
         endTimeUtc = endTimeData.data.utcDate;
       }
 
-      // Calculate duration if end time is provided
-      let duration = null;
-      if (endTimeUtc) {
-        duration = Math.round(
-          (new Date(endTimeUtc).getTime() - new Date(startTimeData.data.utcDate).getTime()) / (1000 * 60)
-        );
-      }
-
-      const payload = {
-        babyId,
-        startTime: startTimeData.data.utcDate,
-        endTime: endTimeUtc,
-        duration,
-        type: formData.type,
-        location: formData.location || null,
-        quality: formData.quality || null,
-      };
-
-      // When ending sleep, update the existing record instead of creating a new one
       let response;
+      
+      // When ending sleep, update the existing record instead of creating a new one
       if (isSleeping) {
         // Find the current sleep record to update
         const sleepResponse = await fetch(`/api/sleep-log?babyId=${babyId}`);
@@ -166,6 +149,12 @@ export default function SleepModal({
         const currentSleep = sleepData.data.find((log: any) => !log.endTime);
         if (!currentSleep) throw new Error('No ongoing sleep record found');
 
+        // Calculate duration using the original start time
+        const startTimeUtc = new Date(currentSleep.startTime);
+        const sleepDuration = Math.round(
+          (new Date(endTimeUtc).getTime() - startTimeUtc.getTime()) / (1000 * 60)
+        );
+
         // Update the existing record
         response = await fetch(`/api/sleep-log?id=${currentSleep.id}`, {
           method: 'PUT',
@@ -174,12 +163,22 @@ export default function SleepModal({
           },
           body: JSON.stringify({
             endTime: endTimeUtc,
-            duration,
+            duration: sleepDuration,
             quality: formData.quality || null,
           }),
         });
       } else {
         // Create a new sleep record when starting sleep
+        const payload = {
+          babyId,
+          startTime: startTimeData.data.utcDate,
+          endTime: null,
+          duration: null,
+          type: formData.type,
+          location: formData.location || null,
+          quality: null,
+        };
+
         response = await fetch('/api/sleep-log', {
           method: 'POST',
           headers: {

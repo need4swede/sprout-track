@@ -46,18 +46,20 @@ const getActivityIcon = (activity: ActivityType) => {
 };
 
 const getActivityTime = (activity: ActivityType): Date => {
-  if ('time' in activity) {
+  if ('time' in activity && activity.time) {
     return new Date(activity.time);
   }
-  if ('startTime' in activity) {
-    const date = new Date(activity.startTime);
-    // Check if the date is valid
-    return isNaN(date.getTime()) ? new Date() : date;
+  if ('startTime' in activity && activity.startTime) {
+    // For sleep activities, use endTime if available (to show most recent time first)
+    if ('duration' in activity && activity.endTime) {
+      return new Date(activity.endTime);
+    }
+    return new Date(activity.startTime);
   }
   return new Date();
 };
 
-const formatTime = (date: Date | string, settings: Settings | null) => {
+const formatTime = (date: Date | string, settings: Settings | null, includeDate: boolean = true) => {
   if (!date) {
     return 'Invalid Date';
   }
@@ -68,12 +70,39 @@ const formatTime = (date: Date | string, settings: Settings | null) => {
       return 'Invalid Date';
     }
 
-    return dateObj.toLocaleTimeString('en-US', {
+    const timeStr = dateObj.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
       timeZone: settings?.timezone || 'America/Chicago',
     });
+
+    if (!includeDate) {
+      return timeStr;
+    }
+
+    // Convert to local timezone for date comparison
+    const localDate = new Date(dateObj.toLocaleString('en-US', {
+      timeZone: settings?.timezone || 'America/Chicago'
+    }));
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Compare dates ignoring time
+    const isToday = localDate.toDateString() === today.toDateString();
+    const isYesterday = localDate.toDateString() === yesterday.toDateString();
+
+    if (isToday) {
+      return `Today`;
+    } else if (isYesterday) {
+      return `Yesterday`;
+    } else {
+      return localDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
+    }
   } catch (error) {
     console.error('Error formatting time:', error);
     return 'Invalid Date';
@@ -144,9 +173,11 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = formatTime(new Date(activity.startTime), settings);
-      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings) : 'ongoing';
-      return `Slept for ${activity.duration || 'unknown'} minutes (${startTime} - ${endTime})`;
+      const startTime = activity.startTime ? formatTime(new Date(activity.startTime), settings, false) : 'unknown';
+      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings, false) : 'ongoing';
+      const duration = activity.duration ? `${activity.duration} minutes` : 
+                      (activity.endTime ? 'finished' : 'ongoing');
+      return `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}: ${startTime} - ${endTime}`;
     }
     if ('amount' in activity) {
       return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : 'ml'}`;
@@ -286,7 +317,18 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                   </p>
                   <div className="flex items-center gap-4">
                     <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
-                      {formatTime(getActivityTime(activity), settings)}
+                      {'duration' in activity && 'endTime' in activity
+                        ? activity.endTime
+                          ? `${formatTime(getActivityTime(activity), settings, true)} (${activity.duration} min)`
+                          : `${formatTime(getActivityTime(activity), settings, true)} (ongoing)`
+                        : formatTime(getActivityTime(activity), settings, true) + ' ' + 
+                          getActivityTime(activity).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: settings?.timezone || 'America/Chicago',
+                          })
+                      }
                     </span>
                   </div>
                 </div>
