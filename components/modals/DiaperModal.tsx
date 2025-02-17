@@ -142,6 +142,7 @@ export default function DiaperModal({
                 }
                 className="w-full"
                 required
+                tabIndex={-1}
               />
             </div>
             <div>

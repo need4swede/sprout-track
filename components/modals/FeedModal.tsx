@@ -151,6 +151,7 @@ export default function FeedModal({
                 }
                 className="w-full"
                 required
+                tabIndex={-1}
               />
             </div>
             <div>

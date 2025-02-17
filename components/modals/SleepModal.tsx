@@ -182,6 +182,7 @@ export default function SleepModal({
                 }
                 className="w-full"
                 required
+                tabIndex={-1}
               />
             </div>
             {isSleeping && (
@@ -195,6 +196,7 @@ export default function SleepModal({
                   }
                   className="w-full"
                   required
+                  tabIndex={-1}
                 />
               </div>
             )}

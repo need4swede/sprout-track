@@ -132,6 +132,7 @@ export default function NoteModal({
                 }
                 className="w-full"
                 required
+                tabIndex={-1}
               />
             </div>
             <div>
