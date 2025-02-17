@@ -21,12 +21,14 @@ interface FeedModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
+  initialTime: string;
 }
 
 export default function FeedModal({
   open,
   onClose,
   babyId,
+  initialTime,
 }: FeedModalProps) {
   const [formData, setFormData] = useState({
     time: new Date().toISOString().slice(0, 16),
@@ -37,28 +39,13 @@ export default function FeedModal({
   });
 
   useEffect(() => {
-    // Update time with local timezone when modal opens
-    const updateLocalTime = async () => {
-      try {
-        const response = await fetch('/api/timezone');
-        if (!response.ok) throw new Error('Failed to get local time');
-        const data = await response.json();
-        
-        if (data.success) {
-          setFormData(prev => ({
-            ...prev,
-            time: data.data.localTime.slice(0, 16)
-          }));
-        }
-      } catch (error) {
-        console.error('Error updating local time:', error);
-      }
-    };
-
     if (open) {
-      updateLocalTime();
+      setFormData(prev => ({
+        ...prev,
+        time: initialTime
+      }));
     }
-  }, [open]);
+  }, [open, initialTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

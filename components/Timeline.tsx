@@ -57,13 +57,18 @@ const getActivityTime = (activity: ActivityType): Date => {
   return new Date();
 };
 
-const formatTime = (date: Date, settings: Settings | null) => {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+const formatTime = (date: Date | string, settings: Settings | null) => {
+  if (!date) {
     return 'Invalid Date';
   }
 
   try {
-    return new Date(date).toLocaleTimeString('en-US', {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) {
+      return 'Invalid Date';
+    }
+
+    return dateObj.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,

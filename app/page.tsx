@@ -34,6 +34,33 @@ export default function Home() {
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [localTime, setLocalTime] = useState<string>('');
+
+  // Fetch local time
+  const fetchLocalTime = async () => {
+    try {
+      const response = await fetch('/api/timezone');
+      if (!response.ok) throw new Error('Failed to get local time');
+      const data = await response.json();
+      
+      if (data.success) {
+        setLocalTime(data.data.localTime.slice(0, 16));
+      }
+    } catch (error) {
+      console.error('Error getting local time:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Initial local time fetch
+    fetchLocalTime();
+
+    // Set up interval to update local time every minute
+    const interval = setInterval(fetchLocalTime, 60000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -176,10 +203,10 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
             onClick={() => setShowSleepModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-teal-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-gray-400/20 flex items-center justify-center">
               <Moon className="h-10 w-10" />
             </div>
             <span className="text-base font-medium">Sleep</span>
@@ -187,13 +214,13 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:[clip-path:polygon(0_0,15%_4%,33%_0,66%_5%,85%_0,100%_3%,100%_100%,0_100%)]"
             onClick={() => setShowFeedModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-blue-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
               <Icon iconNode={bottleBaby} className="h-10 w-10" />
             </div>
-            <span className="text-base font-medium">Feed</span>
+            <span className="text-base font-medium z-10">Feed</span>
           </Button>
           <Button
             variant="default"
@@ -209,10 +236,10 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)]"
             onClick={() => setShowNoteModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-teal-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-[#FFFF99]/30 flex items-center justify-center">
               <Edit className="h-10 w-10" />
             </div>
             <div className="space-y-1 text-center">
@@ -278,6 +305,7 @@ export default function Home() {
         isSleeping={isSleeping}
         onSleepToggle={() => setIsSleeping(!isSleeping)}
         babyId={selectedBaby?.id}
+        initialTime={localTime}
       />
       <FeedModal
         open={showFeedModal}
@@ -286,6 +314,7 @@ export default function Home() {
           refreshActivities(selectedBaby?.id);
         }}
         babyId={selectedBaby?.id}
+        initialTime={localTime}
       />
       <DiaperModal
         open={showDiaperModal}
@@ -294,6 +323,7 @@ export default function Home() {
           refreshActivities(selectedBaby?.id);
         }}
         babyId={selectedBaby?.id}
+        initialTime={localTime}
       />
       <NoteModal
         open={showNoteModal}
@@ -302,6 +332,7 @@ export default function Home() {
           refreshActivities(selectedBaby?.id);
         }}
         babyId={selectedBaby?.id}
+        initialTime={localTime}
       />
       <SettingsModal
         open={showSettingsModal}
