@@ -275,7 +275,7 @@ export default function Home() {
 
       {/* Timeline Section */}
       {selectedBaby && (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border-0">
           {activities.length > 0 ? (
             <Timeline 
               activities={activities} 

@@ -304,7 +304,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   return (
     <div>
       {/* Header */}
-      <CardHeader className="py-4 bg-gradient-to-r from-teal-600 to-teal-700">
+      <CardHeader className="py-4 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex justify-between items-center">
           <CardTitle className="text-white">Recent Activity</CardTitle>
           <div className="flex gap-1">
@@ -361,7 +361,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       </CardHeader>
 
       <div className="min-h-[200px]">
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 bg-white">
           {sortedActivities.map((activity) => {
           const style = getActivityStyle(activity);
           return (
@@ -411,7 +411,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
       {/* Pagination Controls */}
       {activities.length > 0 && (
-        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+        <div className="flex justify-between items-center px-6 py-4">
         <select
           className="h-8 px-2 rounded-md border border-gray-200 text-sm"
           value={itemsPerPage}
