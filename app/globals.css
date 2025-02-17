@@ -30,6 +30,45 @@ body::before {
   pointer-events: none;
 }
 
+@keyframes formulaRipple {
+  0% {
+    clip-path: polygon(
+      0 0,
+      15% 4%,
+      33% 0,
+      66% 5%,
+      85% 0,
+      100% 3%,
+      100% 100%,
+      0 100%
+    );
+  }
+  50% {
+    clip-path: polygon(
+      0 2%,
+      20% 0,
+      40% 4%,
+      60% 1%,
+      80% 3%,
+      100% 0,
+      100% 100%,
+      0 100%
+    );
+  }
+  100% {
+    clip-path: polygon(
+      0 0,
+      15% 4%,
+      33% 0,
+      66% 5%,
+      85% 0,
+      100% 3%,
+      100% 100%,
+      0 100%
+    );
+  }
+}
+
 @layer components {
   /* Baby Selection Section */
   .baby-select-container {

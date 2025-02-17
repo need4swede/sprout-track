@@ -238,7 +238,7 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:[clip-path:polygon(0_0,15%_4%,33%_0,66%_5%,85%_0,100%_3%,100%_100%,0_100%)]"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
             onClick={() => setShowFeedModal(true)}
           >
             <div className="w-16 h-16 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
