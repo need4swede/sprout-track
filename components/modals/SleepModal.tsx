@@ -45,13 +45,28 @@ export default function SleepModal({
     quality: '' as SleepQuality | '',
   });
 
+  // Format date string to be compatible with datetime-local input
+  const formatDateForInput = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    
+    // Format as YYYY-MM-DDThh:mm in local time
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (open) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          startTime: initialTime,
-          endTime: activity.endTime ? initialTime : '',
+          startTime: formatDateForInput(initialTime),
+          endTime: activity.endTime ? formatDateForInput(activity.endTime) : '',
           type: activity.type,
           location: activity.location || '',
           quality: activity.quality || '',
@@ -69,14 +84,14 @@ export default function SleepModal({
             // Find the most recent sleep record without an end time
             const currentSleep = data.data.find((log: SleepLogResponse) => !log.endTime);
             if (currentSleep) {
-              setFormData(prev => ({
-                ...prev,
-                startTime: currentSleep.startTime,
-                endTime: initialTime,
-                type: currentSleep.type,
-                location: currentSleep.location || '',
-                quality: 'GOOD', // Default to GOOD when ending sleep
-              }));
+                setFormData(prev => ({
+                  ...prev,
+                  startTime: formatDateForInput(currentSleep.startTime),
+                  endTime: formatDateForInput(initialTime),
+                  type: currentSleep.type,
+                  location: currentSleep.location || '',
+                  quality: 'GOOD', // Default to GOOD when ending sleep
+                }));
               return;
             }
           } catch (error) {
@@ -88,8 +103,8 @@ export default function SleepModal({
         // Starting new sleep
         setFormData(prev => ({
           ...prev,
-          startTime: initialTime,
-          endTime: isSleeping ? initialTime : '',
+          startTime: formatDateForInput(initialTime),
+          endTime: isSleeping ? formatDateForInput(initialTime) : '',
           type: prev.type || 'NAP', // Default to NAP if not set
           location: prev.location,
           quality: isSleeping ? 'GOOD' : prev.quality,

@@ -5,12 +5,18 @@ export async function POST(req: NextRequest) {
   try {
     const body: SleepLogCreate = await req.json();
     
+    // Ensure times are saved as local time
+    const startTime = new Date(body.startTime);
+    const endTime = body.endTime ? new Date(body.endTime) : null;
+    
     // Calculate duration if both start and end times are present
-    const duration = body.endTime ? Math.round((new Date(body.endTime).getTime() - new Date(body.startTime).getTime()) / 60000) : undefined;
+    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.create({
       data: {
         ...body,
+        startTime,
+        ...(endTime && { endTime }),
         duration,
       },
     });
@@ -70,13 +76,19 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Ensure times are saved as local time
+    const startTime = body.startTime ? new Date(body.startTime) : undefined;
+    const endTime = body.endTime ? new Date(body.endTime) : undefined;
+    
     // Calculate duration if both start and end times are present
-    const duration = body.endTime ? Math.round((new Date(body.endTime).getTime() - new Date(body.startTime || existingSleepLog.startTime).getTime()) / 60000) : undefined;
+    const duration = endTime ? Math.round((endTime.getTime() - (startTime || existingSleepLog.startTime).getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.update({
       where: { id },
       data: {
         ...body,
+        ...(startTime && { startTime }),
+        ...(endTime && { endTime }),
         duration,
       },
     });

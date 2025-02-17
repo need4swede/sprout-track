@@ -6,8 +6,13 @@ export async function POST(req: NextRequest) {
   try {
     const body: NoteCreate = await req.json();
     
+    // Ensure time is saved as local time
+    const localTime = new Date(body.time);
     const note = await prisma.note.create({
-      data: body,
+      data: {
+        ...body,
+        time: localTime,
+      },
     });
 
     const response: NoteResponse = {
@@ -64,9 +69,14 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Ensure time is saved as local time if provided
+    const data = body.time
+      ? { ...body, time: new Date(body.time) }
+      : body;
+
     const note = await prisma.note.update({
       where: { id },
-      data: body,
+      data,
     });
 
     const response: NoteResponse = {

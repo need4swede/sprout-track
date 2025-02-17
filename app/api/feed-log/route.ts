@@ -6,8 +6,13 @@ export async function POST(req: NextRequest) {
   try {
     const body: FeedLogCreate = await req.json();
     
+    // Ensure time is saved as local time
+    const localTime = new Date(body.time);
     const feedLog = await prisma.feedLog.create({
-      data: body,
+      data: {
+        ...body,
+        time: localTime,
+      },
     });
 
     const response: FeedLogResponse = {
@@ -40,6 +45,11 @@ export async function PUT(req: NextRequest) {
     const id = searchParams.get('id');
     const body: Partial<FeedLogCreate> = await req.json();
 
+    // Ensure time is saved as local time if provided
+    const data = body.time
+      ? { ...body, time: new Date(body.time) }
+      : body;
+
     if (!id) {
       return NextResponse.json<ApiResponse<FeedLogResponse>>(
         {
@@ -66,7 +76,7 @@ export async function PUT(req: NextRequest) {
 
     const feedLog = await prisma.feedLog.update({
       where: { id },
-      data: body,
+      data,
     });
 
     const response: FeedLogResponse = {

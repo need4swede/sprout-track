@@ -40,12 +40,27 @@ export default function DiaperModal({
     color: '',
   });
 
+  // Format date string to be compatible with datetime-local input
+  const formatDateForInput = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    
+    // Format as YYYY-MM-DDThh:mm in local time
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (open) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: initialTime,
+          time: formatDateForInput(initialTime),
           type: activity.type,
           condition: activity.condition || '',
           color: activity.color || '',
@@ -54,7 +69,7 @@ export default function DiaperModal({
         // New entry mode
         setFormData(prev => ({
           ...prev,
-          time: initialTime
+          time: formatDateForInput(initialTime)
         }));
       }
     }

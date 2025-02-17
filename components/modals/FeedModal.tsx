@@ -65,8 +65,14 @@ export default function FeedModal({
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return '';
     
-    // Format to YYYY-MM-DDThh:mm
-    return date.toISOString().slice(0, 16);
+    // Format as YYYY-MM-DDThh:mm in local time
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   useEffect(() => {
@@ -142,16 +148,9 @@ export default function FeedModal({
     }
 
     try {
-      // Convert the datetime-local value to a full ISO string
-      const timeDate = new Date(formData.time);
-      if (isNaN(timeDate.getTime())) {
-        console.error('Invalid time format');
-        return;
-      }
-
       const payload = {
         babyId,
-        time: timeDate.toISOString(),
+        time: formData.time, // Send the local time directly
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
         ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
