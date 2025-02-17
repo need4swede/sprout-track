@@ -38,6 +38,25 @@ export default function FeedModal({
     food: '',
   });
 
+  const fetchLastAmount = async (type: FeedType) => {
+    if (!babyId) return;
+    
+    try {
+      const response = await fetch(`/api/feed-log/last?babyId=${babyId}&type=${type}`);
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      if (data.success && data.data?.amount) {
+        setFormData(prev => ({
+          ...prev,
+          amount: data.data.amount.toString()
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching last amount:', error);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       setFormData(prev => ({
@@ -46,6 +65,41 @@ export default function FeedModal({
       }));
     }
   }, [open, initialTime]);
+
+  useEffect(() => {
+    if (formData.type && formData.type !== 'BREAST') {
+      fetchLastAmount(formData.type);
+    }
+  }, [formData.type, babyId]);
+
+  const handleAmountChange = (newAmount: string) => {
+    // Ensure it's a valid number and not negative
+    const numValue = parseFloat(newAmount);
+    if (!isNaN(numValue) && numValue >= 0) {
+      setFormData(prev => ({
+        ...prev,
+        amount: newAmount
+      }));
+    }
+  };
+
+  const incrementAmount = () => {
+    const currentAmount = parseFloat(formData.amount || '0');
+    setFormData(prev => ({
+      ...prev,
+      amount: (currentAmount + 1).toString()
+    }));
+  };
+
+  const decrementAmount = () => {
+    const currentAmount = parseFloat(formData.amount || '0');
+    if (currentAmount > 0) {
+      setFormData(prev => ({
+        ...prev,
+        amount: (currentAmount - 1).toString()
+      }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,35 +240,33 @@ export default function FeedModal({
               <label className="form-label">
                 Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
               </label>
-              <Select
-                value={formData.amount}
-                onValueChange={(value: string) =>
-                  setFormData({ ...formData, amount: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={formData.type === 'SOLIDS' ? 'Select grams' : 'Select ounces'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {formData.type === 'SOLIDS' ? (
-                    <>
-                      <SelectItem value="30">30g</SelectItem>
-                      <SelectItem value="60">60g</SelectItem>
-                      <SelectItem value="90">90g</SelectItem>
-                      <SelectItem value="120">120g</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
-                    </>
-                  ) : (
-                    <>
-                      <SelectItem value="2">2 oz</SelectItem>
-                      <SelectItem value="4">4 oz</SelectItem>
-                      <SelectItem value="6">6 oz</SelectItem>
-                      <SelectItem value="8">8 oz</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={decrementAmount}
+                  className="px-3"
+                >
+                  -
+                </Button>
+                <Input
+                  type="number"
+                  value={formData.amount}
+                  onChange={(e) => handleAmountChange(e.target.value)}
+                  className="w-full"
+                  step="0.1"
+                  min="0"
+                  placeholder={formData.type === 'SOLIDS' ? 'Enter grams' : 'Enter ounces'}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={incrementAmount}
+                  className="px-3"
+                >
+                  +
+                </Button>
+              </div>
             </div>
           )}
 

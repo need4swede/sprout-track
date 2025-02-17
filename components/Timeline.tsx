@@ -1,27 +1,21 @@
 import { SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings } from '@prisma/client';
 import { Card } from '@/components/ui/card';
 import {
-  MoreVertical,
   Moon,
-  Droplet,
   Baby as BabyIcon,
   Trash2,
-  X,
+  Icon,
+  Edit,
 } from 'lucide-react';
+import { diaper, bottleBaby } from '@lucide/lab';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 
 type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
 
@@ -33,14 +27,17 @@ interface TimelineProps {
 const getActivityIcon = (activity: ActivityType) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      return <Moon className="h-4 w-4" />; // Sleep activity
+      return <Moon className="h-4 w-4 text-white" />; // Sleep activity
     }
     if ('amount' in activity) {
-      return <Droplet className="h-4 w-4" />; // Feed activity
+      return <Icon iconNode={bottleBaby} className="h-4 w-4 text-gray-700" />; // Feed activity
     }
     if ('condition' in activity) {
-      return <BabyIcon className="h-4 w-4" />; // Diaper activity
+      return <Icon iconNode={diaper} className="h-4 w-4 text-white" />; // Diaper activity
     }
+  }
+  if ('content' in activity) {
+    return <Edit className="h-4 w-4 text-gray-700" />; // Note activity
   }
   return null;
 };
@@ -50,7 +47,6 @@ const getActivityTime = (activity: ActivityType): Date => {
     return new Date(activity.time);
   }
   if ('startTime' in activity && activity.startTime) {
-    // For sleep activities, use endTime if available (to show most recent time first)
     if ('duration' in activity && activity.endTime) {
       return new Date(activity.endTime);
     }
@@ -60,15 +56,11 @@ const getActivityTime = (activity: ActivityType): Date => {
 };
 
 const formatTime = (date: Date | string, settings: Settings | null, includeDate: boolean = true) => {
-  if (!date) {
-    return 'Invalid Date';
-  }
+  if (!date) return 'Invalid Date';
 
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(dateObj.getTime())) {
-      return 'Invalid Date';
-    }
+    if (isNaN(dateObj.getTime())) return 'Invalid Date';
 
     const timeStr = dateObj.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -77,11 +69,8 @@ const formatTime = (date: Date | string, settings: Settings | null, includeDate:
       timeZone: settings?.timezone || 'America/Chicago',
     });
 
-    if (!includeDate) {
-      return timeStr;
-    }
+    if (!includeDate) return timeStr;
 
-    // Convert to local timezone for date comparison
     const localDate = new Date(dateObj.toLocaleString('en-US', {
       timeZone: settings?.timezone || 'America/Chicago'
     }));
@@ -89,20 +78,15 @@ const formatTime = (date: Date | string, settings: Settings | null, includeDate:
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    // Compare dates ignoring time
     const isToday = localDate.toDateString() === today.toDateString();
     const isYesterday = localDate.toDateString() === yesterday.toDateString();
 
-    if (isToday) {
-      return `Today`;
-    } else if (isYesterday) {
-      return `Yesterday`;
-    } else {
-      return localDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
-    }
+    if (isToday) return `Today`;
+    if (isYesterday) return `Yesterday`;
+    return localDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
   } catch (error) {
     console.error('Error formatting time:', error);
     return 'Invalid Date';
@@ -131,7 +115,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
         title: 'Feed Record',
         details: [
           { label: 'Type', value: activity.type },
-          { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : 'ml'}` },
+          { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}` },
           { label: 'Side', value: activity.side || 'Not specified' },
           { label: 'Food', value: activity.food || 'Not specified' },
         ],
@@ -157,16 +141,6 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       ],
     };
   }
-  if ('mood' in activity) {
-    return {
-      title: 'Mood Record',
-      details: [
-        { label: 'Mood', value: activity.mood },
-        { label: 'Intensity', value: activity.intensity?.toString() || 'Not specified' },
-        { label: 'Duration', value: activity.duration ? `${activity.duration} minutes` : 'Not specified' },
-      ],
-    };
-  }
   return { title: 'Activity', details: [] };
 };
 
@@ -175,12 +149,10 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
     if ('duration' in activity) {
       const startTime = activity.startTime ? formatTime(new Date(activity.startTime), settings, false) : 'unknown';
       const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings, false) : 'ongoing';
-      const duration = activity.duration ? `${activity.duration} minutes` : 
-                      (activity.endTime ? 'finished' : 'ongoing');
       return `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}: ${startTime} - ${endTime}`;
     }
     if ('amount' in activity) {
-      return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : 'ml'}`;
+      return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}`;
     }
     if ('condition' in activity) {
       return `${activity.type.toLowerCase()} diaper change`;
@@ -189,64 +161,47 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
   if ('content' in activity) {
     return activity.content;
   }
-  if ('mood' in activity) {
-    return `Mood: ${activity.mood.toLowerCase()}`;
-  }
   return 'Activity logged';
 };
 
 const getActivityEndpoint = (activity: ActivityType): string => {
-  if ('duration' in activity) {
-    return 'sleep-log';
-  }
-  if ('amount' in activity) {
-    return 'feed-log';
-  }
-  if ('condition' in activity) {
-    return 'diaper-log';
-  }
-  if ('mood' in activity) {
-    return 'mood-log';
-  }
-  if ('content' in activity) {
-    return 'note';
-  }
+  if ('duration' in activity) return 'sleep-log';
+  if ('amount' in activity) return 'feed-log';
+  if ('condition' in activity) return 'diaper-log';
+  if ('content' in activity) return 'note';
   return '';
 };
 
-const getActivityColor = (activity: ActivityType): { bg: string, text: string, icon: string } => {
-  if ('duration' in activity) {
-    return {
-      bg: 'bg-indigo-100',
-      text: 'text-indigo-700',
-      icon: 'text-indigo-500',
-    };
+const getActivityStyle = (activity: ActivityType): { bg: string, textColor: string } => {
+  if ('type' in activity) {
+    if ('duration' in activity) {
+      return {
+        bg: 'bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600',
+        textColor: 'text-white',
+      };
+    }
+    if ('amount' in activity) {
+      return {
+        bg: 'bg-sky-200',
+        textColor: 'text-gray-700',
+      };
+    }
+    if ('condition' in activity) {
+      return {
+        bg: 'bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700',
+        textColor: 'text-white',
+      };
+    }
   }
-  if ('amount' in activity) {
+  if ('content' in activity) {
     return {
-      bg: 'bg-blue-100',
-      text: 'text-blue-700',
-      icon: 'text-blue-500',
-    };
-  }
-  if ('condition' in activity) {
-    return {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
-      icon: 'text-green-500',
-    };
-  }
-  if ('mood' in activity) {
-    return {
-      bg: 'bg-yellow-100',
-      text: 'text-yellow-700',
-      icon: 'text-yellow-500',
+      bg: 'bg-[#FFFF99]',
+      textColor: 'text-gray-700',
     };
   }
   return {
     bg: 'bg-gray-100',
-    text: 'text-gray-700',
-    icon: 'text-gray-500',
+    textColor: 'text-gray-700',
   };
 };
 
@@ -273,7 +228,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       const timeB = getActivityTime(b);
       return timeB.getTime() - timeA.getTime();
     })
-    .slice(0, 5); // Only show the 5 most recent activities
+    .slice(0, 5);
 
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
@@ -297,7 +252,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     <div>
       <div className="divide-y divide-gray-100">
         {sortedActivities.map((activity) => {
-          const colors = getActivityColor(activity);
+          const style = getActivityStyle(activity);
           return (
             <div
               key={activity.id}
@@ -305,12 +260,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onClick={() => setSelectedActivity(activity)}
             >
               <div className="flex items-center px-6 py-4">
-                {/* Icon */}
-                <div className={`flex-shrink-0 ${colors.bg} p-3 rounded-xl mr-4`}>
+                <div className={`flex-shrink-0 ${style.bg} p-3 rounded-xl mr-4`}>
                   {getActivityIcon(activity)}
                 </div>
-                
-                {/* Content */}
                 <div className="min-w-0 flex-1 flex items-center justify-between">
                   <p className="timeline-text">
                     {getActivityDescription(activity, settings)}

@@ -150,22 +150,25 @@ export default function Home() {
         setSelectedBaby(null);
       }
 
-      const [sleepResponse, feedResponse, diaperResponse] = await Promise.all([
+      const [sleepResponse, feedResponse, diaperResponse, noteResponse] = await Promise.all([
         fetch(`/api/sleep-log?babyId=${babyId}`),
         fetch(`/api/feed-log?babyId=${babyId}`),
-        fetch(`/api/diaper-log?babyId=${babyId}`)
+        fetch(`/api/diaper-log?babyId=${babyId}`),
+        fetch(`/api/note?babyId=${babyId}`)
       ]);
       
-      const [sleepData, feedData, diaperData] = await Promise.all([
+      const [sleepData, feedData, diaperData, noteData] = await Promise.all([
         sleepResponse.json(),
         feedResponse.json(),
-        diaperResponse.json()
+        diaperResponse.json(),
+        noteResponse.json()
       ]);
       
       const allActivities = [
         ...(sleepData.success ? sleepData.data : []),
         ...(feedData.success ? feedData.data : []),
-        ...(diaperData.success ? diaperData.data : [])
+        ...(diaperData.success ? diaperData.data : []),
+        ...(noteData.success ? noteData.data : [])
       ].map(activity => ({
         ...activity,
         time: activity.time ? new Date(activity.time).toISOString() : undefined,
