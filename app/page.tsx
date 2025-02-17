@@ -30,7 +30,7 @@ export default function Home() {
   const [showFeedModal, setShowFeedModal] = useState(false);
   const [showDiaperModal, setShowDiaperModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
-  const [isSleeping, setIsSleeping] = useState(false);
+  const [sleepingBabies, setSleepingBabies] = useState<Set<string>>(new Set());
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -61,6 +61,38 @@ export default function Home() {
     // Cleanup interval on unmount
     return () => clearInterval(interval);
   }, []);
+
+  // Check sleep status when baby is selected
+  useEffect(() => {
+    const checkSleepStatus = async () => {
+      if (!selectedBabyId) return;
+      
+      try {
+        const response = await fetch(`/api/sleep-log?babyId=${selectedBabyId}`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        if (!data.success) return;
+        
+        // Check if there's any ongoing sleep (no endTime)
+        const hasOngoingSleep = data.data.some((log: SleepLog) => !log.endTime);
+        
+        setSleepingBabies(prev => {
+          const newSet = new Set(prev);
+          if (hasOngoingSleep) {
+            newSet.add(selectedBabyId);
+          } else {
+            newSet.delete(selectedBabyId);
+          }
+          return newSet;
+        });
+      } catch (error) {
+        console.error('Error checking sleep status:', error);
+      }
+    };
+
+    checkSleepStatus();
+  }, [selectedBabyId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,9 +218,12 @@ export default function Home() {
             >
               <CardHeader className="p-2">
                 <CardTitle className="flex text-sm items-center space-x-2 text-lg text-white">
-                  <BabyIcon 
-                    className="h-5 w-5 text-lg text-white" 
-                  />
+                  <div className="flex items-center">
+                    <BabyIcon className="h-5 w-5 text-lg text-white" />
+                    {sleepingBabies.has(baby.id) && (
+                      <Moon className="h-4 w-4 text-white ml-1" />
+                    )}
+                  </div>
                   <span>{baby.firstName}</span>
                 </CardTitle>
               </CardHeader>
@@ -209,7 +244,9 @@ export default function Home() {
             <div className="w-16 h-16 rounded-xl bg-gray-400/20 flex items-center justify-center">
               <Moon className="h-10 w-10" />
             </div>
-            <span className="text-base font-medium">Sleep</span>
+            <span className="text-base font-medium">
+              {sleepingBabies.has(selectedBaby?.id || '') ? 'End Sleep' : 'Start Sleep'}
+            </span>
           </Button>
           <Button
             variant="default"
@@ -298,12 +335,41 @@ export default function Home() {
       {/* Modals */}
       <SleepModal
         open={showSleepModal}
-        onClose={() => {
+        onClose={async () => {
           setShowSleepModal(false);
-          refreshActivities(selectedBaby?.id);
+          if (selectedBaby?.id) {
+            await refreshActivities(selectedBaby.id);
+            // Re-check sleep status after activities refresh
+            const response = await fetch(`/api/sleep-log?babyId=${selectedBaby.id}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success) {
+                const hasOngoingSleep = data.data.some((log: SleepLog) => !log.endTime);
+                setSleepingBabies(prev => {
+                  const newSet = new Set(prev);
+                  if (hasOngoingSleep) {
+                    newSet.add(selectedBaby.id);
+                  } else {
+                    newSet.delete(selectedBaby.id);
+                  }
+                  return newSet;
+                });
+              }
+            }
+          }
         }}
-        isSleeping={isSleeping}
-        onSleepToggle={() => setIsSleeping(!isSleeping)}
+        isSleeping={sleepingBabies.has(selectedBaby?.id || '')}
+        onSleepToggle={() => {
+          const newSleepingBabies = new Set(sleepingBabies);
+          if (selectedBaby) {
+            if (sleepingBabies.has(selectedBaby.id)) {
+              newSleepingBabies.delete(selectedBaby.id);
+            } else {
+              newSleepingBabies.add(selectedBaby.id);
+            }
+            setSleepingBabies(newSleepingBabies);
+          }
+        }}
         babyId={selectedBaby?.id}
         initialTime={localTime}
       />

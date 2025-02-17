@@ -44,19 +44,63 @@ export default function SleepModal({
 
   useEffect(() => {
     if (open) {
-      setFormData(prev => ({
-        ...prev,
-        startTime: initialTime
-      }));
+      const fetchCurrentSleep = async () => {
+        if (isSleeping && babyId) {
+          try {
+            const response = await fetch(`/api/sleep-log?babyId=${babyId}`);
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            if (!data.success) return;
+            
+            // Find the most recent sleep record without an end time
+            const currentSleep = data.data.find((log: any) => !log.endTime);
+            if (currentSleep) {
+              setFormData(prev => ({
+                ...prev,
+                startTime: currentSleep.startTime.slice(0, 16),
+                endTime: initialTime,
+                type: currentSleep.type,
+                location: currentSleep.location || '',
+                quality: 'GOOD', // Default to GOOD when ending sleep
+              }));
+              return;
+            }
+          } catch (error) {
+            console.error('Error fetching current sleep:', error);
+          }
+        }
+
+        // If not sleeping or no current sleep found, set defaults
+        setFormData(prev => ({
+          ...prev,
+          startTime: initialTime,
+          endTime: isSleeping ? initialTime : '',
+          type: prev.type || 'NAP', // Default to NAP if not set
+          location: prev.location,
+          quality: isSleeping ? 'GOOD' : prev.quality,
+        }));
+      };
+
+      fetchCurrentSleep();
+    } else {
+      // Reset form when modal closes
+      setFormData({
+        startTime: initialTime,
+        endTime: '',
+        type: '' as SleepType | '',
+        location: '',
+        quality: '' as SleepQuality | '',
+      });
     }
-  }, [open, initialTime]);
+  }, [open, initialTime, isSleeping, babyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!babyId) return;
 
     // Validate required fields
-    if (!formData.type || !formData.startTime) {
+    if (!formData.type || !formData.startTime || (isSleeping && !formData.endTime)) {
       console.error('Required fields missing');
       return;
     }
@@ -109,22 +153,48 @@ export default function SleepModal({
         quality: formData.quality || null,
       };
 
-      const response = await fetch('/api/sleep-log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // When ending sleep, update the existing record instead of creating a new one
+      let response;
+      if (isSleeping) {
+        // Find the current sleep record to update
+        const sleepResponse = await fetch(`/api/sleep-log?babyId=${babyId}`);
+        if (!sleepResponse.ok) throw new Error('Failed to fetch sleep logs');
+        const sleepData = await sleepResponse.json();
+        if (!sleepData.success) throw new Error('Failed to fetch sleep logs');
+        
+        // Find the most recent sleep record without an end time
+        const currentSleep = sleepData.data.find((log: any) => !log.endTime);
+        if (!currentSleep) throw new Error('No ongoing sleep record found');
+
+        // Update the existing record
+        response = await fetch(`/api/sleep-log?id=${currentSleep.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            endTime: endTimeUtc,
+            duration,
+            quality: formData.quality || null,
+          }),
+        });
+      } else {
+        // Create a new sleep record when starting sleep
+        response = await fetch('/api/sleep-log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
 
       if (!response.ok) {
         throw new Error('Failed to save sleep log');
       }
 
       onClose();
-      if (isSleeping) {
-        onSleepToggle();
-      }
+      onSleepToggle(); // Toggle sleep state for both start and end
       
       // Reset form data with current local time
       const newTimeResponse = await fetch('/api/timezone');
@@ -170,14 +240,15 @@ export default function SleepModal({
                 className="w-full"
                 required
                 tabIndex={-1}
+                disabled={isSleeping} // Can't change start time when ending sleep
               />
             </div>
-            {isSleeping && (
+            {isSleeping ? (
               <div>
                 <label className="form-label">End Time</label>
                 <Input
                   type="datetime-local"
-                  value={formData.endTime}
+                  value={formData.endTime || initialTime}
                   onChange={(e) =>
                     setFormData({ ...formData, endTime: e.target.value })
                   }
@@ -186,7 +257,7 @@ export default function SleepModal({
                   tabIndex={-1}
                 />
               </div>
-            )}
+            ) : null}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -196,6 +267,7 @@ export default function SleepModal({
                 onValueChange={(value: SleepType) =>
                   setFormData({ ...formData, type: value })
                 }
+                disabled={isSleeping} // Can't change type when ending sleep
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select type" />
@@ -215,6 +287,7 @@ export default function SleepModal({
                 }
                 className="w-full"
                 placeholder="e.g., Crib, Car Seat"
+                disabled={isSleeping} // Can't change location when ending sleep
               />
             </div>
           </div>
