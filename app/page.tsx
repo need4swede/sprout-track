@@ -68,8 +68,29 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const refreshActivities = async (babyId: string = selectedBabyId) => {
+  const refreshBabies = async () => {
     try {
+      const babyResponse = await fetch('/api/baby');
+      if (!babyResponse.ok) return;
+      
+      const babyData = await babyResponse.json();
+      if (!babyData.success) return;
+      
+      // Filter out inactive babies
+      const activeBabies = babyData.data.filter((baby: Baby) => !baby.inactive);
+      setBabies(activeBabies);
+    } catch (error) {
+      console.error('Error fetching babies:', error);
+    }
+  };
+
+  const refreshActivities = async (babyId: string = selectedBabyId, preserveSelectedBaby: boolean = true) => {
+    try {
+      if (!preserveSelectedBaby) {
+        setSelectedBabyId('');
+        setSelectedBaby(null);
+      }
+
       const [sleepResponse, feedResponse, diaperResponse] = await Promise.all([
         fetch(`/api/sleep-log?babyId=${babyId}`),
         fetch(`/api/feed-log?babyId=${babyId}`),
@@ -209,7 +230,10 @@ export default function Home() {
           </CardHeader>
           <div className="divide-y divide-gray-100">
             {activities.length > 0 ? (
-              <Timeline activities={activities} />
+              <Timeline 
+                activities={activities} 
+                onActivityDeleted={() => refreshActivities(selectedBaby?.id)}
+              />
             ) : (
               <div className="text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -247,33 +271,47 @@ export default function Home() {
       {/* Modals */}
       <SleepModal
         open={showSleepModal}
-        onClose={() => setShowSleepModal(false)}
+        onClose={() => {
+          setShowSleepModal(false);
+          refreshActivities(selectedBaby?.id);
+        }}
         isSleeping={isSleeping}
         onSleepToggle={() => setIsSleeping(!isSleeping)}
         babyId={selectedBaby?.id}
       />
       <FeedModal
         open={showFeedModal}
-        onClose={() => setShowFeedModal(false)}
+        onClose={() => {
+          setShowFeedModal(false);
+          refreshActivities(selectedBaby?.id);
+        }}
         babyId={selectedBaby?.id}
       />
       <DiaperModal
         open={showDiaperModal}
-        onClose={() => setShowDiaperModal(false)}
+        onClose={() => {
+          setShowDiaperModal(false);
+          refreshActivities(selectedBaby?.id);
+        }}
         babyId={selectedBaby?.id}
       />
       <NoteModal
         open={showNoteModal}
         onClose={() => {
           setShowNoteModal(false);
-          refreshActivities();
+          refreshActivities(selectedBaby?.id);
         }}
         babyId={selectedBaby?.id}
       />
       <SettingsModal
         open={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
+        onClose={() => {
+          setShowSettingsModal(false);
+          refreshBabies();
+          refreshActivities(selectedBaby?.id);
+        }}
         onBabySelect={handleBabySelect}
+        onBabyStatusChange={refreshBabies}
       />
     </div>
   );

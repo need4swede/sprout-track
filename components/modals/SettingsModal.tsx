@@ -43,6 +43,7 @@ interface SettingsModalProps {
   open: boolean;
   onClose: () => void;
   onBabySelect?: (babyId: string) => void;
+  onBabyStatusChange?: () => void;
   selectedBabyId?: string;
 }
 
@@ -50,6 +51,7 @@ export default function SettingsModal({
   open, 
   onClose,
   onBabySelect,
+  onBabyStatusChange,
   selectedBabyId 
 }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -64,30 +66,32 @@ export default function SettingsModal({
     setLocalSelectedBabyId(selectedBabyId);
   }, [selectedBabyId]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsResponse, babiesResponse] = await Promise.all([
-          fetch('/api/settings'),
-          fetch('/api/baby')
-        ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [settingsResponse, babiesResponse] = await Promise.all([
+        fetch('/api/settings'),
+        fetch('/api/baby')
+      ]);
 
-        if (settingsResponse.ok) {
-          const settingsData = await settingsResponse.json();
-          setSettings(settingsData.data);
-        }
-
-        if (babiesResponse.ok) {
-          const babiesData = await babiesResponse.json();
-          setBabies(babiesData.data);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+      if (settingsResponse.ok) {
+        const settingsData = await settingsResponse.json();
+        setSettings(settingsData.data);
       }
-    };
 
+      if (babiesResponse.ok) {
+        const babiesData = await babiesResponse.json();
+        setBabies(babiesData.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data when modal opens
+  useEffect(() => {
     if (open) {
       fetchData();
     }
@@ -114,16 +118,21 @@ export default function SettingsModal({
 
   const handleBabyModalClose = async () => {
     setShowBabyModal(false);
-    const response = await fetch('/api/baby');
-    if (response.ok) {
-      const data = await response.json();
-      setBabies(data.data);
-    }
+    await fetchData(); // Refresh local babies list
+    onBabyStatusChange?.(); // Refresh parent's babies list
   };
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onClose}>
+      <Dialog 
+        open={open} 
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            onBabyStatusChange?.(); // Refresh parent's babies list when settings modal closes
+          }
+          onClose();
+        }}
+      >
         <DialogContent className="dialog-content max-w-2xl">
           <DialogHeader className="dialog-header">
             <DialogTitle className="dialog-title text-slate-800">Settings</DialogTitle>

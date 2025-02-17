@@ -24,22 +24,26 @@ interface BabyModalProps {
   baby: Baby | null;
 }
 
+const defaultFormData = {
+  firstName: '',
+  lastName: '',
+  birthDate: '',
+  gender: '',
+  inactive: false,
+};
+
 export default function BabyModal({
   open,
   onClose,
   isEditing,
   baby,
 }: BabyModalProps) {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    gender: '',
-    inactive: false,
-  });
+  const [formData, setFormData] = useState(defaultFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Reset form when modal opens/closes or baby changes
   useEffect(() => {
-    if (baby) {
+    if (baby && open) {
       const birthDate = baby.birthDate instanceof Date 
         ? baby.birthDate.toISOString().split('T')[0]
         : new Date(baby.birthDate as string).toISOString().split('T')[0];
@@ -51,12 +55,17 @@ export default function BabyModal({
         gender: baby.gender || '',
         inactive: baby.inactive || false,
       });
+    } else if (!open) {
+      setFormData(defaultFormData);
     }
-  }, [baby]);
+  }, [baby, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     try {
+      setIsSubmitting(true);
       const response = await fetch('/api/baby', {
         method: isEditing ? 'PUT' : 'POST',
         headers: {
@@ -77,11 +86,18 @@ export default function BabyModal({
       onClose();
     } catch (error) {
       console.error('Error saving baby:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleClose = () => {
+    setFormData(defaultFormData);
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="dialog-content">
         <DialogHeader className="dialog-header">
           <DialogTitle className="dialog-title">
@@ -171,16 +187,23 @@ export default function BabyModal({
             <Button 
               type="button" 
               variant="outline" 
-              onClick={onClose}
+              onClick={handleClose}
               className="hover:bg-slate-50"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button 
               type="submit"
               className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700"
+              disabled={isSubmitting}
             >
-              {isEditing ? 'Save Changes' : 'Add Baby'}
+              {isSubmitting 
+                ? 'Saving...' 
+                : isEditing 
+                  ? 'Save Changes' 
+                  : 'Add Baby'
+              }
             </Button>
           </div>
         </form>
