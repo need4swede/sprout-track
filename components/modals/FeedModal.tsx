@@ -15,14 +15,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { FeedType, BreastSide, FeedLog } from '@prisma/client';
+import { FeedType, BreastSide } from '@prisma/client';
+import { FeedLogResponse } from '@/app/api/types';
 
 interface FeedModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
-  activity?: FeedLog;
+  activity?: FeedLogResponse;
 }
 
 export default function FeedModal({
@@ -33,7 +34,7 @@ export default function FeedModal({
   activity,
 }: FeedModalProps) {
   const [formData, setFormData] = useState({
-    time: new Date().toISOString().slice(0, 16),
+    time: initialTime,
     type: '' as FeedType | '',
     amount: '',
     side: '' as BreastSide | '',
@@ -64,7 +65,7 @@ export default function FeedModal({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: new Date(activity.time).toISOString().slice(0, 16),
+          time: initialTime,
           type: activity.type,
           amount: activity.amount?.toString() || '',
           side: activity.side || '',
@@ -134,7 +135,7 @@ export default function FeedModal({
     try {
       const payload = {
         babyId,
-        time: new Date(formData.time),
+        time: formData.time,
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
         ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
@@ -157,7 +158,7 @@ export default function FeedModal({
       
       // Reset form data
       setFormData({
-        time: new Date().toISOString().slice(0, 16),
+        time: initialTime,
         type: '' as FeedType | '',
         amount: '',
         side: '' as BreastSide | '',

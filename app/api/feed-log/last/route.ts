@@ -1,41 +1,60 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/app/api/db';
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../db';
+import { ApiResponse, FeedLogResponse } from '../../types';
+import { FeedType } from '@prisma/client';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const babyId = searchParams.get('babyId');
-  const type = searchParams.get('type');
-
-  if (!babyId || !type) {
-    return NextResponse.json(
-      { success: false, error: 'Missing required parameters' },
-      { status: 400 }
-    );
-  }
-
+export async function GET(req: NextRequest) {
   try {
-    const lastFeed = await prisma.feedLog.findFirst({
+    const { searchParams } = new URL(req.url);
+    const babyId = searchParams.get('babyId');
+    const type = searchParams.get('type') as FeedType;
+
+    if (!babyId || !type) {
+      return NextResponse.json<ApiResponse<FeedLogResponse>>(
+        {
+          success: false,
+          error: 'Baby ID and type are required',
+        },
+        { status: 400 }
+      );
+    }
+
+    const feedLog = await prisma.feedLog.findFirst({
       where: {
         babyId,
-        type: type as any,
-        amount: { not: null }
+        type,
       },
       orderBy: {
-        time: 'desc'
+        time: 'desc',
       },
-      select: {
-        amount: true
-      }
     });
 
-    return NextResponse.json({
+    if (!feedLog) {
+    return NextResponse.json<ApiResponse<FeedLogResponse | undefined>>({
       success: true,
-      data: lastFeed
+      data: undefined,
+      });
+    }
+
+    const response: FeedLogResponse = {
+      ...feedLog,
+      time: feedLog.time.toLocaleString(),
+      createdAt: feedLog.createdAt.toLocaleString(),
+      updatedAt: feedLog.updatedAt.toLocaleString(),
+      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
+    };
+
+    return NextResponse.json<ApiResponse<FeedLogResponse>>({
+      success: true,
+      data: response,
     });
   } catch (error) {
-    console.error('Error fetching last feed:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch last feed' },
+    console.error('Error fetching last feed log:', error);
+    return NextResponse.json<ApiResponse<FeedLogResponse | undefined>>(
+      {
+        success: false,
+        error: 'Failed to fetch last feed log',
+      },
       { status: 500 }
     );
   }

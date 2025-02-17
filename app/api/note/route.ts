@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, NoteCreate, NoteResponse } from '../types';
+
 export async function POST(req: NextRequest) {
   try {
     const body: NoteCreate = await req.json();
@@ -11,10 +12,10 @@ export async function POST(req: NextRequest) {
 
     const response: NoteResponse = {
       ...note,
-      time: note.time.toISOString(),
-      createdAt: note.createdAt.toISOString(),
-      updatedAt: note.updatedAt.toISOString(),
-      deletedAt: note.deletedAt?.toISOString() || null,
+      time: body.time,
+      createdAt: note.createdAt.toLocaleString(),
+      updatedAt: note.updatedAt.toLocaleString(),
+      deletedAt: note.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -70,10 +71,10 @@ export async function PUT(req: NextRequest) {
 
     const response: NoteResponse = {
       ...note,
-      time: note.time.toISOString(),
-      createdAt: note.createdAt.toISOString(),
-      updatedAt: note.updatedAt.toISOString(),
-      deletedAt: note.deletedAt?.toISOString() || null,
+      time: body.time || existingNote.time.toLocaleString(),
+      createdAt: note.createdAt.toLocaleString(),
+      updatedAt: note.updatedAt.toLocaleString(),
+      deletedAt: note.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -99,11 +100,9 @@ export async function GET(req: NextRequest) {
     const babyId = searchParams.get('babyId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const category = searchParams.get('category');
 
     const queryParams = {
       ...(babyId && { babyId }),
-      ...(category && { category }),
       ...(startDate && endDate && {
         time: {
           gte: new Date(startDate),
@@ -129,10 +128,10 @@ export async function GET(req: NextRequest) {
 
       const response: NoteResponse = {
         ...note,
-        time: note.time.toISOString(),
-        createdAt: note.createdAt.toISOString(),
-        updatedAt: note.updatedAt.toISOString(),
-        deletedAt: note.deletedAt?.toISOString() || null,
+        time: note.time.toLocaleString(),
+        createdAt: note.createdAt.toLocaleString(),
+        updatedAt: note.updatedAt.toLocaleString(),
+        deletedAt: note.deletedAt?.toLocaleString() || null,
       };
 
       return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -150,10 +149,10 @@ export async function GET(req: NextRequest) {
 
     const response: NoteResponse[] = notes.map(note => ({
       ...note,
-      time: note.time.toISOString(),
-      createdAt: note.createdAt.toISOString(),
-      updatedAt: note.updatedAt.toISOString(),
-      deletedAt: note.deletedAt?.toISOString() || null,
+      time: note.time.toLocaleString(),
+      createdAt: note.createdAt.toLocaleString(),
+      updatedAt: note.updatedAt.toLocaleString(),
+      deletedAt: note.deletedAt?.toLocaleString() || null,
     }));
 
     return NextResponse.json<ApiResponse<NoteResponse[]>>({

@@ -15,14 +15,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { DiaperType, DiaperLog } from '@prisma/client';
+import { DiaperType } from '@prisma/client';
+import { DiaperLogResponse } from '@/app/api/types';
 
 interface DiaperModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
-  activity?: DiaperLog;
+  activity?: DiaperLogResponse;
 }
 
 export default function DiaperModal({
@@ -33,7 +34,7 @@ export default function DiaperModal({
   activity,
 }: DiaperModalProps) {
   const [formData, setFormData] = useState({
-    time: new Date().toISOString().slice(0, 16),
+    time: initialTime,
     type: '' as DiaperType | '',
     condition: '',
     color: '',
@@ -44,7 +45,7 @@ export default function DiaperModal({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: new Date(activity.time).toISOString().slice(0, 16),
+          time: initialTime,
           type: activity.type,
           condition: activity.condition || '',
           color: activity.color || '',
@@ -72,7 +73,7 @@ export default function DiaperModal({
     try {
       const payload = {
         babyId,
-        time: new Date(formData.time),
+        time: formData.time,
         type: formData.type,
         condition: formData.condition || null,
         color: formData.color || null,
@@ -94,7 +95,7 @@ export default function DiaperModal({
       
       // Reset form data
       setFormData({
-        time: new Date().toISOString().slice(0, 16),
+        time: initialTime,
         type: '' as DiaperType | '',
         condition: '',
         color: '',

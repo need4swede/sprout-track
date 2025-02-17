@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
-import { Note } from '@prisma/client';
+import { NoteResponse } from '@/app/api/types';
 
 interface NoteModalProps {
   open: boolean;
   onClose: () => void;
   babyId: string | undefined;
   initialTime: string;
-  activity?: Note;
+  activity?: NoteResponse;
 }
 
 export default function NoteModal({
@@ -27,7 +27,7 @@ export default function NoteModal({
   activity,
 }: NoteModalProps) {
   const [formData, setFormData] = useState({
-    time: new Date().toISOString().slice(0, 16),
+    time: initialTime,
     content: '',
     category: '',
   });
@@ -37,7 +37,7 @@ export default function NoteModal({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: new Date(activity.time).toISOString().slice(0, 16),
+          time: initialTime,
           content: activity.content,
           category: activity.category || '',
         });
@@ -64,7 +64,7 @@ export default function NoteModal({
     try {
       const payload = {
         babyId,
-        time: new Date(formData.time),
+        time: formData.time,
         content: formData.content,
         category: formData.category || null,
       };
@@ -85,7 +85,7 @@ export default function NoteModal({
       
       // Reset form data
       setFormData({
-        time: new Date().toISOString().slice(0, 16),
+        time: initialTime,
         content: '',
         category: '',
       });

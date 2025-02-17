@@ -6,26 +6,22 @@ export async function POST(req: NextRequest) {
     const body: SleepLogCreate = await req.json();
     
     // Calculate duration if both start and end times are present
-    const startTime = new Date(body.startTime);
-    const endTime = body.endTime ? new Date(body.endTime) : undefined;
-    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
+    const duration = body.endTime ? Math.round((new Date(body.endTime).getTime() - new Date(body.startTime).getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.create({
       data: {
         ...body,
-        startTime,
-        endTime,
         duration,
       },
     });
 
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: sleepLog.startTime.toISOString(),
-      endTime: sleepLog.endTime?.toISOString() || null,
-      createdAt: sleepLog.createdAt.toISOString(),
-      updatedAt: sleepLog.updatedAt.toISOString(),
-      deletedAt: sleepLog.deletedAt?.toISOString() || null,
+      startTime: body.startTime,
+      endTime: body.endTime || null,
+      createdAt: sleepLog.createdAt.toLocaleString(),
+      updatedAt: sleepLog.updatedAt.toLocaleString(),
+      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -75,27 +71,23 @@ export async function PUT(req: NextRequest) {
     }
 
     // Calculate duration if both start and end times are present
-    const startTime = new Date(body.startTime || existingSleepLog.startTime);
-    const endTime = body.endTime ? new Date(body.endTime) : existingSleepLog.endTime;
-    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
+    const duration = body.endTime ? Math.round((new Date(body.endTime).getTime() - new Date(body.startTime || existingSleepLog.startTime).getTime()) / 60000) : undefined;
 
     const sleepLog = await prisma.sleepLog.update({
       where: { id },
       data: {
         ...body,
-        startTime,
-        endTime,
         duration,
       },
     });
 
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: sleepLog.startTime.toISOString(),
-      endTime: sleepLog.endTime?.toISOString() || null,
-      createdAt: sleepLog.createdAt.toISOString(),
-      updatedAt: sleepLog.updatedAt.toISOString(),
-      deletedAt: sleepLog.deletedAt?.toISOString() || null,
+      startTime: body.startTime || existingSleepLog.startTime.toLocaleString(),
+      endTime: body.endTime || existingSleepLog.endTime?.toLocaleString() || null,
+      createdAt: sleepLog.createdAt.toLocaleString(),
+      updatedAt: sleepLog.updatedAt.toLocaleString(),
+      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -149,11 +141,11 @@ export async function GET(req: NextRequest) {
 
       const response: SleepLogResponse = {
         ...sleepLog,
-        startTime: sleepLog.startTime.toISOString(),
-        endTime: sleepLog.endTime?.toISOString() || null,
-        createdAt: sleepLog.createdAt.toISOString(),
-        updatedAt: sleepLog.updatedAt.toISOString(),
-        deletedAt: sleepLog.deletedAt?.toISOString() || null,
+        startTime: sleepLog.startTime.toLocaleString(),
+        endTime: sleepLog.endTime?.toLocaleString() || null,
+        createdAt: sleepLog.createdAt.toLocaleString(),
+        updatedAt: sleepLog.updatedAt.toLocaleString(),
+        deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
       };
 
       return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -171,11 +163,11 @@ export async function GET(req: NextRequest) {
 
     const response: SleepLogResponse[] = sleepLogs.map(sleepLog => ({
       ...sleepLog,
-      startTime: sleepLog.startTime.toISOString(),
-      endTime: sleepLog.endTime?.toISOString() || null,
-      createdAt: sleepLog.createdAt.toISOString(),
-      updatedAt: sleepLog.updatedAt.toISOString(),
-      deletedAt: sleepLog.deletedAt?.toISOString() || null,
+      startTime: sleepLog.startTime.toLocaleString(),
+      endTime: sleepLog.endTime?.toLocaleString() || null,
+      createdAt: sleepLog.createdAt.toLocaleString(),
+      updatedAt: sleepLog.updatedAt.toLocaleString(),
+      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
     }));
 
     return NextResponse.json<ApiResponse<SleepLogResponse[]>>({

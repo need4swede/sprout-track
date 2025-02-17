@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note } from '@prisma/client';
+import { Baby } from '@prisma/client';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -19,7 +20,7 @@ import NoteModal from '@/components/modals/NoteModal';
 import Timeline from '@/components/Timeline';
 import SettingsModal from '@/components/modals/SettingsModal';
 
-type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
+type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
 
 export default function Home() {
   // State management
@@ -36,29 +37,17 @@ export default function Home() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [localTime, setLocalTime] = useState<string>('');
 
-  // Fetch local time
-  const fetchLocalTime = async () => {
-    try {
-      const response = await fetch('/api/timezone');
-      if (!response.ok) throw new Error('Failed to get local time');
-      const data = await response.json();
-      
-      if (data.success) {
-        setLocalTime(data.data.localTime.slice(0, 16));
-      }
-    } catch (error) {
-      console.error('Error getting local time:', error);
-    }
-  };
-
   useEffect(() => {
-    // Initial local time fetch
-    fetchLocalTime();
+    // Set initial time
+    const now = new Date();
+    setLocalTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
 
-    // Set up interval to update local time every minute
-    const interval = setInterval(fetchLocalTime, 60000);
+    // Update time every minute
+    const interval = setInterval(() => {
+      const now = new Date();
+      setLocalTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+    }, 60000);
 
-    // Cleanup interval on unmount
     return () => clearInterval(interval);
   }, []);
 
@@ -75,7 +64,7 @@ export default function Home() {
         if (!data.success) return;
         
         // Check if there's any ongoing sleep (no endTime)
-        const hasOngoingSleep = data.data.some((log: SleepLog) => !log.endTime);
+        const hasOngoingSleep = data.data.some((log: SleepLogResponse) => !log.endTime);
         
         setSleepingBabies(prev => {
           const newSet = new Set(prev);
@@ -169,12 +158,7 @@ export default function Home() {
         ...(feedData.success ? feedData.data : []),
         ...(diaperData.success ? diaperData.data : []),
         ...(noteData.success ? noteData.data : [])
-      ].map(activity => ({
-        ...activity,
-        time: activity.time ? new Date(activity.time).toISOString() : undefined,
-        startTime: activity.startTime ? new Date(activity.startTime).toISOString() : undefined,
-        endTime: activity.endTime ? new Date(activity.endTime).toISOString() : undefined,
-      }));
+      ];
       
       setActivities(allActivities);
     } catch (error) {
@@ -342,7 +326,7 @@ export default function Home() {
             if (response.ok) {
               const data = await response.json();
               if (data.success) {
-                const hasOngoingSleep = data.data.some((log: SleepLog) => !log.endTime);
+                const hasOngoingSleep = data.data.some((log: SleepLogResponse) => !log.endTime);
                 setSleepingBabies(prev => {
                   const newSet = new Set(prev);
                   if (hasOngoingSleep) {

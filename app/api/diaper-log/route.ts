@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, DiaperLogCreate, DiaperLogResponse } from '../types';
-import { DiaperType } from '@prisma/client';
+
 export async function POST(req: NextRequest) {
   try {
     const body: DiaperLogCreate = await req.json();
@@ -12,10 +12,10 @@ export async function POST(req: NextRequest) {
 
     const response: DiaperLogResponse = {
       ...diaperLog,
-      time: diaperLog.time.toISOString(),
-      createdAt: diaperLog.createdAt.toISOString(),
-      updatedAt: diaperLog.updatedAt.toISOString(),
-      deletedAt: diaperLog.deletedAt?.toISOString() || null,
+      time: body.time,
+      createdAt: diaperLog.createdAt.toLocaleString(),
+      updatedAt: diaperLog.updatedAt.toLocaleString(),
+      deletedAt: diaperLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -71,10 +71,10 @@ export async function PUT(req: NextRequest) {
 
     const response: DiaperLogResponse = {
       ...diaperLog,
-      time: diaperLog.time.toISOString(),
-      createdAt: diaperLog.createdAt.toISOString(),
-      updatedAt: diaperLog.updatedAt.toISOString(),
-      deletedAt: diaperLog.deletedAt?.toISOString() || null,
+      time: body.time || existingDiaperLog.time.toLocaleString(),
+      createdAt: diaperLog.createdAt.toLocaleString(),
+      updatedAt: diaperLog.updatedAt.toLocaleString(),
+      deletedAt: diaperLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -100,11 +100,9 @@ export async function GET(req: NextRequest) {
     const babyId = searchParams.get('babyId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const typeParam = searchParams.get('type');
 
     const queryParams = {
       ...(babyId && { babyId }),
-      ...(typeParam && { type: typeParam as DiaperType }),
       ...(startDate && endDate && {
         time: {
           gte: new Date(startDate),
@@ -130,10 +128,10 @@ export async function GET(req: NextRequest) {
 
       const response: DiaperLogResponse = {
         ...diaperLog,
-        time: diaperLog.time.toISOString(),
-        createdAt: diaperLog.createdAt.toISOString(),
-        updatedAt: diaperLog.updatedAt.toISOString(),
-        deletedAt: diaperLog.deletedAt?.toISOString() || null,
+        time: diaperLog.time.toLocaleString(),
+        createdAt: diaperLog.createdAt.toLocaleString(),
+        updatedAt: diaperLog.updatedAt.toLocaleString(),
+        deletedAt: diaperLog.deletedAt?.toLocaleString() || null,
       };
 
       return NextResponse.json<ApiResponse<DiaperLogResponse>>({
@@ -151,10 +149,10 @@ export async function GET(req: NextRequest) {
 
     const response: DiaperLogResponse[] = diaperLogs.map(diaperLog => ({
       ...diaperLog,
-      time: diaperLog.time.toISOString(),
-      createdAt: diaperLog.createdAt.toISOString(),
-      updatedAt: diaperLog.updatedAt.toISOString(),
-      deletedAt: diaperLog.deletedAt?.toISOString() || null,
+      time: diaperLog.time.toLocaleString(),
+      createdAt: diaperLog.createdAt.toLocaleString(),
+      updatedAt: diaperLog.updatedAt.toLocaleString(),
+      deletedAt: diaperLog.deletedAt?.toLocaleString() || null,
     }));
 
     return NextResponse.json<ApiResponse<DiaperLogResponse[]>>({

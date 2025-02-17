@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { SleepType, SleepQuality, SleepLog } from '@prisma/client';
+import { SleepType, SleepQuality } from '@prisma/client';
+import { SleepLogResponse } from '@/app/api/types';
 
 interface SleepModalProps {
   open: boolean;
@@ -24,7 +25,7 @@ interface SleepModalProps {
   onSleepToggle: () => void;
   babyId: string | undefined;
   initialTime: string;
-  activity?: SleepLog;
+  activity?: SleepLogResponse;
 }
 
 export default function SleepModal({
@@ -37,7 +38,7 @@ export default function SleepModal({
   activity,
 }: SleepModalProps) {
   const [formData, setFormData] = useState({
-    startTime: new Date().toISOString().slice(0, 16),
+    startTime: initialTime,
     endTime: '',
     type: '' as SleepType | '',
     location: '',
@@ -49,8 +50,8 @@ export default function SleepModal({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          startTime: new Date(activity.startTime).toISOString().slice(0, 16),
-          endTime: activity.endTime ? new Date(activity.endTime).toISOString().slice(0, 16) : '',
+          startTime: initialTime,
+          endTime: activity.endTime ? initialTime : '',
           type: activity.type,
           location: activity.location || '',
           quality: activity.quality || '',
@@ -66,11 +67,11 @@ export default function SleepModal({
             if (!data.success) return;
             
             // Find the most recent sleep record without an end time
-            const currentSleep = data.data.find((log: any) => !log.endTime);
+            const currentSleep = data.data.find((log: SleepLogResponse) => !log.endTime);
             if (currentSleep) {
               setFormData(prev => ({
                 ...prev,
-                startTime: currentSleep.startTime.slice(0, 16),
+                startTime: currentSleep.startTime,
                 endTime: initialTime,
                 type: currentSleep.type,
                 location: currentSleep.location || '',
@@ -117,9 +118,9 @@ export default function SleepModal({
     }
 
     try {
-      const startTime = new Date(formData.startTime);
-      const endTime = formData.endTime ? new Date(formData.endTime) : null;
-      const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60)) : null;
+      const startTime = formData.startTime;
+      const endTime = formData.endTime || null;
+      const duration = endTime ? Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000) : null;
 
       let response;
       
@@ -148,7 +149,7 @@ export default function SleepModal({
         const sleepData = await sleepResponse.json();
         if (!sleepData.success) throw new Error('Failed to fetch sleep logs');
         
-        const currentSleep = sleepData.data.find((log: any) => !log.endTime);
+        const currentSleep = sleepData.data.find((log: SleepLogResponse) => !log.endTime);
         if (!currentSleep) throw new Error('No ongoing sleep record found');
 
         response = await fetch(`/api/sleep-log?id=${currentSleep.id}`, {
@@ -192,7 +193,7 @@ export default function SleepModal({
       
       // Reset form data
       setFormData({
-        startTime: new Date().toISOString().slice(0, 16),
+        startTime: initialTime,
         endTime: '',
         type: '' as SleepType | '',
         location: '',

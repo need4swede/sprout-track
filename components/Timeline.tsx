@@ -1,4 +1,4 @@
-import { SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings } from '@prisma/client';
+import { SleepType, FeedType, DiaperType, Settings } from '@prisma/client';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Moon,
@@ -21,8 +21,9 @@ import SleepModal from '@/components/modals/SleepModal';
 import FeedModal from '@/components/modals/FeedModal';
 import DiaperModal from '@/components/modals/DiaperModal';
 import NoteModal from '@/components/modals/NoteModal';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 
-type ActivityType = SleepLog | FeedLog | DiaperLog | MoodLog | Note;
+type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface TimelineProps {
@@ -48,51 +49,50 @@ const getActivityIcon = (activity: ActivityType) => {
   return null;
 };
 
-const getActivityTime = (activity: ActivityType): Date => {
+const getActivityTime = (activity: ActivityType): string => {
   if ('time' in activity && activity.time) {
-    return new Date(activity.time);
+    return activity.time;
   }
   if ('startTime' in activity && activity.startTime) {
     if ('duration' in activity && activity.endTime) {
-      return new Date(activity.endTime);
+      return activity.endTime;
     }
-    return new Date(activity.startTime);
+    return activity.startTime;
   }
-  return new Date();
+  return new Date().toLocaleString();
 };
 
-const formatTime = (date: Date | string, settings: Settings | null, includeDate: boolean = true) => {
+const formatTime = (date: string, settings: Settings | null, includeDate: boolean = true) => {
   if (!date) return 'Invalid Date';
 
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateObj = new Date(date);
     if (isNaN(dateObj.getTime())) return 'Invalid Date';
 
     const timeStr = dateObj.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-      timeZone: settings?.timezone || 'America/Chicago',
     });
 
     if (!includeDate) return timeStr;
 
-    const localDate = new Date(dateObj.toLocaleString('en-US', {
-      timeZone: settings?.timezone || 'America/Chicago'
-    }));
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const isToday = localDate.toDateString() === today.toDateString();
-    const isYesterday = localDate.toDateString() === yesterday.toDateString();
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const isYesterday = dateObj.toDateString() === yesterday.toDateString();
 
-    if (isToday) return `Today`;
-    if (isYesterday) return `Yesterday`;
-    return localDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
+    const dateStr = isToday 
+      ? 'Today'
+      : isYesterday 
+      ? 'Yesterday'
+      : dateObj.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+    return `${dateStr} ${timeStr}`;
   } catch (error) {
     console.error('Error formatting time:', error);
     return 'Invalid Date';
@@ -102,8 +102,8 @@ const formatTime = (date: Date | string, settings: Settings | null, includeDate:
 const getActivityDetails = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = formatTime(new Date(activity.startTime), settings);
-      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings) : 'ongoing';
+      const startTime = formatTime(activity.startTime, settings);
+      const endTime = activity.endTime ? formatTime(activity.endTime, settings) : 'ongoing';
       return {
         title: 'Sleep Record',
         details: [
@@ -120,6 +120,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       return {
         title: 'Feed Record',
         details: [
+          { label: 'Time', value: formatTime(activity.time, settings) },
           { label: 'Type', value: activity.type },
           { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}` },
           { label: 'Side', value: activity.side || 'Not specified' },
@@ -131,6 +132,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       return {
         title: 'Diaper Record',
         details: [
+          { label: 'Time', value: formatTime(activity.time, settings) },
           { label: 'Type', value: activity.type },
           { label: 'Condition', value: activity.condition || 'Not specified' },
           { label: 'Color', value: activity.color || 'Not specified' },
@@ -142,6 +144,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
     return {
       title: 'Note',
       details: [
+        { label: 'Time', value: formatTime(activity.time, settings) },
         { label: 'Content', value: activity.content },
         { label: 'Category', value: activity.category || 'Not specified' },
       ],
@@ -153,8 +156,8 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = activity.startTime ? formatTime(new Date(activity.startTime), settings, false) : 'unknown';
-      const endTime = activity.endTime ? formatTime(new Date(activity.endTime), settings, false) : 'ongoing';
+      const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
+      const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
       return `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}: ${startTime} - ${endTime}`;
     }
     if ('amount' in activity) {
@@ -251,8 +254,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         });
 
     const sorted = [...filtered].sort((a, b) => {
-      const timeA = getActivityTime(a);
-      const timeB = getActivityTime(b);
+      const timeA = new Date(getActivityTime(a));
+      const timeB = new Date(getActivityTime(b));
       return timeB.getTime() - timeA.getTime();
     });
 
@@ -381,13 +384,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                         ? activity.endTime
                           ? `${formatTime(getActivityTime(activity), settings, true)} (${activity.duration} min)`
                           : `${formatTime(getActivityTime(activity), settings, true)} (ongoing)`
-                        : formatTime(getActivityTime(activity), settings, true) + ' ' + 
-                          getActivityTime(activity).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                            timeZone: settings?.timezone || 'America/Chicago',
-                          })
+                        : formatTime(getActivityTime(activity), settings, true)
                       }
                     </span>
                   </div>
@@ -516,8 +513,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
             isSleeping={false}
             onSleepToggle={() => {}}
             babyId={selectedActivity.babyId}
-            initialTime={new Date().toISOString()}
-            activity={'duration' in selectedActivity && 'startTime' in selectedActivity ? selectedActivity as SleepLog : undefined}
+            initialTime={'startTime' in selectedActivity ? selectedActivity.startTime : getActivityTime(selectedActivity)}
+            activity={'duration' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <FeedModal
             open={editModalType === 'feed'}
@@ -527,8 +524,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
-            activity={'amount' in selectedActivity && 'time' in selectedActivity ? selectedActivity as FeedLog : undefined}
+            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            activity={'amount' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <DiaperModal
             open={editModalType === 'diaper'}
@@ -538,8 +535,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
-            activity={'condition' in selectedActivity && 'time' in selectedActivity ? selectedActivity as DiaperLog : undefined}
+            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            activity={'condition' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <NoteModal
             open={editModalType === 'note'}
@@ -549,8 +546,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity && selectedActivity.time ? selectedActivity.time.toString() : new Date().toISOString()}
-            activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity as Note : undefined}
+            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity : undefined}
           />
         </>
       )}

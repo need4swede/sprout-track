@@ -12,10 +12,10 @@ export async function POST(req: NextRequest) {
 
     const response: FeedLogResponse = {
       ...feedLog,
-      time: feedLog.time.toISOString(),
-      createdAt: feedLog.createdAt.toISOString(),
-      updatedAt: feedLog.updatedAt.toISOString(),
-      deletedAt: feedLog.deletedAt?.toISOString() || null,
+      time: body.time,
+      createdAt: feedLog.createdAt.toLocaleString(),
+      updatedAt: feedLog.updatedAt.toLocaleString(),
+      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -71,10 +71,10 @@ export async function PUT(req: NextRequest) {
 
     const response: FeedLogResponse = {
       ...feedLog,
-      time: feedLog.time.toISOString(),
-      createdAt: feedLog.createdAt.toISOString(),
-      updatedAt: feedLog.updatedAt.toISOString(),
-      deletedAt: feedLog.deletedAt?.toISOString() || null,
+      time: body.time || existingFeedLog.time.toLocaleString(),
+      createdAt: feedLog.createdAt.toLocaleString(),
+      updatedAt: feedLog.updatedAt.toLocaleString(),
+      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -130,10 +130,10 @@ export async function GET(req: NextRequest) {
 
       const response: FeedLogResponse = {
         ...feedLog,
-        time: feedLog.time.toISOString(),
-        createdAt: feedLog.createdAt.toISOString(),
-        updatedAt: feedLog.updatedAt.toISOString(),
-        deletedAt: feedLog.deletedAt?.toISOString() || null,
+        time: feedLog.time.toLocaleString(),
+        createdAt: feedLog.createdAt.toLocaleString(),
+        updatedAt: feedLog.updatedAt.toLocaleString(),
+        deletedAt: feedLog.deletedAt?.toLocaleString() || null,
       };
 
       return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -151,10 +151,10 @@ export async function GET(req: NextRequest) {
 
     const response: FeedLogResponse[] = feedLogs.map(feedLog => ({
       ...feedLog,
-      time: feedLog.time.toISOString(),
-      createdAt: feedLog.createdAt.toISOString(),
-      updatedAt: feedLog.updatedAt.toISOString(),
-      deletedAt: feedLog.deletedAt?.toISOString() || null,
+      time: feedLog.time.toLocaleString(),
+      createdAt: feedLog.createdAt.toLocaleString(),
+      updatedAt: feedLog.updatedAt.toLocaleString(),
+      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
     }));
 
     return NextResponse.json<ApiResponse<FeedLogResponse[]>>({
