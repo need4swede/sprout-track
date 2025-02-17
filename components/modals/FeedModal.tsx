@@ -186,31 +186,57 @@ export default function FeedModal({
               <label className="form-label">
                 Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
               </label>
-              <Input
-                type="number"
+              <Select
                 value={formData.amount}
-                onChange={(e) =>
-                  setFormData({ ...formData, amount: e.target.value })
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, amount: value })
                 }
-                className="w-full"
-                step="0.1"
-                min="0"
-                placeholder={formData.type === 'SOLIDS' ? 'Enter grams' : 'Enter ounces'}
-              />
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={formData.type === 'SOLIDS' ? 'Select grams' : 'Select ounces'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {formData.type === 'SOLIDS' ? (
+                    <>
+                      <SelectItem value="30">30g</SelectItem>
+                      <SelectItem value="60">60g</SelectItem>
+                      <SelectItem value="90">90g</SelectItem>
+                      <SelectItem value="120">120g</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="2">2 oz</SelectItem>
+                      <SelectItem value="4">4 oz</SelectItem>
+                      <SelectItem value="6">6 oz</SelectItem>
+                      <SelectItem value="8">8 oz</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {formData.type === 'SOLIDS' && (
             <div>
               <label className="form-label">Food</label>
-              <Input
+              <Select
                 value={formData.food}
-                onChange={(e) =>
-                  setFormData({ ...formData, food: e.target.value })
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, food: value })
                 }
-                className="w-full"
-                placeholder="e.g., Banana, Rice Cereal"
-              />
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select food" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BANANA">Banana</SelectItem>
+                  <SelectItem value="RICE_CEREAL">Rice Cereal</SelectItem>
+                  <SelectItem value="PUREE">Puree</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
 

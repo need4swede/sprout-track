@@ -279,15 +279,23 @@ export default function SleepModal({
             </div>
             <div>
               <label className="form-label">Location</label>
-              <Input
+              <Select
                 value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, location: value })
                 }
-                className="w-full"
-                placeholder="e.g., Crib, Car Seat"
-                disabled={isSleeping} // Can't change location when ending sleep
-              />
+                disabled={isSleeping}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CRIB">Crib</SelectItem>
+                  <SelectItem value="CAR_SEAT">Car Seat</SelectItem>
+                  <SelectItem value="PARENTS_BEDROOM">Parent's Bedroom</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {isSleeping && (

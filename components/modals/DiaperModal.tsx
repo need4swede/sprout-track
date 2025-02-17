@@ -156,25 +156,41 @@ export default function DiaperModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="form-label">Condition</label>
-                <Input
-                  value={formData.condition}
-                  onChange={(e) =>
-                    setFormData({ ...formData, condition: e.target.value })
-                  }
-                  className="w-full"
-                  placeholder="e.g., Normal, Loose"
-                />
+              <Select
+                value={formData.condition}
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, condition: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NORMAL">Normal</SelectItem>
+                  <SelectItem value="LOOSE">Loose</SelectItem>
+                  <SelectItem value="FIRM">Firm</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
               </div>
               <div>
                 <label className="form-label">Color</label>
-                <Input
-                  value={formData.color}
-                  onChange={(e) =>
-                    setFormData({ ...formData, color: e.target.value })
-                  }
-                  className="w-full"
-                  placeholder="e.g., Yellow, Brown"
-                />
+              <Select
+                value={formData.color}
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, color: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select color" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="YELLOW">Yellow</SelectItem>
+                  <SelectItem value="BROWN">Brown</SelectItem>
+                  <SelectItem value="GREEN">Green</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
               </div>
             </div>
           )}
