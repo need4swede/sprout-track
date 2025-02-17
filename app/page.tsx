@@ -265,10 +265,10 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
             onClick={() => setShowDiaperModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-emerald-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-teal-500/20 flex items-center justify-center">
               <Icon iconNode={diaper} className="h-10 w-10" />
             </div>
             <span className="text-base font-medium">Diaper</span>

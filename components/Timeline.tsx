@@ -194,7 +194,7 @@ const getActivityStyle = (activity: ActivityType): { bg: string, textColor: stri
     }
     if ('condition' in activity) {
       return {
-        bg: 'bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700',
+        bg: 'bg-gradient-to-r from-teal-600 to-teal-700',
         textColor: 'text-white',
       };
     }
