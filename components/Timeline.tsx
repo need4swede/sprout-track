@@ -1,5 +1,5 @@
 import { SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings } from '@prisma/client';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Moon,
   Baby as BabyIcon,
@@ -216,6 +216,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | null>(null);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -230,32 +232,53 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     fetchSettings();
   }, []);
 
-  const filteredActivities = useMemo(() => {
-    if (!activeFilter) return activities;
+  const sortedActivities = useMemo(() => {
+    const filtered = !activeFilter 
+      ? activities 
+      : activities.filter(activity => {
+          switch (activeFilter) {
+            case 'sleep':
+              return 'duration' in activity;
+            case 'feed':
+              return 'amount' in activity;
+            case 'diaper':
+              return 'condition' in activity;
+            case 'note':
+              return 'content' in activity;
+            default:
+              return true;
+          }
+        });
 
-    return activities.filter(activity => {
-      switch (activeFilter) {
-        case 'sleep':
-          return 'duration' in activity;
-        case 'feed':
-          return 'amount' in activity;
-        case 'diaper':
-          return 'condition' in activity;
-        case 'note':
-          return 'content' in activity;
-        default:
-          return true;
-      }
-    });
-  }, [activities, activeFilter]);
-
-  const sortedActivities = [...filteredActivities]
-    .sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       const timeA = getActivityTime(a);
       const timeB = getActivityTime(b);
       return timeB.getTime() - timeA.getTime();
-    })
-    .slice(0, 5);
+    });
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sorted.slice(startIndex, startIndex + itemsPerPage);
+  }, [activities, activeFilter, currentPage, itemsPerPage]);
+
+  const totalPages = useMemo(() => {
+    const filtered = !activeFilter 
+      ? activities 
+      : activities.filter(activity => {
+          switch (activeFilter) {
+            case 'sleep':
+              return 'duration' in activity;
+            case 'feed':
+              return 'amount' in activity;
+            case 'diaper':
+              return 'condition' in activity;
+            case 'note':
+              return 'content' in activity;
+            default:
+              return true;
+          }
+        });
+    return Math.ceil(filtered.length / itemsPerPage);
+  }, [activities, activeFilter, itemsPerPage]);
 
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
@@ -277,61 +300,62 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
   return (
     <div>
-      {/* Filter Buttons */}
-      <div className="flex gap-2 mb-4 px-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setActiveFilter(activeFilter === 'sleep' ? null : 'sleep')}
-          className={`${
-            activeFilter === 'sleep'
-              ? 'border-2 border-blue-500 bg-white'
-              : 'bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          <Moon className="h-4 w-4 mr-2" />
-          Sleep
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setActiveFilter(activeFilter === 'feed' ? null : 'feed')}
-          className={`${
-            activeFilter === 'feed'
-              ? 'border-2 border-blue-500 bg-white'
-              : 'bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          <Icon iconNode={bottleBaby} className="h-4 w-4 mr-2" />
-          Feed
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setActiveFilter(activeFilter === 'diaper' ? null : 'diaper')}
-          className={`${
-            activeFilter === 'diaper'
-              ? 'border-2 border-blue-500 bg-white'
-              : 'bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          <Icon iconNode={diaper} className="h-4 w-4 mr-2" />
-          Diaper
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setActiveFilter(activeFilter === 'note' ? null : 'note')}
-          className={`${
-            activeFilter === 'note'
-              ? 'border-2 border-blue-500 bg-white'
-              : 'bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          Notes
-        </Button>
-      </div>
+      {/* Header */}
+      <CardHeader className="py-4 bg-gradient-to-r from-teal-600 to-teal-700">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-white">Recent Activity</CardTitle>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setActiveFilter(activeFilter === 'sleep' ? null : 'sleep')}
+              className={`h-8 w-8 ${
+                activeFilter === 'sleep'
+                  ? 'border-2 border-blue-500 bg-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              <Moon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setActiveFilter(activeFilter === 'feed' ? null : 'feed')}
+              className={`h-8 w-8 ${
+                activeFilter === 'feed'
+                  ? 'border-2 border-blue-500 bg-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              <Icon iconNode={bottleBaby} className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setActiveFilter(activeFilter === 'diaper' ? null : 'diaper')}
+              className={`h-8 w-8 ${
+                activeFilter === 'diaper'
+                  ? 'border-2 border-blue-500 bg-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              <Icon iconNode={diaper} className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setActiveFilter(activeFilter === 'note' ? null : 'note')}
+              className={`h-8 w-8 ${
+                activeFilter === 'note'
+                  ? 'border-2 border-blue-500 bg-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
       <div className="divide-y divide-gray-100">
         {sortedActivities.map((activity) => {
@@ -373,6 +397,47 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         })}
       </div>
       
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+        <select
+          className="h-8 px-2 rounded-md border border-gray-200 text-sm"
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+        >
+          <option value="5">5 per page</option>
+          <option value="10">10 per page</option>
+          <option value="20">20 per page</option>
+          <option value="50">50 per page</option>
+        </select>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="px-4 py-2 text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Empty State */}
       {sortedActivities.length === 0 && (
         <div className="text-center py-12">

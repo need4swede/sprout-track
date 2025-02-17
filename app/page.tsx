@@ -292,27 +292,22 @@ export default function Home() {
       {/* Timeline Section */}
       {selectedBaby && (
         <Card className="overflow-hidden">
-          <CardHeader className="py-4">
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <div className="divide-y divide-gray-100">
-            {activities.length > 0 ? (
-              <Timeline 
-                activities={activities} 
-                onActivityDeleted={() => refreshActivities(selectedBaby?.id)}
-              />
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <BabyIcon className="h-8 w-8 text-indigo-600" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No activities yet</h3>
-                <p className="text-sm text-gray-500">
-                  Start tracking your baby's activities using the buttons above
-                </p>
+          {activities.length > 0 ? (
+            <Timeline 
+              activities={activities} 
+              onActivityDeleted={() => refreshActivities(selectedBaby?.id)}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                <BabyIcon className="h-8 w-8 text-indigo-600" />
               </div>
-            )}
-          </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No activities yet</h3>
+              <p className="text-sm text-gray-500">
+                Start tracking your baby's activities using the buttons above
+              </p>
+            </div>
+          )}
         </Card>
       )}
 
