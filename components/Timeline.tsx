@@ -357,8 +357,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         </div>
       </CardHeader>
 
-      <div className="divide-y divide-gray-100">
-        {sortedActivities.map((activity) => {
+      <div className="min-h-[200px]">
+        <div className="divide-y divide-gray-100">
+          {sortedActivities.map((activity) => {
           const style = getActivityStyle(activity);
           return (
             <div
@@ -394,11 +395,26 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               </div>
             </div>
           );
-        })}
+          })}
+        </div>
+        
+        {/* Empty State */}
+        {sortedActivities.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+              <BabyIcon className="h-8 w-8 text-indigo-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
+            <p className="text-sm text-gray-500">
+              Activities will appear here once you start tracking
+            </p>
+          </div>
+        )}
       </div>
-      
+
       {/* Pagination Controls */}
-      <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+      {activities.length > 0 && (
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
         <select
           className="h-8 px-2 rounded-md border border-gray-200 text-sm"
           value={itemsPerPage}
@@ -421,7 +437,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
             >
-              Previous
+              {'<'}
             </Button>
             <span className="px-4 py-2 text-sm">
               Page {currentPage} of {totalPages}
@@ -432,23 +448,12 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
             >
-              Next
+              {'>'}
             </Button>
           </div>
         )}
       </div>
 
-      {/* Empty State */}
-      {sortedActivities.length === 0 && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-            <BabyIcon className="h-8 w-8 text-indigo-600" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
-          <p className="text-sm text-gray-500">
-            Activities will appear here once you start tracking
-          </p>
-        </div>
       )}
 
       {/* Activity Details Dialog */}

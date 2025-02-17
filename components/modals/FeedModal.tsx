@@ -81,7 +81,7 @@ export default function FeedModal({
   }, [open, initialTime, activity]);
 
   useEffect(() => {
-    if (formData.type && formData.type !== 'BREAST') {
+    if (formData.type === 'BOTTLE' || formData.type === 'SOLIDS') {
       fetchLastAmount(formData.type);
     }
   }, [formData.type, babyId]);
@@ -150,7 +150,7 @@ export default function FeedModal({
         time: timeData.data.utcDate,
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
-        ...(formData.type !== 'BREAST' && formData.amount && { amount: parseFloat(formData.amount) }),
+        ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
         ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
       };
 
@@ -251,7 +251,7 @@ export default function FeedModal({
             </div>
           )}
 
-          {formData.type !== 'BREAST' && (
+          {(formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && (
             <div>
               <label className="form-label">
                 Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
