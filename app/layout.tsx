@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import './globals.css';
 import SettingsModal from '@/components/modals/SettingsModal';
 import { Button } from '@/components/ui/button';
@@ -181,7 +182,16 @@ export default function RootLayout({
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
-                    <BabyIcon className="h-6 w-6 text-white" />
+                    <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
+                      <Image
+                        src="/Sprout-256.png"
+                        alt="Sprout Logo"
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                        priority
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     {babies.length > 0 && (
