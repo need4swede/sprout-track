@@ -168,7 +168,7 @@ export default function Security({ onUnlock }: SecurityProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-4 p-6">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-r from-teal-600 to-teal-700 p-4 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-2xl bg-gradient-to-r from-teal-600/90 to-teal-700/90 p-4 flex items-center justify-center">
             <Image
               src="/Sprout-256.png"
               alt="Sprout Logo"
