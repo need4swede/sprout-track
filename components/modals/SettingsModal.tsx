@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Settings, Baby } from '@prisma/client';
+import { Baby } from '@prisma/client';
+import { Settings } from '@/app/api/types';
 import { Settings as SettingsIcon, Plus, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import BabyModal from '@/components/modals/BabyModal';
+import ChangePinModal from '@/components/modals/ChangePinModal';
 
 
 interface SettingsModalProps {
@@ -44,6 +47,7 @@ export default function SettingsModal({
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
   const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
 
   useEffect(() => {
     setLocalSelectedBabyId(selectedBabyId);
@@ -124,8 +128,9 @@ export default function SettingsModal({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
-            <div>
-              <label className="form-label">Family Name</label>
+            <div className="space-y-4">
+              <div>
+                <Label className="form-label">Family Name</Label>
               <Input
                 disabled={loading}
                 value={settings?.familyName || ''}
@@ -133,7 +138,29 @@ export default function SettingsModal({
                 placeholder="Enter family name"
                 className="w-full"
               />
+              </div>
+              
+              <div>
+                <Label className="form-label">Security PIN</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    disabled
+                    value="••••••"
+                    className="w-full font-mono"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowChangePinModal(true)}
+                    disabled={loading}
+                  >
+                    Change PIN
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">PIN must be between 6 and 10 digits</p>
+              </div>
             </div>
+            
             <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Manage Babies</h3>
               <div className="space-y-4">
@@ -191,6 +218,13 @@ export default function SettingsModal({
         onClose={handleBabyModalClose}
         isEditing={isEditing}
         baby={selectedBaby}
+      />
+
+      <ChangePinModal
+        open={showChangePinModal}
+        onClose={() => setShowChangePinModal(false)}
+        currentPin={settings?.securityPin || '111222'}
+        onPinChange={(newPin) => handleSettingsChange({ securityPin: newPin })}
       />
     </>
   );

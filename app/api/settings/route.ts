@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       data: {
         familyName: body.familyName,
         timezone: body.timezone,
+        securityPin: body.securityPin,
       },
     });
 
@@ -82,6 +83,7 @@ export async function PUT(req: NextRequest) {
       data: {
         familyName: body.familyName,
         timezone: body.timezone,
+        securityPin: body.securityPin,
       },
     });
 

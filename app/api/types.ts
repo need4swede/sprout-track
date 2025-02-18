@@ -1,4 +1,7 @@
-import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood } from '@prisma/client';
+import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood } from '@prisma/client';
+
+// Settings types
+export type Settings = PrismaSettings;
 
 export interface ApiResponse<T = void> {
   success: boolean;

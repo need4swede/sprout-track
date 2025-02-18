@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Security from '@/components/Security';
 import Image from 'next/image';
 import './globals.css';
 import SettingsModal from '@/components/modals/SettingsModal';
@@ -173,10 +174,15 @@ export default function RootLayout({
     window.dispatchEvent(event);
   }, [selectedBaby, sleepingBabies]);
 
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
   return (
     <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
       <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
         {mounted ? (
+          <>
+            {!isUnlocked && <Security onUnlock={() => setIsUnlocked(true)} />}
+            {(isUnlocked || process.env.NODE_ENV === 'development') && (
           <div className="min-h-screen flex flex-col">
             <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
@@ -267,6 +273,8 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+            )}
+          </>
         ) : null}
         <SettingsModal 
           open={settingsOpen} 
