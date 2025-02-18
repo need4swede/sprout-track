@@ -27,6 +27,11 @@ if (process.env.NODE_ENV === 'production') {
         emit: 'stdout',
         level,
       })),
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
     });
   }
   prisma = (global as any).prisma;

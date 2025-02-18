@@ -3,13 +3,20 @@ import prisma from '../../db';
 import { ApiResponse } from '../../types';
 import { Baby } from '@prisma/client';
 
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
+  const { id } = await context.params;
   try {
     const baby = await prisma.baby.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!baby) {
