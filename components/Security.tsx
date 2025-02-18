@@ -160,8 +160,8 @@ export default function Security({ onUnlock }: SecurityProps) {
 
   return (
     <Dialog open={showDialog} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" aria-describedby="pin-description">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md" aria-describedby="pin-description" hideClose>
+        <DialogHeader className="text-center">
           <DialogTitle>Security Check</DialogTitle>
           <DialogDescription id="pin-description">
             Please enter your PIN to access the app
