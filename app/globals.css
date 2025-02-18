@@ -69,6 +69,21 @@ body::before {
   }
 }
 
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
 @layer components {
   /* Baby Selection Section */
   .baby-select-container {
@@ -145,6 +160,32 @@ body::before {
     @apply w-full rounded-xl border-2 border-slate-200 bg-white;
     @apply hover:border-slate-300 hover:bg-slate-50;
     @apply focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100 focus:ring-offset-2;
+  }
+
+  .sleep-button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.3);
+    z-index: 0;
+  }
+
+  .star.twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .poop-emoji {
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0;
+    z-index: 0;
+  }
+
+  .poop-emoji.spin {
+    animation: spin 8s linear infinite, fadeInOut 4s ease-in-out infinite;
   }
 }
 

@@ -11,6 +11,7 @@ import {
   Droplet,
   Edit,
   Icon,
+  Star,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import SleepModal from '@/components/modals/SleepModal';
@@ -182,6 +183,43 @@ export default function Home() {
     }
   };
 
+  // Function to generate random position
+  const getRandomPosition = () => {
+    return {
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      transform: `scale(${0.5 + Math.random() * 0.5})`,
+    };
+  };
+
+  // Function to create star elements
+  const renderStars = (count: number) => {
+    return Array(count).fill(0).map((_, i) => (
+      <Star
+        key={i}
+        className={`star ${Math.random() > 0.7 ? 'twinkle' : ''}`}
+        style={getRandomPosition()}
+        size={16}
+      />
+    ));
+  };
+
+  // Function to create poop emojis
+  const renderPoopEmojis = (count: number) => {
+    return Array(count).fill(0).map((_, i) => (
+      <span
+        key={i}
+        className="poop-emoji spin"
+        style={{
+          ...getRandomPosition(),
+          color: '#8B4513',
+        }}
+      >
+        💩
+      </span>
+    ));
+  };
+
   return (
     <div className="space-y-6 mx-4 my-4">
       {/* Baby Selector */}
@@ -225,13 +263,14 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-hidden"
             onClick={() => setShowSleepModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-gray-400/20 flex items-center justify-center">
+            {renderStars(8)}
+            <div className="w-16 h-16 rounded-xl bg-gray-400/20 flex items-center justify-center z-10">
               <Moon className="h-10 w-10" />
             </div>
-            <span className="text-base font-medium">
+            <span className="text-base font-medium z-10">
               {sleepingBabies.has(selectedBaby?.id || '') ? 'End Sleep' : 'Start Sleep'}
             </span>
           </Button>
@@ -249,13 +288,14 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl"
+            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-hidden"
             onClick={() => setShowDiaperModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-teal-500/20 flex items-center justify-center">
+            {renderPoopEmojis(4)}
+            <div className="w-16 h-16 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
               <Icon iconNode={diaper} className="h-10 w-10" />
             </div>
-            <span className="text-base font-medium">Diaper</span>
+            <span className="text-base font-medium z-10">Diaper</span>
           </Button>
           <Button
             variant="default"
