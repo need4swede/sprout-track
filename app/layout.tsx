@@ -4,9 +4,18 @@ import { useEffect, useState } from 'react';
 import './globals.css';
 import SettingsModal from '@/components/modals/SettingsModal';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Baby as BabyIcon, ChevronDown, Moon } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { Baby } from '@prisma/client';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -21,25 +30,147 @@ export default function RootLayout({
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
+  const [babies, setBabies] = useState<Baby[]>([]);
+  const [selectedBaby, setSelectedBaby] = useState<string>('');
+  const [sleepingBabies, setSleepingBabies] = useState<Set<string>>(new Set());
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
+  // Listen for sleep status updates
   useEffect(() => {
-    const fetchSettings = async () => {
+    const handleSleepUpdate = (event: CustomEvent<{ babyId: string; isSleeping: boolean }>) => {
+      setSleepingBabies(prev => {
+        const newSet = new Set(prev);
+        if (event.detail.isSleeping) {
+          newSet.add(event.detail.babyId);
+        } else {
+          newSet.delete(event.detail.babyId);
+        }
+        return newSet;
+      });
+    };
+
+    window.addEventListener('sleepStatusChanged', handleSleepUpdate as EventListener);
+    
+    // Initial sleep status check for selected baby
+    const checkInitialSleepStatus = async () => {
+      if (!selectedBaby) return;
+      
       try {
-        const response = await fetch('/api/settings');
+        const response = await fetch(`/api/sleep-log?babyId=${selectedBaby}`);
         if (!response.ok) return;
         
         const data = await response.json();
-        if (data.success && data.data.familyName) {
-          setFamilyName(data.data.familyName);
-        }
+        if (!data.success) return;
+        
+        const hasOngoingSleep = data.data.some((log: any) => !log.endTime);
+        setSleepingBabies(prev => {
+          const newSet = new Set(prev);
+          if (hasOngoingSleep) {
+            newSet.add(selectedBaby);
+          } else {
+            newSet.delete(selectedBaby);
+          }
+          return newSet;
+        });
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        console.error('Error checking initial sleep status:', error);
       }
     };
 
+    checkInitialSleepStatus();
+
+    return () => {
+      window.removeEventListener('sleepStatusChanged', handleSleepUpdate as EventListener);
+    };
+  }, [selectedBaby]);
+
+  // Function to calculate baby's age
+  const calculateAge = (birthday: Date) => {
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    
+    const ageInWeeks = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const ageInMonths = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+    const ageInYears = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    
+    if (ageInMonths < 6) {
+      return `${ageInWeeks} weeks`;
+    } else if (ageInMonths < 24) {
+      return `${ageInMonths} months`;
+    } else {
+      return `${ageInYears} ${ageInYears === 1 ? 'year' : 'years'}`;
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      // Fetch settings
+      const settingsResponse = await fetch('/api/settings');
+      if (settingsResponse.ok) {
+        const settingsData = await settingsResponse.json();
+        if (settingsData.success && settingsData.data.familyName) {
+          setFamilyName(settingsData.data.familyName);
+        }
+      }
+
+      // Fetch babies
+      const babiesResponse = await fetch('/api/baby');
+      if (babiesResponse.ok) {
+        const babiesData = await babiesResponse.json();
+        if (babiesData.success) {
+          const activeBabies = babiesData.data.filter((baby: Baby) => !baby.inactive);
+          setBabies(activeBabies);
+          
+          // Get selected baby from URL or select first baby if only one exists
+          const urlParams = new URLSearchParams(window.location.search);
+          const babyId = urlParams.get('babyId');
+          
+          // If current selected baby is inactive, clear selection
+          if (selectedBaby && !activeBabies.some((b: Baby) => b.id === selectedBaby)) {
+            setSelectedBaby('');
+          }
+          // Set selected baby from URL or first active baby
+          else if (babyId && activeBabies.some((b: Baby) => b.id === babyId)) {
+            setSelectedBaby(babyId);
+          } else if (activeBabies.length === 1) {
+            setSelectedBaby(activeBabies[0].id);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
     setMounted(true);
-    fetchSettings();
+    fetchData();
   }, []);
+
+  const router = useRouter();
+
+  // Update URL when selected baby changes
+  useEffect(() => {
+    if (selectedBaby) {
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      current.set('babyId', selectedBaby);
+      const search = current.toString();
+      const query = search ? `?${search}` : "";
+      router.push(`${pathname}${query}`);
+    }
+  }, [selectedBaby, router, pathname, searchParams]);
+
+  // Share selected baby and sleep status with children
+  useEffect(() => {
+    const event = new CustomEvent('babySelected', { 
+      detail: { 
+        babyId: selectedBaby,
+        sleepingBabies: Array.from(sleepingBabies)
+      }
+    });
+    window.dispatchEvent(event);
+  }, [selectedBaby, sleepingBabies]);
 
   return (
     <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
@@ -49,17 +180,75 @@ export default function RootLayout({
             <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex justify-between items-center">
-                  <h1 className="text-xl font-bold text-white">
-                    {familyName ? `${familyName}'s Baby Tracker` : 'Baby Tracker'}
-                  </h1>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSettingsOpen(true)}
-                    className="h-8 w-8 text-white hover:bg-white/20 transition-colors duration-200"
-                  >
-                    <SettingsIcon className="h-5 w-5" />
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <BabyIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {babies.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-auto py-1 text-white transition-colors duration-200 flex items-center space-x-2 ${
+                              selectedBaby && babies.find((b: Baby) => b.id === selectedBaby)?.gender === 'MALE'
+                                ? 'bg-blue-500'
+                                : selectedBaby && babies.find((b: Baby) => b.id === selectedBaby)?.gender === 'FEMALE'
+                                ? 'bg-pink-500'
+                                : ''
+                            }`}
+                          >
+                            <div className="flex flex-col items-start">
+                              <div className="flex items-center space-x-1">
+                                <span className="text-sm font-medium">
+                                  {selectedBaby ? babies.find((b: Baby) => b.id === selectedBaby)?.firstName : 'Select Baby'}
+                                </span>
+                                {selectedBaby && sleepingBabies.has(selectedBaby) && (
+                                  <Moon className="h-3 w-3" />
+                                )}
+                              </div>
+                              {selectedBaby && (
+                                <span className="text-xs opacity-80">
+                                  {calculateAge(babies.find((b: Baby) => b.id === selectedBaby)?.birthDate || new Date())}
+                                </span>
+                              )}
+                            </div>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuRadioGroup value={selectedBaby} onValueChange={setSelectedBaby}>
+                            {babies.map((baby) => (
+                              <DropdownMenuRadioItem 
+                                key={baby.id} 
+                                value={baby.id}
+                                className={`${
+                                  baby.gender === 'MALE'
+                                    ? 'bg-blue-500/10 hover:bg-blue-500/20'
+                                    : baby.gender === 'FEMALE'
+                                    ? 'bg-pink-500/10 hover:bg-pink-500/20'
+                                    : ''
+                                }`}
+                              >
+                                <div className="flex flex-col">
+                                  <span>{baby.firstName}</span>
+                                  <span className="text-xs opacity-80">{calculateAge(baby.birthDate)}</span>
+                                </div>
+                              </DropdownMenuRadioItem>
+                            ))}
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSettingsOpen(true)}
+                      className="h-8 w-8 text-white hover:bg-white/20 transition-colors duration-200"
+                    >
+                      <SettingsIcon className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </header>
@@ -69,7 +258,13 @@ export default function RootLayout({
             </main>
           </div>
         ) : null}
-        <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        <SettingsModal 
+          open={settingsOpen} 
+          onClose={() => setSettingsOpen(false)}
+          onBabySelect={setSelectedBaby}
+          onBabyStatusChange={fetchData}
+          selectedBabyId={selectedBaby}
+        />
       </body>
     </html>
   )
