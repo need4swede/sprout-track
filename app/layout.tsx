@@ -176,6 +176,20 @@ export default function RootLayout({
 
   const [isUnlocked, setIsUnlocked] = useState(false);
 
+  // Check unlock status periodically
+  useEffect(() => {
+    const checkUnlockStatus = () => {
+      const unlockTime = localStorage.getItem('unlockTime');
+      if (!unlockTime || Date.now() - parseInt(unlockTime) > 60 * 1000) {
+        setIsUnlocked(false);
+      }
+    };
+
+    // Check every second
+    const interval = setInterval(checkUnlockStatus, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
       <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
