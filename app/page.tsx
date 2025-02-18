@@ -230,6 +230,24 @@ export default function Home() {
     ));
   };
 
+  // Function to calculate baby's age
+  const calculateAge = (birthday: Date) => {
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    
+    const ageInWeeks = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const ageInMonths = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+    const ageInYears = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    
+    if (ageInMonths < 6) {
+      return `${ageInWeeks} weeks`;
+    } else if (ageInMonths < 24) {
+      return `${ageInMonths} months`;
+    } else {
+      return `${ageInYears} ${ageInYears === 1 ? 'year' : 'years'}`;
+    }
+  };
+
   return (
     <div className="space-y-6 mx-4 my-4">
       {/* Baby Selector */}
@@ -259,7 +277,10 @@ export default function Home() {
                       <Moon className="h-4 w-4 text-white ml-1" />
                     )}
                   </div>
-                  <span>{baby.firstName}</span>
+                  <div className="flex flex-col">
+                    <span>{baby.firstName}</span>
+                    <span className="text-xs opacity-90">{calculateAge(baby.birthDate)}</span>
+                  </div>
                 </CardTitle>
               </CardHeader>
             </Card>
