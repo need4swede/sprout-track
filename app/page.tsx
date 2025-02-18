@@ -183,13 +183,22 @@ export default function Home() {
     }
   };
 
-  // Function to generate random position
+  // Function to generate random position and size
   const getRandomPosition = () => {
     return {
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
-      transform: `scale(${0.5 + Math.random() * 0.5})`,
     };
+  };
+
+  // Function to get random animation timing
+  const getRandomTiming = () => {
+    return {
+      '--delay': `${Math.random() * 2}s`,
+      '--duration': `${3 + Math.random() * 3}s`,
+      '--spin-duration': `${6 + Math.random() * 4}s`,
+      fontSize: `${1 + Math.random() * 1}rem`,
+    } as React.CSSProperties;
   };
 
   // Function to create star elements
@@ -209,9 +218,10 @@ export default function Home() {
     return Array(count).fill(0).map((_, i) => (
       <span
         key={i}
-        className="poop-emoji spin"
+        className="poop-emoji animate"
         style={{
           ...getRandomPosition(),
+          ...getRandomTiming(),
           color: '#8B4513',
         }}
       >

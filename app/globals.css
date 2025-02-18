@@ -80,8 +80,9 @@ body::before {
 }
 
 @keyframes fadeInOut {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
 }
 
 @layer components {
@@ -179,13 +180,15 @@ body::before {
 
   .poop-emoji {
     position: absolute;
-    font-size: 1.5rem;
     opacity: 0;
     z-index: 0;
+    animation-fill-mode: both;
   }
 
-  .poop-emoji.spin {
-    animation: spin 8s linear infinite, fadeInOut 4s ease-in-out infinite;
+  .poop-emoji.animate {
+    animation: 
+      fadeInOut var(--duration, 4s) ease-in-out var(--delay, 0s) infinite,
+      spin var(--spin-duration, 8s) linear var(--delay, 0s) infinite;
   }
 }
 
