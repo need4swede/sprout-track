@@ -179,7 +179,7 @@ export default function RootLayout({
         {mounted ? (
           <div className="min-h-screen flex flex-col">
             <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
                     <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
