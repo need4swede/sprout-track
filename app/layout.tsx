@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BabyProvider, useBaby } from './context/baby';
 import Security from '@/components/Security';
 import Image from 'next/image';
 import './globals.css';
@@ -17,75 +18,19 @@ import {
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { Baby } from '@prisma/client';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function AppContent({ children }: { children: React.ReactNode }) {
+  const { selectedBaby, setSelectedBaby } = useBaby();
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
-  const [selectedBaby, setSelectedBaby] = useState<string>('');
-  const [sleepingBabies, setSleepingBabies] = useState<Set<string>>(new Set());
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  // Listen for sleep status updates
-  useEffect(() => {
-    const handleSleepUpdate = (event: CustomEvent<{ babyId: string; isSleeping: boolean }>) => {
-      setSleepingBabies(prev => {
-        const newSet = new Set(prev);
-        if (event.detail.isSleeping) {
-          newSet.add(event.detail.babyId);
-        } else {
-          newSet.delete(event.detail.babyId);
-        }
-        return newSet;
-      });
-    };
-
-    window.addEventListener('sleepStatusChanged', handleSleepUpdate as EventListener);
-    
-    // Initial sleep status check for selected baby
-    const checkInitialSleepStatus = async () => {
-      if (!selectedBaby) return;
-      
-      try {
-        const response = await fetch(`/api/sleep-log?babyId=${selectedBaby}`);
-        if (!response.ok) return;
-        
-        const data = await response.json();
-        if (!data.success) return;
-        
-        const hasOngoingSleep = data.data.some((log: any) => !log.endTime);
-        setSleepingBabies(prev => {
-          const newSet = new Set(prev);
-          if (hasOngoingSleep) {
-            newSet.add(selectedBaby);
-          } else {
-            newSet.delete(selectedBaby);
-          }
-          return newSet;
-        });
-      } catch (error) {
-        console.error('Error checking initial sleep status:', error);
-      }
-    };
-
-    checkInitialSleepStatus();
-
-    return () => {
-      window.removeEventListener('sleepStatusChanged', handleSleepUpdate as EventListener);
-    };
-  }, [selectedBaby]);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   // Function to calculate baby's age
   const calculateAge = (birthday: Date) => {
@@ -129,14 +74,13 @@ export default function RootLayout({
           const babyId = urlParams.get('babyId');
           
           // If current selected baby is inactive, clear selection
-          if (selectedBaby && !activeBabies.some((b: Baby) => b.id === selectedBaby)) {
-            setSelectedBaby('');
-          }
-          // Set selected baby from URL or first active baby
-          else if (babyId && activeBabies.some((b: Baby) => b.id === babyId)) {
-            setSelectedBaby(babyId);
+          const foundBaby = activeBabies.find((b: Baby) => b.id === babyId);
+          if (foundBaby) {
+            setSelectedBaby(foundBaby);
           } else if (activeBabies.length === 1) {
-            setSelectedBaby(activeBabies[0].id);
+            setSelectedBaby(activeBabies[0]);
+          } else {
+            setSelectedBaby(null);
           }
         }
       }
@@ -148,33 +92,28 @@ export default function RootLayout({
   useEffect(() => {
     setMounted(true);
     fetchData();
-  }, []);
 
-  const router = useRouter();
-
-  // Update URL when selected baby changes
-  useEffect(() => {
-    if (selectedBaby) {
-      const current = new URLSearchParams(Array.from(searchParams.entries()));
-      current.set('babyId', selectedBaby);
-      const search = current.toString();
-      const query = search ? `?${search}` : "";
-      router.push(`${pathname}${query}`);
-    }
-  }, [selectedBaby, router, pathname, searchParams]);
-
-  // Share selected baby and sleep status with children
-  useEffect(() => {
-    const event = new CustomEvent('babySelected', { 
-      detail: { 
-        babyId: selectedBaby,
-        sleepingBabies: Array.from(sleepingBabies)
+    // Update unlock timer on any activity
+    const handleActivity = () => {
+      const unlockTime = localStorage.getItem('unlockTime');
+      if (unlockTime) {
+        localStorage.setItem('unlockTime', Date.now().toString());
       }
-    });
-    window.dispatchEvent(event);
-  }, [selectedBaby, sleepingBabies]);
+    };
 
-  const [isUnlocked, setIsUnlocked] = useState(false);
+    // Add listeners for user activity
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+
+    return () => {
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+    };
+  }, []);
 
   // Check unlock status periodically
   useEffect(() => {
@@ -190,114 +129,140 @@ export default function RootLayout({
     return () => clearInterval(interval);
   }, []);
 
+  if (!mounted) return null;
+
   return (
-    <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
-      <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
-        {mounted ? (
-          <>
-            {!isUnlocked && <Security onUnlock={() => setIsUnlocked(true)} />}
-            {(isUnlocked || process.env.NODE_ENV === 'development') && (
-          <div className="min-h-screen flex flex-col">
-            <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
-              <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
-                      <Image
-                        src="/Sprout-256.png"
-                        alt="Sprout Logo"
-                        width={48}
-                        height={48}
-                        className="object-contain"
-                        priority
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {babies.length > 0 && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`h-auto py-1 text-white transition-colors duration-200 flex items-center space-x-2 ${
-                              selectedBaby && babies.find((b: Baby) => b.id === selectedBaby)?.gender === 'MALE'
-                                ? 'bg-blue-500'
-                                : selectedBaby && babies.find((b: Baby) => b.id === selectedBaby)?.gender === 'FEMALE'
-                                ? 'bg-pink-500'
-                                : ''
-                            }`}
-                          >
-                            <div className="flex flex-col items-start">
-                              <div className="flex items-center space-x-1">
-                                <span className="text-sm font-medium">
-                                  {selectedBaby ? babies.find((b: Baby) => b.id === selectedBaby)?.firstName : 'Select Baby'}
-                                </span>
-                                {selectedBaby && sleepingBabies.has(selectedBaby) && (
-                                  <Moon className="h-3 w-3" />
-                                )}
-                              </div>
-                              {selectedBaby && (
-                                <span className="text-xs opacity-80">
-                                  {calculateAge(babies.find((b: Baby) => b.id === selectedBaby)?.birthDate || new Date())}
-                                </span>
-                              )}
-                            </div>
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuRadioGroup value={selectedBaby} onValueChange={setSelectedBaby}>
-                            {babies.map((baby) => (
-                              <DropdownMenuRadioItem 
-                                key={baby.id} 
-                                value={baby.id}
-                                className={`${
-                                  baby.gender === 'MALE'
-                                    ? 'bg-blue-500/10 hover:bg-blue-500/20'
-                                    : baby.gender === 'FEMALE'
-                                    ? 'bg-pink-500/10 hover:bg-pink-500/20'
-                                    : ''
-                                }`}
-                              >
-                                <div className="flex flex-col">
-                                  <span>{baby.firstName}</span>
-                                  <span className="text-xs opacity-80">{calculateAge(baby.birthDate)}</span>
-                                </div>
-                              </DropdownMenuRadioItem>
-                            ))}
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSettingsOpen(true)}
-                      className="h-8 w-8 text-white hover:bg-white/20 transition-colors duration-200"
-                    >
-                      <SettingsIcon className="h-5 w-5" />
-                    </Button>
+    <>
+      {!isUnlocked && <Security onUnlock={() => setIsUnlocked(true)} />}
+      {(isUnlocked || process.env.NODE_ENV === 'development') && (
+        <div className="min-h-screen flex flex-col">
+          <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
+                    <Image
+                      src="/Sprout-256.png"
+                      alt="Sprout Logo"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      priority
+                    />
                   </div>
                 </div>
+                <div className="flex items-center space-x-2">
+                  {babies.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-auto py-1 text-white transition-colors duration-200 flex items-center space-x-2 ${
+                            selectedBaby?.gender === 'MALE'
+                              ? 'bg-blue-500'
+                              : selectedBaby?.gender === 'FEMALE'
+                              ? 'bg-pink-500'
+                              : ''
+                          }`}
+                        >
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-sm font-medium">
+                                {selectedBaby ? selectedBaby.firstName : 'Select Baby'}
+                              </span>
+                              {selectedBaby && (
+                                <Moon className="h-3 w-3" />
+                              )}
+                            </div>
+                            {selectedBaby && (
+                              <span className="text-xs opacity-80">
+                                {calculateAge(selectedBaby.birthDate)}
+                              </span>
+                            )}
+                          </div>
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuRadioGroup 
+                          value={selectedBaby?.id || ''} 
+                          onValueChange={(id) => {
+                            const baby = babies.find((b: Baby) => b.id === id);
+                            if (baby) {
+                              setSelectedBaby(baby);
+                            }
+                          }}
+                        >
+                          {babies.map((baby) => (
+                            <DropdownMenuRadioItem 
+                              key={baby.id} 
+                              value={baby.id}
+                              className={`${
+                                baby.gender === 'MALE'
+                                  ? 'bg-blue-500/10 hover:bg-blue-500/20'
+                                  : baby.gender === 'FEMALE'
+                                  ? 'bg-pink-500/10 hover:bg-pink-500/20'
+                                  : ''
+                              }`}
+                            >
+                              <div className="flex flex-col">
+                                <span>{baby.firstName}</span>
+                                <span className="text-xs opacity-80">{calculateAge(baby.birthDate)}</span>
+                              </div>
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSettingsOpen(true)}
+                    className="h-8 w-8 text-white hover:bg-white/20 transition-colors duration-200"
+                  >
+                    <SettingsIcon className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
-            </header>
-            
-            <main className="flex-1 w-full relative">
-              {children}
-            </main>
-          </div>
-            )}
-          </>
-        ) : null}
-        <SettingsModal 
-          open={settingsOpen} 
-          onClose={() => setSettingsOpen(false)}
-          onBabySelect={setSelectedBaby}
-          onBabyStatusChange={fetchData}
-          selectedBabyId={selectedBaby}
-        />
-      </body>
-    </html>
-  )
+            </div>
+          </header>
+          
+          <main className="flex-1 w-full relative">
+            {children}
+          </main>
+        </div>
+      )}
+
+      <SettingsModal 
+        open={settingsOpen} 
+        onClose={() => setSettingsOpen(false)}
+        onBabySelect={(id) => {
+          const baby = babies.find((b: Baby) => b.id === id);
+          if (baby) {
+            setSelectedBaby(baby);
+          }
+        }}
+        onBabyStatusChange={fetchData}
+        selectedBabyId={selectedBaby?.id || ''}
+      />
+    </>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <BabyProvider>
+      <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
+        <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
+          <AppContent>{children}</AppContent>
+        </body>
+      </html>
+    </BabyProvider>
+  );
 }
