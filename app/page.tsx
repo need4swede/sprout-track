@@ -199,19 +199,19 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-6 mx-4 my-4">
+    <div className="space-y-4 mx-3 my-3">
       {/* Action Buttons */}
       {selectedBaby?.id && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-3">
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-hidden"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-hidden"
             onClick={() => setShowSleepModal(true)}
           >
             {renderStars(8)}
-            <div className="w-16 h-16 rounded-xl bg-gray-400/20 flex items-center justify-center z-10">
-              <Moon className="h-10 w-10" />
+            <div className="w-12 h-12 rounded-xl bg-gray-400/20 flex items-center justify-center z-10">
+              <Moon className="h-8 w-8" />
             </div>
             <span className="text-base font-medium z-10">
               {sleepingBabies.has(selectedBaby?.id || '') ? 'End Sleep' : 'Start Sleep'}
@@ -220,34 +220,34 @@ export default function Home() {
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
             onClick={() => setShowFeedModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
-              <Icon iconNode={bottleBaby} className="h-10 w-10" />
+            <div className="w-12 h-12 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
+              <Icon iconNode={bottleBaby} className="h-8 w-8" />
             </div>
             <span className="text-base font-medium z-10">Feed</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-hidden"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-hidden"
             onClick={() => setShowDiaperModal(true)}
           >
             {renderPoopEmojis(4)}
-            <div className="w-16 h-16 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
-              <Icon iconNode={diaper} className="h-10 w-10" />
+            <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
+              <Icon iconNode={diaper} className="h-8 w-8" />
             </div>
             <span className="text-base font-medium z-10">Diaper</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-36 sm:h-40 flex flex-col items-center justify-center gap-4 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)]"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)]"
             onClick={() => setShowNoteModal(true)}
           >
-            <div className="w-16 h-16 rounded-xl bg-[#FFFF99]/30 flex items-center justify-center">
-              <Edit className="h-10 w-10" />
+            <div className="w-12 h-12 rounded-xl bg-[#FFFF99]/30 flex items-center justify-center">
+              <Edit className="h-8 w-8" />
             </div>
             <div className="space-y-1 text-center">
               <h3 className="font-semibold">Add Note</h3>
