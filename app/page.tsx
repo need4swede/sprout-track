@@ -258,7 +258,7 @@ function HomeContent(): React.ReactElement {
               sleepingBabies.has(selectedBaby.id) ? (
                 <StatusBubble 
                   status="sleeping"
-                  className="overflow-visible"
+                  className="overflow-visible z-40"
                   durationInMinutes={Math.floor(
                     (new Date().getTime() - sleepStartTime[selectedBaby.id]?.getTime() || 0) / 60000
                   )}
@@ -267,7 +267,7 @@ function HomeContent(): React.ReactElement {
                 !sleepStartTime[selectedBaby.id] && lastSleepEndTime[selectedBaby.id] && (
                   <StatusBubble 
                     status="awake"
-                    className="overflow-visible"
+                    className="overflow-visible z-40"
                     durationInMinutes={Math.floor(
                       (new Date().getTime() - lastSleepEndTime[selectedBaby.id].getTime()) / 60000
                     )}
