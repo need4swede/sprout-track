@@ -5,6 +5,7 @@ import { Baby } from '@prisma/client';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBubble } from "@/components/ui/status-bubble";
 import { 
   Baby as BabyIcon, 
   Moon, 
@@ -34,6 +35,8 @@ function HomeContent(): React.ReactElement {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [localTime, setLocalTime] = useState<string>('');
   const lastSleepCheck = useRef<string>('');
+  const [sleepStartTime, setSleepStartTime] = useState<Record<string, Date>>({});
+  const [lastSleepEndTime, setLastSleepEndTime] = useState<Record<string, Date>>({});
 
   const refreshActivities = useCallback(async (babyId: string | undefined) => {
     if (!babyId) return;
@@ -107,6 +110,11 @@ function HomeContent(): React.ReactElement {
     }
   }, [selectedBaby, refreshActivities]);
 
+  const [sleepData, setSleepData] = useState<{
+    ongoingSleep?: SleepLogResponse;
+    lastEndedSleep?: SleepLogResponse & { endTime: string };
+  }>({});
+
   const checkSleepStatus = async (babyId: string) => {
     // Prevent duplicate checks
     const checkId = `${babyId}-${Date.now()}`;
@@ -120,20 +128,63 @@ function HomeContent(): React.ReactElement {
       const data = await response.json();
       if (!data.success) return;
       
-      const hasOngoingSleep = data.data.some((log: SleepLogResponse) => !log.endTime);
-      setSleepingBabies((prev: Set<string>) => {
-        const newSet = new Set(prev);
-        if (hasOngoingSleep) {
-          newSet.add(babyId);
-        } else {
-          newSet.delete(babyId);
-        }
-        return newSet;
+      const sleepLogs = data.data as SleepLogResponse[];
+      
+      // Find ongoing sleep
+      const ongoingSleep = sleepLogs.find(log => !log.endTime);
+      
+      // Find last ended sleep
+      const completedSleeps = sleepLogs
+        .filter((log): log is SleepLogResponse & { endTime: string } => 
+          log.endTime !== null
+        )
+        .sort((a, b) => new Date(b.endTime).getTime() - new Date(a.endTime).getTime());
+      
+      setSleepData({
+        ongoingSleep,
+        lastEndedSleep: completedSleeps[0]
       });
     } catch (error) {
       console.error('Error checking sleep status:', error);
     }
   };
+
+  // Handle sleep status changes
+  useEffect(() => {
+    if (!selectedBaby?.id) return;
+
+    const { ongoingSleep, lastEndedSleep } = sleepData;
+    
+    if (ongoingSleep) {
+      setSleepingBabies(prev => {
+        const newSet = new Set(prev);
+        newSet.add(selectedBaby.id);
+        return newSet;
+      });
+      setSleepStartTime(prev => ({
+        ...prev,
+        [selectedBaby.id]: new Date(ongoingSleep.startTime)
+      }));
+    } else {
+      setSleepingBabies(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(selectedBaby.id);
+        return newSet;
+      });
+      setSleepStartTime(prev => {
+        const newState = { ...prev };
+        delete newState[selectedBaby.id];
+        return newState;
+      });
+      
+      if (lastEndedSleep) {
+        setLastSleepEndTime(prev => ({
+          ...prev,
+          [selectedBaby.id]: new Date(lastEndedSleep.endTime)
+        }));
+      }
+    }
+  }, [sleepData, selectedBaby]);
 
   // Function to generate random position and size
   const getRandomPosition = () => {
@@ -186,17 +237,38 @@ function HomeContent(): React.ReactElement {
     <div className="space-y-4 mx-3 my-3">
       {/* Action Buttons */}
       {selectedBaby?.id && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-3 overflow-visible">
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-hidden"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-visible"
             onClick={() => {
               updateUnlockTimer();
               setShowSleepModal(true);
             }}
           >
             {renderStars(8)}
+            {selectedBaby?.id && (
+              sleepingBabies.has(selectedBaby.id) ? (
+                <StatusBubble 
+                  status="sleeping"
+                  className="overflow-visible"
+                  durationInMinutes={Math.floor(
+                    (new Date().getTime() - sleepStartTime[selectedBaby.id]?.getTime() || 0) / 60000
+                  )}
+                />
+              ) : (
+                !sleepStartTime[selectedBaby.id] && lastSleepEndTime[selectedBaby.id] && (
+                  <StatusBubble 
+                    status="awake"
+                    className="overflow-visible"
+                    durationInMinutes={Math.floor(
+                      (new Date().getTime() - lastSleepEndTime[selectedBaby.id].getTime()) / 60000
+                    )}
+                  />
+                )
+              )
+            )}
             <div className="w-12 h-12 rounded-xl bg-gray-400/20 flex items-center justify-center z-10">
               <Moon className="h-8 w-8" />
             </div>

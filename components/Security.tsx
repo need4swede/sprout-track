@@ -47,32 +47,53 @@ export default function Security({ onUnlock }: SecurityProps) {
     };
   }, []);
 
-  // Check if the app is unlocked or locked out on mount
+  // Check for inactivity and handle security state
   useEffect(() => {
-    const unlockTime = localStorage.getItem('unlockTime');
-    const storedLockoutTime = localStorage.getItem('lockoutTime');
-    const storedAttempts = localStorage.getItem('attempts');
+    let inactivityTimer: NodeJS.Timeout;
 
-    if (storedLockoutTime) {
-      const lockoutEnd = parseInt(storedLockoutTime);
-      if (Date.now() < lockoutEnd) {
-        setLockoutTime(lockoutEnd);
+    const checkSecurityState = () => {
+      const unlockTime = localStorage.getItem('unlockTime');
+      const storedLockoutTime = localStorage.getItem('lockoutTime');
+      const storedAttempts = localStorage.getItem('attempts');
+
+      // Handle lockout state
+      if (storedLockoutTime) {
+        const lockoutEnd = parseInt(storedLockoutTime);
+        if (Date.now() < lockoutEnd) {
+          setLockoutTime(lockoutEnd);
+          setShowDialog(true);
+        } else {
+          localStorage.removeItem('lockoutTime');
+          localStorage.removeItem('attempts');
+          setAttempts(0);
+        }
+      }
+
+      if (storedAttempts) {
+        setAttempts(parseInt(storedAttempts));
+      }
+
+      // Check for inactivity
+      if (!unlockTime) {
         setShowDialog(true);
       } else {
-        localStorage.removeItem('lockoutTime');
-        localStorage.removeItem('attempts');
-        setAttempts(0);
+        const timeSinceUnlock = Date.now() - parseInt(unlockTime);
+        if (timeSinceUnlock > 60 * 1000) { // 1 minute inactivity
+          setShowDialog(true);
+          localStorage.removeItem('unlockTime');
+        }
       }
-    }
+    };
 
-    if (storedAttempts) {
-      setAttempts(parseInt(storedAttempts));
-    }
+    // Initial check
+    checkSecurityState();
 
-    if (!unlockTime || Date.now() - parseInt(unlockTime) > 60 * 1000) {
-      setShowDialog(true);
-      localStorage.removeItem('unlockTime');
-    }
+    // Set up continuous checking every second
+    inactivityTimer = setInterval(checkSecurityState, 1000);
+
+    return () => {
+      clearInterval(inactivityTimer);
+    };
   }, []);
 
   // Update lockout timer
