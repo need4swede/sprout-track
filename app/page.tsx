@@ -37,6 +37,8 @@ function HomeContent(): React.ReactElement {
   const lastSleepCheck = useRef<string>('');
   const [sleepStartTime, setSleepStartTime] = useState<Record<string, Date>>({});
   const [lastSleepEndTime, setLastSleepEndTime] = useState<Record<string, Date>>({});
+  const [lastFeedTime, setLastFeedTime] = useState<Record<string, Date>>({});
+  const [lastDiaperTime, setLastDiaperTime] = useState<Record<string, Date>>({});
 
   const refreshActivities = useCallback(async (babyId: string | undefined) => {
     if (!babyId) return;
@@ -64,6 +66,30 @@ function HomeContent(): React.ReactElement {
       ];
       
       setActivities(allActivities);
+
+      // Update last feed time
+      if (feedData.success && feedData.data.length > 0) {
+        const lastFeed = feedData.data
+          .sort((a: FeedLogResponse, b: FeedLogResponse) => 
+            new Date(b.time).getTime() - new Date(a.time).getTime()
+          )[0];
+        setLastFeedTime(prev => ({
+          ...prev,
+          [babyId]: new Date(lastFeed.time)
+        }));
+      }
+
+      // Update last diaper time
+      if (diaperData.success && diaperData.data.length > 0) {
+        const lastDiaper = diaperData.data
+          .sort((a: DiaperLogResponse, b: DiaperLogResponse) => 
+            new Date(b.time).getTime() - new Date(a.time).getTime()
+          )[0];
+        setLastDiaperTime(prev => ({
+          ...prev,
+          [babyId]: new Date(lastDiaper.time)
+        }));
+      }
     } catch (error) {
       console.error('Error refreshing activities:', error);
     }
@@ -285,12 +311,22 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-hidden text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
             }}
           >
+            {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
+              <StatusBubble 
+                status="feed"
+                className="overflow-visible z-40"
+                durationInMinutes={Math.floor(
+                  (new Date().getTime() - lastFeedTime[selectedBaby.id].getTime()) / 60000
+                )}
+                warningTime={selectedBaby.feedWarningTime}
+              />
+            )}
             <div className="w-12 h-12 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
               <Icon iconNode={bottleBaby} className="h-8 w-8" />
             </div>
@@ -299,12 +335,22 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-hidden"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-visible"
             onClick={() => {
               updateUnlockTimer();
               setShowDiaperModal(true);
             }}
           >
+            {selectedBaby?.id && lastDiaperTime[selectedBaby.id] && (
+              <StatusBubble 
+                status="diaper"
+                className="overflow-visible z-40"
+                durationInMinutes={Math.floor(
+                  (new Date().getTime() - lastDiaperTime[selectedBaby.id].getTime()) / 60000
+                )}
+                warningTime={selectedBaby.diaperWarningTime}
+              />
+            )}
             {renderPoopEmojis(4)}
             <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
               <Icon iconNode={diaper} className="h-8 w-8" />

@@ -53,15 +53,17 @@ enum Mood {
 }
 
 model Baby {
-  id          String   @id @default(uuid())
-  firstName   String
-  lastName    String
-  birthDate   DateTime
-  gender      Gender?
-  inactive    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  id                String   @id @default(uuid())
+  firstName         String
+  lastName          String
+  birthDate         DateTime
+  gender            Gender?
+  inactive          Boolean  @default(false)
+  feedWarningTime   String   @default("03:00") // Default 3 hours
+  diaperWarningTime String   @default("02:00") // Default 2 hours
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
 
   // Relationships
   sleepLogs   SleepLog[]

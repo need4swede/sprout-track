@@ -30,6 +30,8 @@ const defaultFormData = {
   birthDate: '',
   gender: '',
   inactive: false,
+  feedWarningTime: '03:00',
+  diaperWarningTime: '02:00',
 };
 
 export default function BabyModal({
@@ -54,6 +56,8 @@ export default function BabyModal({
         birthDate,
         gender: baby.gender || '',
         inactive: baby.inactive || false,
+        feedWarningTime: baby.feedWarningTime || '03:00',
+        diaperWarningTime: baby.diaperWarningTime || '02:00',
       });
     } else if (!open) {
       setFormData(defaultFormData);
@@ -166,6 +170,36 @@ export default function BabyModal({
                 <SelectItem value="OTHER">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Feed Warning Time (hh:mm)</label>
+              <Input
+                type="text"
+                pattern="[0-9]{2}:[0-9]{2}"
+                value={formData.feedWarningTime}
+                onChange={(e) =>
+                  setFormData({ ...formData, feedWarningTime: e.target.value })
+                }
+                className="w-full"
+                placeholder="03:00"
+                required
+              />
+            </div>
+            <div>
+              <label className="form-label">Diaper Warning Time (hh:mm)</label>
+              <Input
+                type="text"
+                pattern="[0-9]{2}:[0-9]{2}"
+                value={formData.diaperWarningTime}
+                onChange={(e) =>
+                  setFormData({ ...formData, diaperWarningTime: e.target.value })
+                }
+                className="w-full"
+                placeholder="02:00"
+                required
+              />
+            </div>
           </div>
           {isEditing && (
             <div className="flex items-center space-x-2">

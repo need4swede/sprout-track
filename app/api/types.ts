@@ -15,6 +15,8 @@ export type BabyResponse = Omit<Baby, 'birthDate' | 'createdAt' | 'updatedAt' | 
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  feedWarningTime: string;
+  diaperWarningTime: string;
 };
 
 export interface BabyCreate {
@@ -23,6 +25,8 @@ export interface BabyCreate {
   birthDate: string;
   gender?: Gender;
   inactive?: boolean;
+  feedWarningTime?: string;
+  diaperWarningTime?: string;
 }
 
 export interface BabyUpdate extends Partial<BabyCreate> {
