@@ -25,7 +25,7 @@ const fontSans = FontSans({
 });
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { selectedBaby, setSelectedBaby } = useBaby();
+  const { selectedBaby, setSelectedBaby, sleepingBabies } = useBaby();
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
@@ -182,7 +182,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                               <span className="text-sm font-medium">
                                 {selectedBaby ? selectedBaby.firstName : 'Select Baby'}
                               </span>
-                              {selectedBaby && (
+                              {selectedBaby && sleepingBabies.has(selectedBaby.id) && (
                                 <Moon className="h-3 w-3" />
                               )}
                             </div>
