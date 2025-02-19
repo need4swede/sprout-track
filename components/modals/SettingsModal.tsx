@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Baby } from '@prisma/client';
 import { Settings } from '@/app/api/types';
-import { Settings as SettingsIcon, Plus, Edit } from 'lucide-react';
+import { Settings as SettingsIcon, Plus, Edit, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,6 +48,8 @@ export default function SettingsModal({
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
   const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
   const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLocalSelectedBabyId(selectedBabyId);
@@ -109,8 +111,66 @@ export default function SettingsModal({
     onBabyStatusChange?.(); // Refresh parent's babies list
   };
 
+  const handleBackup = async () => {
+    try {
+      const response = await fetch('/api/database');
+      if (!response.ok) throw new Error('Backup failed');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.split('filename=')[1].replace(/"/g, '') || 'baby-tracker-backup.db';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Backup error:', error);
+      alert('Failed to create backup');
+    }
+  };
+
+  const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsRestoring(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/database', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Restore failed');
+      }
+
+      // Refresh the page to reflect the restored data
+      window.location.reload();
+    } catch (error) {
+      console.error('Restore error:', error);
+      alert('Failed to restore backup');
+    } finally {
+      setIsRestoring(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".db"
+        onChange={handleRestore}
+        style={{ display: 'none' }}
+      />
       <Dialog 
         open={open} 
         onOpenChange={(isOpen) => {
@@ -120,14 +180,14 @@ export default function SettingsModal({
           onClose();
         }}
       >
-        <DialogContent className="dialog-content max-w-2xl">
+        <DialogContent className="dialog-content max-w-2xl w-full">
           <DialogHeader className="dialog-header">
             <DialogTitle className="dialog-title text-slate-800">Settings</DialogTitle>
             <DialogDescription className="dialog-description">
               Configure your preferences for the Baby Tracker app
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6">
+          <div className="space-y-6 w-full max-w-lg mx-auto">
             <div className="space-y-4">
               <div>
                 <Label className="form-label">Family Name</Label>
@@ -161,11 +221,34 @@ export default function SettingsModal({
               </div>
             </div>
             
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleBackup}
+                  className="w-full"
+                  disabled={loading}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Backup Database
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full"
+                  disabled={loading || isRestoring}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Restore Database
+                </Button>
+              </div>
+            </div>
+
             <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Manage Babies</h3>
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="w-[200px]">
+                <div className="flex flex-wrap items-center gap-2 w-full">
+                  <div className="flex-1 min-w-[200px]">
                     <Select 
                       value={localSelectedBabyId} 
                       onValueChange={(babyId) => {
