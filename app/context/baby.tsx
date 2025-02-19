@@ -22,8 +22,35 @@ interface BabyProviderProps {
 }
 
 export function BabyProvider({ children }: BabyProviderProps) {
-  const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
-  const [sleepingBabies, setSleepingBabies] = useState<Set<string>>(new Set());
+  const [selectedBaby, setSelectedBaby] = useState<Baby | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('selectedBaby');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
+
+  const [sleepingBabies, setSleepingBabies] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sleepingBabies');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    }
+    return new Set();
+  });
+
+  // Persist selected baby
+  useEffect(() => {
+    if (selectedBaby) {
+      localStorage.setItem('selectedBaby', JSON.stringify(selectedBaby));
+    } else {
+      localStorage.removeItem('selectedBaby');
+    }
+  }, [selectedBaby]);
+
+  // Persist sleeping babies
+  useEffect(() => {
+    localStorage.setItem('sleepingBabies', JSON.stringify(Array.from(sleepingBabies)));
+  }, [sleepingBabies]);
 
   // Update URL when selected baby changes
   useEffect(() => {

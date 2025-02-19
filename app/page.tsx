@@ -104,10 +104,14 @@ function HomeContent(): React.ReactElement {
   }, []);
 
   useEffect(() => {
-    if (selectedBaby?.id) {
-      refreshActivities(selectedBaby.id);
-      checkSleepStatus(selectedBaby.id);
-    }
+    const initializeData = async () => {
+      if (selectedBaby?.id) {
+        await refreshActivities(selectedBaby.id);
+        await checkSleepStatus(selectedBaby.id);
+      }
+    };
+    
+    initializeData();
   }, [selectedBaby, refreshActivities]);
 
   const [sleepData, setSleepData] = useState<{
@@ -247,7 +251,9 @@ function HomeContent(): React.ReactElement {
               setShowSleepModal(true);
             }}
           >
-            {renderStars(8)}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl">
+              {renderStars(8)}
+            </div>
             {selectedBaby?.id && (
               sleepingBabies.has(selectedBaby.id) ? (
                 <StatusBubble 

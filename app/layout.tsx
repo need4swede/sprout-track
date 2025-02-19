@@ -30,7 +30,16 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    // Only run this on client-side
+    if (typeof window !== 'undefined') {
+      const unlockTime = localStorage.getItem('unlockTime');
+      if (unlockTime && Date.now() - parseInt(unlockTime) <= 60 * 1000) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   // Function to calculate baby's age
   const calculateAge = (birthday: Date) => {
@@ -119,12 +128,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkUnlockStatus = () => {
       const unlockTime = localStorage.getItem('unlockTime');
-      if (!unlockTime || Date.now() - parseInt(unlockTime) > 60 * 1000) {
-        setIsUnlocked(false);
-      }
+      const newUnlockState = !!(unlockTime && Date.now() - parseInt(unlockTime) <= 60 * 1000);
+      setIsUnlocked(newUnlockState);
     };
 
-    // Check every second
+    // Check immediately on mount
+    checkUnlockStatus();
+
+    // Then check every second
     const interval = setInterval(checkUnlockStatus, 1000);
     return () => clearInterval(interval);
   }, []);
