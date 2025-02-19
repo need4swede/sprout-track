@@ -19,7 +19,7 @@ export function StatusBubble({ status, durationInMinutes, className }: StatusBub
   return (
     <div
       className={cn(
-        "absolute -top-2 -right-2 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm font-medium z-50 shadow-xl",
+        "absolute -top-2 -right-2 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm font-medium z-50",
         status === 'sleeping' 
           ? "bg-gray-700/90 text-white" 
           : "bg-sky-100 text-sky-900",
