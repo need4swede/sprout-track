@@ -151,12 +151,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
-                  <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-2 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-[.5] flex items-center justify-center">
                     <Image
-                      src="/Sprout-256.png"
-                      alt="Sprout Logo"
-                      width={48}
-                      height={48}
+                      src="/acorn-128.png"
+                      alt="Acorn Logo"
+                      width={64}
+                      height={64}
                       className="object-contain"
                       priority
                     />

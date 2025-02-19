@@ -189,15 +189,15 @@ export default function Security({ onUnlock }: SecurityProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-4 p-6">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-r from-teal-600/90 to-teal-700/90 p-4 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-2xl bg-gradient-to-r from-teal-600/90 to-teal-700/90 p-1 flex items-center justify-center">
             <Image
-              src="/Sprout-256.png"
-              alt="Sprout Logo"
-              width={64}
-              height={64}
-              className="object-contain"
-              priority
-            />
+                      src="/acorn-128.png"
+                      alt="Acorn Logo"
+                      width={128}
+                      height={128}
+                      className="object-contain"
+                      priority
+                    />
           </div>
           
           <h2 className="text-xl font-semibold text-gray-900">Enter PIN</h2>
