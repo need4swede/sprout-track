@@ -351,7 +351,9 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.diaperWarningTime}
               />
             )}
-            {renderPoopEmojis(4)}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl">
+              {renderPoopEmojis(4)}
+            </div>
             <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
               <Icon iconNode={diaper} className="h-8 w-8" />
             </div>
