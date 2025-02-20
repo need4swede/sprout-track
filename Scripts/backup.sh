@@ -4,10 +4,11 @@
 # It stops the service before backup and starts it afterward
 # Excludes .next and node_modules directories
 
-# Get the directory name of the project (one level up from the script location)
+# Get the directory name of the project and its parent
 PROJECT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
+PARENT_DIR=$(dirname "$PROJECT_DIR")
 PROJECT_NAME=$(basename "$PROJECT_DIR")
-BACKUP_DIR="../${PROJECT_NAME}_backup_$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="${PARENT_DIR}/${PROJECT_NAME}_backup_$(date +%Y%m%d_%H%M%S)"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 # Stop the service before backup
@@ -22,8 +23,8 @@ fi
 echo "Creating backup in $BACKUP_DIR..."
 mkdir -p "$BACKUP_DIR"
 
-# Exclude .next and node_modules directories when copying
-rsync -av --exclude='.next' --exclude='node_modules' "$PROJECT_DIR/" "$BACKUP_DIR/"
+# Exclude .next, node_modules, and the backup directory itself when copying
+rsync -av --exclude='.next' --exclude='node_modules' --exclude="*_backup_*" "$PROJECT_DIR/" "$BACKUP_DIR/"
 BACKUP_STATUS=$?
 
 # Start the service after backup
