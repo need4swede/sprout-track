@@ -104,16 +104,40 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
     if ('duration' in activity) {
       const startTime = formatTime(activity.startTime, settings);
       const endTime = activity.endTime ? formatTime(activity.endTime, settings) : 'ongoing';
+      const formatSleepQuality = (quality: string) => {
+        switch (quality) {
+          case 'POOR': return 'Poor';
+          case 'FAIR': return 'Fair';
+          case 'GOOD': return 'Good';
+          case 'EXCELLENT': return 'Excellent';
+          default: return quality;
+        }
+      };
+      const details = [
+        { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : 'Night Sleep' },
+        { label: 'Start Time', value: startTime },
+      ];
+      
+      // Only show end time and duration if sleep has ended
+      if (activity.endTime) {
+        details.push(
+          { label: 'End Time', value: endTime },
+          { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` }
+        );
+        // Only show quality if sleep has ended
+        if (activity.quality) {
+          details.push({ label: 'Quality', value: formatSleepQuality(activity.quality) });
+        }
+      }
+      
+      // Always show location if specified
+      if (activity.location) {
+        details.push({ label: 'Location', value: activity.location });
+      }
+
       return {
         title: 'Sleep Record',
-        details: [
-          { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : activity.type === 'NIGHT_SLEEP' ? 'Night Sleep' : activity.type },
-          { label: 'Start Time', value: startTime },
-          { label: 'End Time', value: endTime },
-          { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` },
-          { label: 'Quality', value: activity.quality || 'Not specified' },
-          { label: 'Location', value: activity.location || 'Not specified' },
-        ],
+        details,
       };
     }
     if ('amount' in activity) {
@@ -132,15 +156,37 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
           default: return side;
         }
       };
+      const details = [
+        { label: 'Time', value: formatTime(activity.time, settings) },
+        { label: 'Type', value: formatFeedType(activity.type) },
+      ];
+
+      // Show amount for bottle and solids
+      if (activity.amount && (activity.type === 'BOTTLE' || activity.type === 'SOLIDS')) {
+        details.push({ 
+          label: 'Amount', 
+          value: `${activity.amount}${activity.type === 'BOTTLE' ? ' oz' : ' g'}`
+        });
+      }
+
+      // Show side for breast feeds
+      if (activity.type === 'BREAST') {
+        if (activity.side) {
+          details.push({ label: 'Side', value: formatBreastSide(activity.side) });
+        }
+        if (activity.amount) {
+          details.push({ label: 'Duration', value: `${activity.amount} minutes` });
+        }
+      }
+
+      // Show food for solids
+      if (activity.type === 'SOLIDS' && activity.food) {
+        details.push({ label: 'Food', value: activity.food });
+      }
+
       return {
         title: 'Feed Record',
-        details: [
-          { label: 'Time', value: formatTime(activity.time, settings) },
-          { label: 'Type', value: formatFeedType(activity.type) },
-          { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}` },
-          { label: 'Side', value: activity.side ? formatBreastSide(activity.side) : 'Not specified' },
-          { label: 'Food', value: activity.food || 'Not specified' },
-        ],
+        details,
       };
     }
     if ('condition' in activity) {
@@ -152,14 +198,42 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
           default: return type;
         }
       };
+      const formatDiaperCondition = (condition: string) => {
+        switch (condition) {
+          case 'NORMAL': return 'Normal';
+          case 'LOOSE': return 'Loose';
+          case 'FIRM': return 'Firm';
+          case 'OTHER': return 'Other';
+          default: return condition;
+        }
+      };
+      const formatDiaperColor = (color: string) => {
+        switch (color) {
+          case 'YELLOW': return 'Yellow';
+          case 'BROWN': return 'Brown';
+          case 'GREEN': return 'Green';
+          case 'OTHER': return 'Other';
+          default: return color;
+        }
+      };
+      const details = [
+        { label: 'Time', value: formatTime(activity.time, settings) },
+        { label: 'Type', value: formatDiaperType(activity.type) },
+      ];
+
+      // Only show condition and color for DIRTY or BOTH types
+      if (activity.type !== 'WET') {
+        if (activity.condition) {
+          details.push({ label: 'Condition', value: formatDiaperCondition(activity.condition) });
+        }
+        if (activity.color) {
+          details.push({ label: 'Color', value: formatDiaperColor(activity.color) });
+        }
+      }
+
       return {
         title: 'Diaper Record',
-        details: [
-          { label: 'Time', value: formatTime(activity.time, settings) },
-          { label: 'Type', value: formatDiaperType(activity.type) },
-          { label: 'Condition', value: activity.condition || 'Not specified' },
-          { label: 'Color', value: activity.color || 'Not specified' },
-        ],
+        details,
       };
     }
   }
