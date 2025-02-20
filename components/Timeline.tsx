@@ -255,7 +255,12 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
     if ('duration' in activity) {
       const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
       const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
-      return `${activity.type === 'NAP' ? 'Nap' : activity.type === 'NIGHT_SLEEP' ? 'Night Sleep' : activity.type}: ${startTime} - ${endTime}`;
+      const day = formatTime(activity.startTime, settings, true).split(' ')[0];
+      const duration = activity.duration ? ` (${activity.duration} min)` : '';
+      return {
+        type: activity.type === 'NAP' ? 'Nap' : 'Night Sleep',
+        details: `${day} ${startTime} - ${endTime}${duration}`
+      };
     }
     if ('amount' in activity) {
       const formatFeedType = (type: string) => {
@@ -266,8 +271,33 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           default: return type;
         }
       };
-      const feedType = formatFeedType(activity.type);
-      return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'} (${feedType})`;
+      const formatBreastSide = (side: string) => {
+        switch (side) {
+          case 'LEFT': return 'Left';
+          case 'RIGHT': return 'Right';
+          default: return side;
+        }
+      };
+      
+      let details = '';
+      if (activity.type === 'BREAST') {
+        const side = activity.side ? `Side: ${formatBreastSide(activity.side)}` : '';
+        const duration = activity.amount ? `${activity.amount} min` : '';
+        details = [side, duration].filter(Boolean).join(', ');
+      } else if (activity.type === 'BOTTLE') {
+        details = `${activity.amount || 'unknown'} oz`;
+      } else if (activity.type === 'SOLIDS') {
+        details = `${activity.amount || 'unknown'} g`;
+        if (activity.food) {
+          details += ` of ${activity.food}`;
+        }
+      }
+      
+      const time = formatTime(activity.time, settings, true);
+      return {
+        type: formatFeedType(activity.type),
+        details: `${details} - ${time}`
+      };
     }
     if ('condition' in activity) {
       const formatDiaperType = (type: string) => {
@@ -278,13 +308,54 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           default: return type;
         }
       };
-      return `${formatDiaperType(activity.type)} diaper change`;
+      const formatDiaperCondition = (condition: string) => {
+        switch (condition) {
+          case 'NORMAL': return 'Normal';
+          case 'LOOSE': return 'Loose';
+          case 'FIRM': return 'Firm';
+          case 'OTHER': return 'Other';
+          default: return condition;
+        }
+      };
+      const formatDiaperColor = (color: string) => {
+        switch (color) {
+          case 'YELLOW': return 'Yellow';
+          case 'BROWN': return 'Brown';
+          case 'GREEN': return 'Green';
+          case 'OTHER': return 'Other';
+          default: return color;
+        }
+      };
+      
+      let details = '';
+      if (activity.type !== 'WET') {
+        const conditions = [];
+        if (activity.condition) conditions.push(formatDiaperCondition(activity.condition));
+        if (activity.color) conditions.push(formatDiaperColor(activity.color));
+        if (conditions.length > 0) {
+          details = ` (${conditions.join(', ')})`;
+        }
+      }
+      
+      const time = formatTime(activity.time, settings, true);
+      return {
+        type: formatDiaperType(activity.type),
+        details: `${details} - ${time}`
+      };
     }
   }
   if ('content' in activity) {
-    return activity.content;
+    const time = formatTime(activity.time, settings, true);
+    const truncatedContent = activity.content.length > 50 ? activity.content.substring(0, 50) + '...' : activity.content;
+    return {
+      type: activity.category || 'Note',
+      details: `${time} - ${truncatedContent}`
+    };
   }
-  return 'Activity logged';
+  return {
+    type: 'Activity',
+    details: 'logged'
+  };
 };
 
 const getActivityEndpoint = (activity: ActivityType): string => {
@@ -488,20 +559,18 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                 <div className={`flex-shrink-0 ${style.bg} p-3 rounded-xl mr-4`}>
                   {getActivityIcon(activity)}
                 </div>
-                <div className="min-w-0 flex-1 flex items-center justify-between">
-                  <p className="timeline-text">
-                    {getActivityDescription(activity, settings)}
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <span className="timeline-time px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
-                      {'duration' in activity && 'endTime' in activity
-                        ? activity.endTime
-                          ? `${formatTime(getActivityTime(activity), settings, true)} (${activity.duration} min)`
-                          : `${formatTime(getActivityTime(activity), settings, true)} (ongoing)`
-                        : formatTime(getActivityTime(activity), settings, true)
-                      }
-                    </span>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  {(() => {
+                    const description = getActivityDescription(activity, settings);
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
+                          {description.type}
+                        </span>
+                        <span className="text-gray-900">{description.details}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
