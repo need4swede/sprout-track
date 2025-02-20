@@ -99,11 +99,19 @@ const formatTime = (date: string, settings: Settings | null, includeDate: boolea
   }
 };
 
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return `(${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')})`;
+};
+
 const getActivityDetails = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = formatTime(activity.startTime, settings);
-      const endTime = activity.endTime ? formatTime(activity.endTime, settings) : 'ongoing';
+      const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
+      const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
+      const day = formatTime(activity.startTime, settings, true).split(' ')[0];
+      const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
       const formatSleepQuality = (quality: string) => {
         switch (quality) {
           case 'POOR': return 'Poor';
@@ -112,6 +120,11 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
           case 'EXCELLENT': return 'Excellent';
           default: return quality;
         }
+      };
+      const formatLocation = (location: string) => {
+        if (location === 'OTHER') return 'Other';
+        
+        return location;
       };
       const details = [
         { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : 'Night Sleep' },
@@ -132,7 +145,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       
       // Always show location if specified
       if (activity.location) {
-        details.push({ label: 'Location', value: activity.location });
+        details.push({ label: 'Location', value: formatLocation(activity.location) });
       }
 
       return {
@@ -256,10 +269,11 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
       const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
       const day = formatTime(activity.startTime, settings, true).split(' ')[0];
-      const duration = activity.duration ? ` (${activity.duration} min)` : '';
+      const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
+      const location = activity.location === 'OTHER' ? 'Other' : activity.location;
       return {
         type: activity.type === 'NAP' ? 'Nap' : 'Night Sleep',
-        details: `${day} ${startTime} - ${endTime}${duration}`
+        details: `${day} ${startTime} - ${endTime}${duration} ${location ? `at ${location}` : ''}`
       };
     }
     if ('amount' in activity) {
@@ -333,14 +347,14 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
         if (activity.condition) conditions.push(formatDiaperCondition(activity.condition));
         if (activity.color) conditions.push(formatDiaperColor(activity.color));
         if (conditions.length > 0) {
-          details = ` (${conditions.join(', ')})`;
+          details = ` (${conditions.join(', ')}) - `;
         }
       }
       
       const time = formatTime(activity.time, settings, true);
       return {
         type: formatDiaperType(activity.type),
-        details: `${details} - ${time}`
+        details: `${details}${time}`
       };
     }
   }
@@ -489,9 +503,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   return (
     <div>
       {/* Header */}
-      <CardHeader className="py-4 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
+      <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-white">Recent Activity</CardTitle>
+          <CardTitle className="text-white text-xl">Recent Activity</CardTitle>
           <div className="flex gap-1">
             <Button
               variant="outline"
@@ -555,16 +569,16 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
               onClick={() => setSelectedActivity(activity)}
             >
-              <div className="flex items-center px-6 py-4">
-                <div className={`flex-shrink-0 ${style.bg} p-3 rounded-xl mr-4`}>
+              <div className="flex items-center px-6 py-3">
+                <div className={`flex-shrink-0 ${style.bg} p-2 rounded-xl mr-4`}>
                   {getActivityIcon(activity)}
                 </div>
                 <div className="min-w-0 flex-1">
                   {(() => {
                     const description = getActivityDescription(activity, settings);
                     return (
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
                           {description.type}
                         </span>
                         <span className="text-gray-900">{description.details}</span>
