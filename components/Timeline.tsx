@@ -107,7 +107,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       return {
         title: 'Sleep Record',
         details: [
-          { label: 'Type', value: activity.type },
+          { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : activity.type === 'NIGHT_SLEEP' ? 'Night Sleep' : activity.type },
           { label: 'Start Time', value: startTime },
           { label: 'End Time', value: endTime },
           { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` },
@@ -158,7 +158,7 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
     if ('duration' in activity) {
       const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
       const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
-      return `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}: ${startTime} - ${endTime}`;
+      return `${activity.type === 'NAP' ? 'Nap' : activity.type === 'NIGHT_SLEEP' ? 'Night Sleep' : activity.type}: ${startTime} - ${endTime}`;
     }
     if ('amount' in activity) {
       return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}`;

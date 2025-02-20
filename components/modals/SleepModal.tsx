@@ -296,10 +296,11 @@ export default function SleepModal({
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CRIB">Crib</SelectItem>
-                  <SelectItem value="CAR_SEAT">Car Seat</SelectItem>
-                  <SelectItem value="PARENTS_BEDROOM">Parent's Bedroom</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  <SelectItem value="Crib">Crib</SelectItem>
+                  <SelectItem value="Car Seat">Car Seat</SelectItem>
+                  <SelectItem value="Parents Room">Parents Room</SelectItem>
+                  <SelectItem value="Contact">Contact</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
