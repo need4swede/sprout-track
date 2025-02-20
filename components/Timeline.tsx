@@ -270,10 +270,12 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
       const day = formatTime(activity.startTime, settings, true).split(' ')[0];
       const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
-      const location = activity.location === 'OTHER' ? 'Other' : activity.location;
+      const location = activity.location === 'OTHER' ? 'Other' : activity.location?.split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
       return {
-        type: activity.type === 'NAP' ? 'Nap' : 'Night Sleep',
-        details: `${day} ${startTime} - ${endTime}${duration} ${location ? `at ${location}` : ''}`
+        type: `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}${location ? ` - ${location}` : ''}`,
+        details: `${day} ${startTime} - ${endTime}${duration}`
       };
     }
     if ('amount' in activity) {
@@ -282,14 +284,18 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'BREAST': return 'Breast';
           case 'BOTTLE': return 'Bottle';
           case 'SOLIDS': return 'Solid Food';
-          default: return type;
+          default: return type.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatBreastSide = (side: string) => {
         switch (side) {
           case 'LEFT': return 'Left';
           case 'RIGHT': return 'Right';
-          default: return side;
+          default: return side.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       
@@ -319,7 +325,9 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'WET': return 'Wet';
           case 'DIRTY': return 'Dirty';
           case 'BOTH': return 'Wet and Dirty';
-          default: return type;
+          default: return type.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatDiaperCondition = (condition: string) => {
@@ -328,7 +336,9 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'LOOSE': return 'Loose';
           case 'FIRM': return 'Firm';
           case 'OTHER': return 'Other';
-          default: return condition;
+          default: return condition.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatDiaperColor = (color: string) => {
@@ -337,7 +347,9 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'BROWN': return 'Brown';
           case 'GREEN': return 'Green';
           case 'OTHER': return 'Other';
-          default: return color;
+          default: return color.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       
