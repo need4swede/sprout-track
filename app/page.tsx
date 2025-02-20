@@ -311,12 +311,13 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite] [&>div]:hover:scale-110 [&>div]:transition-transform"
+            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
             }}
           >
+            <div className="absolute inset-0 overflow-hidden rounded-2xl before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite]" />
             {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
               <StatusBubble 
                 status="feed"
