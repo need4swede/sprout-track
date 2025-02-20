@@ -160,7 +160,7 @@ export default function DiaperModal({
                 <SelectContent>
                   <SelectItem value="WET">Wet</SelectItem>
                   <SelectItem value="DIRTY">Dirty</SelectItem>
-                  <SelectItem value="BOTH">Both</SelectItem>
+                  <SelectItem value="BOTH">Wet and Dirty</SelectItem>
                 </SelectContent>
               </Select>
             </div>

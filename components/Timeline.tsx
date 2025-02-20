@@ -117,23 +117,46 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
       };
     }
     if ('amount' in activity) {
+      const formatFeedType = (type: string) => {
+        switch (type) {
+          case 'BREAST': return 'Breast';
+          case 'BOTTLE': return 'Bottle';
+          case 'SOLIDS': return 'Solid Food';
+          default: return type;
+        }
+      };
+      const formatBreastSide = (side: string) => {
+        switch (side) {
+          case 'LEFT': return 'Left';
+          case 'RIGHT': return 'Right';
+          default: return side;
+        }
+      };
       return {
         title: 'Feed Record',
         details: [
           { label: 'Time', value: formatTime(activity.time, settings) },
-          { label: 'Type', value: activity.type },
+          { label: 'Type', value: formatFeedType(activity.type) },
           { label: 'Amount', value: `${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}` },
-          { label: 'Side', value: activity.side || 'Not specified' },
+          { label: 'Side', value: activity.side ? formatBreastSide(activity.side) : 'Not specified' },
           { label: 'Food', value: activity.food || 'Not specified' },
         ],
       };
     }
     if ('condition' in activity) {
+      const formatDiaperType = (type: string) => {
+        switch (type) {
+          case 'WET': return 'Wet';
+          case 'DIRTY': return 'Dirty';
+          case 'BOTH': return 'Wet and Dirty';
+          default: return type;
+        }
+      };
       return {
         title: 'Diaper Record',
         details: [
           { label: 'Time', value: formatTime(activity.time, settings) },
-          { label: 'Type', value: activity.type },
+          { label: 'Type', value: formatDiaperType(activity.type) },
           { label: 'Condition', value: activity.condition || 'Not specified' },
           { label: 'Color', value: activity.color || 'Not specified' },
         ],
@@ -161,10 +184,27 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       return `${activity.type === 'NAP' ? 'Nap' : activity.type === 'NIGHT_SLEEP' ? 'Night Sleep' : activity.type}: ${startTime} - ${endTime}`;
     }
     if ('amount' in activity) {
-      return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'}`;
+      const formatFeedType = (type: string) => {
+        switch (type) {
+          case 'BREAST': return 'Breast';
+          case 'BOTTLE': return 'Bottle';
+          case 'SOLIDS': return 'Solid Food';
+          default: return type;
+        }
+      };
+      const feedType = formatFeedType(activity.type);
+      return `Fed ${activity.amount || 'unknown'}${activity.type === 'BREAST' ? ' minutes' : activity.type === 'BOTTLE' ? ' oz' : ' g'} (${feedType})`;
     }
     if ('condition' in activity) {
-      return `${activity.type.toLowerCase()} diaper change`;
+      const formatDiaperType = (type: string) => {
+        switch (type) {
+          case 'WET': return 'Wet';
+          case 'DIRTY': return 'Dirty';
+          case 'BOTH': return 'Wet and Dirty';
+          default: return type;
+        }
+      };
+      return `${formatDiaperType(activity.type)} diaper change`;
     }
   }
   if ('content' in activity) {
