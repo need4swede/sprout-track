@@ -6,15 +6,7 @@ import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBubble } from "@/components/ui/status-bubble";
-import { 
-  Baby as BabyIcon, 
-  Moon, 
-  Droplet,
-  Edit,
-  Icon,
-  Star,
-} from 'lucide-react';
-import { diaper, bottleBaby } from '@lucide/lab';
+import { Baby as BabyIcon } from 'lucide-react';
 import SleepModal from '@/components/modals/SleepModal';
 import FeedModal from '@/components/modals/FeedModal';
 import DiaperModal from '@/components/modals/DiaperModal';
@@ -209,53 +201,6 @@ function HomeContent(): React.ReactElement {
     }
   }, [sleepData, selectedBaby]);
 
-  // Function to generate random position and size
-  const getRandomPosition = () => {
-    return {
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-    };
-  };
-
-  // Function to get random animation timing
-  const getRandomTiming = () => {
-    return {
-      '--delay': `${Math.random() * 2}s`,
-      '--duration': `${3 + Math.random() * 3}s`,
-      '--spin-duration': `${6 + Math.random() * 4}s`,
-      fontSize: `${1 + Math.random() * 1}rem`,
-    } as React.CSSProperties;
-  };
-
-  // Function to create star elements
-  const renderStars = (count: number) => {
-    return Array(count).fill(0).map((_, i) => (
-      <Star
-        key={i}
-        className={`star ${Math.random() > 0.7 ? 'twinkle' : ''}`}
-        style={getRandomPosition()}
-        size={16}
-      />
-    ));
-  };
-
-  // Function to create poop emojis
-  const renderPoopEmojis = (count: number) => {
-    return Array(count).fill(0).map((_, i) => (
-      <span
-        key={i}
-        className="poop-emoji animate"
-        style={{
-          ...getRandomPosition(),
-          ...getRandomTiming(),
-          color: '#8B4513',
-        }}
-      >
-        💩
-      </span>
-    ));
-  };
-
   return (
     <div className="relative isolate">
       {/* Action Buttons */}
@@ -264,15 +209,12 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
+            className="h-20 p-0 flex items-center justify-center bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowSleepModal(true);
             }}
           >
-            <div className="absolute inset-0 overflow-hidden">
-              {renderStars(8)}
-            </div>
             {selectedBaby?.id && (
               sleepingBabies.has(selectedBaby.id) ? (
                 <StatusBubble 
@@ -294,23 +236,22 @@ function HomeContent(): React.ReactElement {
                 )
               )
             )}
-            <div className="w-10 h-10 bg-gray-400/20 flex items-center justify-center z-10">
-              <Moon className="h-6 w-6" />
+            <div className="absolute inset-0 flex items-center justify-center p-2">
+              <img src="/crib-256.png" alt="Sleep" className="h-full w-full object-contain z-10" />
             </div>
-            <span className="text-sm font-medium z-10">
-              {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
+            <span className="absolute bottom-1 text-sm font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm">
+              {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End' : 'Start'}
             </span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-white rounded-none"
+            className="h-20 p-0 flex items-center justify-center relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[#B8E6FE] rounded-none"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
             }}
           >
-            <div className="absolute inset-0 overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite]" />
             {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
               <StatusBubble 
                 status="feed"
@@ -321,15 +262,14 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.feedWarningTime}
               />
             )}
-            <div className="w-10 h-10 bg-sky-200/30 flex items-center justify-center z-10">
-              <Icon iconNode={bottleBaby} className="h-6 w-6" />
+            <div className="absolute inset-0 flex items-center justify-center p-2">
+              <img src="/bottle-256.png" alt="Feed" className="h-full w-full object-contain z-10" />
             </div>
-            <span className="text-sm font-medium z-10">Feed</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
+            className="h-20 p-0 flex items-center justify-center bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowDiaperModal(true);
@@ -345,27 +285,22 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.diaperWarningTime}
               />
             )}
-            <div className="absolute inset-0 overflow-hidden">
-              {renderPoopEmojis(4)}
+            <div className="absolute inset-0 flex items-center justify-center p-2">
+              <img src="/diaper-256.png" alt="Diaper" className="h-full w-full object-contain z-10" />
             </div>
-            <div className="w-10 h-10 bg-teal-500/20 flex items-center justify-center z-10">
-              <Icon iconNode={diaper} className="h-6 w-6" />
-            </div>
-            <span className="text-sm font-medium z-10">Diaper</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)] rounded-none border-l border-white"
+            className="h-20 p-0 flex items-center justify-center bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-none border-l border-white relative overflow-hidden"
             onClick={() => {
               updateUnlockTimer();
               setShowNoteModal(true);
             }}
           >
-            <div className="w-10 h-10 bg-[#FFFF99]/30 flex items-center justify-center z-10">
-              <Edit className="h-6 w-6" />
+            <div className="absolute inset-0 flex items-center justify-center p-2">
+              <img src="/notepad-256.png" alt="Add Note" className="h-full w-full object-contain z-10" />
             </div>
-            <span className="text-sm font-medium z-10">Add Note</span>
           </Button>
         </div>
       )}
