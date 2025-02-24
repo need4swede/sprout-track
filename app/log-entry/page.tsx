@@ -264,7 +264,7 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
+            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowSleepModal(true);
@@ -304,7 +304,7 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-20 py-3 flex flex-col items-center justify-center gap-1 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-white rounded-none"
+            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-white rounded-none"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
@@ -329,7 +329,7 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
+            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowDiaperModal(true);
@@ -356,18 +356,16 @@ function HomeContent(): React.ReactElement {
           <Button
             variant="default"
             size="lg"
-            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)] rounded-none border-l border-white"
+            className="h-20 pt-6 pb-3 flex flex-col items-center justify-center gap-1 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)] rounded-none border-l border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowNoteModal(true);
             }}
           >
-            <div className="w-10 h-10 bg-[#FFFF99]/30 flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#FFFF99]/30 flex items-center justify-center z-10">
               <Edit className="h-6 w-6" />
             </div>
-            <div className="space-y-1 text-center">
-              <h3 className="font-semibold">Add Note</h3>
-            </div>
+            <span className="text-sm font-medium z-10">Add Note</span>
           </Button>
         </div>
       )}
