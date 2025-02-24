@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const babyId = searchParams.get('babyId');
     const limit = Number(searchParams.get('limit')) || 200;
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
     if (!babyId) {
       return NextResponse.json<ApiResponse<ActivityType[]>>(
@@ -36,24 +38,56 @@ export async function GET(req: NextRequest) {
     // Get recent activities from each type
     const [sleepLogs, feedLogs, diaperLogs, noteLogs] = await Promise.all([
       prisma.sleepLog.findMany({
-        where: { babyId },
+        where: { 
+          babyId,
+          ...(startDate && endDate ? {
+            startTime: {
+              gte: new Date(startDate),
+              lte: new Date(endDate)
+            }
+          } : {})
+        },
         orderBy: { startTime: 'desc' },
-        take: limit
+        ...(limit && !startDate ? { take: limit } : {})
       }),
       prisma.feedLog.findMany({
-        where: { babyId },
+        where: { 
+          babyId,
+          ...(startDate && endDate ? {
+            time: {
+              gte: new Date(startDate),
+              lte: new Date(endDate)
+            }
+          } : {})
+        },
         orderBy: { time: 'desc' },
-        take: limit
+        ...(limit && !startDate ? { take: limit } : {})
       }),
       prisma.diaperLog.findMany({
-        where: { babyId },
+        where: { 
+          babyId,
+          ...(startDate && endDate ? {
+            time: {
+              gte: new Date(startDate),
+              lte: new Date(endDate)
+            }
+          } : {})
+        },
         orderBy: { time: 'desc' },
-        take: limit
+        ...(limit && !startDate ? { take: limit } : {})
       }),
       prisma.note.findMany({
-        where: { babyId },
+        where: { 
+          babyId,
+          ...(startDate && endDate ? {
+            time: {
+              gte: new Date(startDate),
+              lte: new Date(endDate)
+            }
+          } : {})
+        },
         orderBy: { time: 'desc' },
-        take: limit
+        ...(limit && !startDate ? { take: limit } : {})
       })
     ]);
 
