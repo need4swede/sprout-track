@@ -121,48 +121,18 @@ const formatDuration = (minutes: number): string => {
   return `(${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')})`;
 };
 
-const getActivityDescription = (activity: ActivityType, settings: Settings | null): ActivityDescription => {
+const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
-      const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
-      const day = formatTime(activity.startTime, settings, true).split(' ')[0];
+      const startTimeFormatted = activity.startTime ? formatTime(activity.startTime, settings, true) : 'unknown';
+      const endTimeFormatted = activity.endTime ? formatTime(activity.endTime, settings, true) : 'ongoing';
       const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
-      const formatSleepQuality = (quality: string) => {
-        switch (quality) {
-          case 'POOR': return 'Poor';
-          case 'FAIR': return 'Fair';
-          case 'GOOD': return 'Good';
-          case 'EXCELLENT': return 'Excellent';
-          default: return quality;
-        }
-      };
-      const formatLocation = (location: string) => {
-        if (location === 'OTHER') return 'Other';
-        return location;
-      };
-      const details: ActivityDetail[] = [
-        { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : 'Night Sleep' },
-        { label: 'Start Time', value: startTime },
-      ];
-      
-      if (activity.endTime) {
-        details.push(
-          { label: 'End Time', value: endTime },
-          { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` }
-        );
-        if (activity.quality) {
-          details.push({ label: 'Quality', value: formatSleepQuality(activity.quality) });
-        }
-      }
-      
-      if (activity.location) {
-        details.push({ label: 'Location', value: formatLocation(activity.location) });
-      }
-
+      const location = activity.location === 'OTHER' ? 'Other' : activity.location?.split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
       return {
-        type: activity.type === 'NAP' ? 'Nap' : 'Night Sleep',
-        details,
+        type: `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}${location ? ` - ${location}` : ''}`,
+        details: `${startTimeFormatted} - ${endTimeFormatted.split(' ').slice(-2).join(' ')}${duration}`
       };
     }
     if ('amount' in activity) {
@@ -171,44 +141,39 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'BREAST': return 'Breast';
           case 'BOTTLE': return 'Bottle';
           case 'SOLIDS': return 'Solid Food';
-          default: return type;
+          default: return type.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatBreastSide = (side: string) => {
         switch (side) {
           case 'LEFT': return 'Left';
           case 'RIGHT': return 'Right';
-          default: return side;
+          default: return side.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
-      const details: ActivityDetail[] = [
-        { label: 'Time', value: formatTime(activity.time, settings) },
-        { label: 'Type', value: formatFeedType(activity.type) },
-      ];
-
-      if (activity.amount && (activity.type === 'BOTTLE' || activity.type === 'SOLIDS')) {
-        details.push({ 
-          label: 'Amount', 
-          value: `${activity.amount}${activity.type === 'BOTTLE' ? ' oz' : ' g'}`
-        });
-      }
-
+      
+      let details = '';
       if (activity.type === 'BREAST') {
-        if (activity.side) {
-          details.push({ label: 'Side', value: formatBreastSide(activity.side) });
-        }
-        if (activity.amount) {
-          details.push({ label: 'Duration', value: `${activity.amount} minutes` });
+        const side = activity.side ? `Side: ${formatBreastSide(activity.side)}` : '';
+        const duration = activity.amount ? `${activity.amount} min` : '';
+        details = [side, duration].filter(Boolean).join(', ');
+      } else if (activity.type === 'BOTTLE') {
+        details = `${activity.amount || 'unknown'} oz`;
+      } else if (activity.type === 'SOLIDS') {
+        details = `${activity.amount || 'unknown'} g`;
+        if (activity.food) {
+          details += ` of ${activity.food}`;
         }
       }
-
-      if (activity.type === 'SOLIDS' && activity.food) {
-        details.push({ label: 'Food', value: activity.food });
-      }
-
+      
+      const time = formatTime(activity.time, settings, true);
       return {
         type: formatFeedType(activity.type),
-        details,
+        details: `${details} - ${time}`
       };
     }
     if ('condition' in activity) {
@@ -217,7 +182,9 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'WET': return 'Wet';
           case 'DIRTY': return 'Dirty';
           case 'BOTH': return 'Wet and Dirty';
-          default: return type;
+          default: return type.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatDiaperCondition = (condition: string) => {
@@ -226,7 +193,9 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'LOOSE': return 'Loose';
           case 'FIRM': return 'Firm';
           case 'OTHER': return 'Other';
-          default: return condition;
+          default: return condition.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
       const formatDiaperColor = (color: string) => {
@@ -235,40 +204,41 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
           case 'BROWN': return 'Brown';
           case 'GREEN': return 'Green';
           case 'OTHER': return 'Other';
-          default: return color;
+          default: return color.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
       };
-      const details: ActivityDetail[] = [
-        { label: 'Time', value: formatTime(activity.time, settings) },
-        { label: 'Type', value: formatDiaperType(activity.type) },
-      ];
-
+      
+      let details = '';
       if (activity.type !== 'WET') {
-        if (activity.condition) {
-          details.push({ label: 'Condition', value: formatDiaperCondition(activity.condition) });
-        }
-        if (activity.color) {
-          details.push({ label: 'Color', value: formatDiaperColor(activity.color) });
+        const conditions = [];
+        if (activity.condition) conditions.push(formatDiaperCondition(activity.condition));
+        if (activity.color) conditions.push(formatDiaperColor(activity.color));
+        if (conditions.length > 0) {
+          details = ` (${conditions.join(', ')}) - `;
         }
       }
-
+      
+      const time = formatTime(activity.time, settings, true);
       return {
         type: formatDiaperType(activity.type),
-        details,
+        details: `${details}${time}`
       };
     }
   }
   if ('content' in activity) {
+    const time = formatTime(activity.time, settings, true);
+    const truncatedContent = activity.content.length > 50 ? activity.content.substring(0, 50) + '...' : activity.content;
     return {
       type: activity.category || 'Note',
-      details: [
-        { label: 'Time', value: formatTime(activity.time, settings) },
-        { label: 'Content', value: activity.content },
-        { label: 'Category', value: activity.category || 'Not specified' },
-      ],
+      details: `${time} - ${truncatedContent}`
     };
   }
-  return { type: 'Activity', details: [] };
+  return {
+    type: 'Activity',
+    details: 'logged'
+  };
 };
 
 const getActivityStyle = (activity: ActivityType): { bg: string, textColor: string } => {
@@ -537,9 +507,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
                       <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
                         {description.type}
                       </span>
-                      <span className="text-gray-900">
-                        {description.details.map(d => d.value).join(' • ')}
-                      </span>
+                        <span className="text-gray-900">{description.details}</span>
                     </div>
                   </div>
                 </div>
@@ -641,12 +609,9 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
           </DialogHeader>
           {selectedActivity && (
             <div className="mt-4 space-y-4">
-              {getActivityDescription(selectedActivity, settings).details.map((detail, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-500">{detail.label}:</span>
-                  <span className="text-sm text-gray-900">{detail.value}</span>
-                </div>
-              ))}
+              <div className="text-sm text-gray-900">
+                {getActivityDescription(selectedActivity, settings).details}
+              </div>
             </div>
           )}
         </DialogContent>

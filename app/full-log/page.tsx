@@ -18,8 +18,15 @@ function FullLogPage() {
     if (!selectedBaby?.id) return;
 
     try {
+      // Set start date to beginning of day (00:00:00) and end date to end of day (23:59:59)
+      const adjustedStartDate = new Date(startDate);
+      adjustedStartDate.setHours(0, 0, 0, 0);
+      
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+
       const response = await fetch(
-        `/api/timeline?babyId=${selectedBaby.id}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
+        `/api/timeline?babyId=${selectedBaby.id}&startDate=${adjustedStartDate.toISOString()}&endDate=${adjustedEndDate.toISOString()}`
       );
       const data = await response.json();
       if (data.success) {

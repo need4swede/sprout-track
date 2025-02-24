@@ -266,16 +266,15 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
-      const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
-      const day = formatTime(activity.startTime, settings, true).split(' ')[0];
+      const startTimeFormatted = activity.startTime ? formatTime(activity.startTime, settings, true) : 'unknown';
+      const endTimeFormatted = activity.endTime ? formatTime(activity.endTime, settings, true) : 'ongoing';
       const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
       const location = activity.location === 'OTHER' ? 'Other' : activity.location?.split('_').map(word => 
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' ');
       return {
         type: `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}${location ? ` - ${location}` : ''}`,
-        details: `${day} ${startTime} - ${endTime}${duration}`
+        details: `${startTimeFormatted} - ${endTimeFormatted.split(' ').slice(-2).join(' ')}${duration}`
       };
     }
     if ('amount' in activity) {
