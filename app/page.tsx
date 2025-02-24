@@ -264,7 +264,7 @@ function HomeContent(): React.ReactElement {
   };
 
   return (
-    <div className="space-y-4 mx-3 my-3">
+    <div className="space-y-4 my-3">
       {/* Action Buttons */}
       {selectedBaby?.id && (
         <div className="grid grid-cols-4 gap-3 overflow-visible">

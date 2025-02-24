@@ -430,7 +430,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -513,7 +513,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col h-[calc(100vh-200px)]">
       {/* Header */}
       <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex justify-between items-center">
@@ -571,7 +571,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         </div>
       </CardHeader>
 
-      <div className="min-h-[200px]">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
         <div className="divide-y divide-gray-100 bg-white">
           {sortedActivities.map((activity) => {
           const style = getActivityStyle(activity);
@@ -620,46 +621,45 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
       {/* Pagination Controls */}
       {activities.length > 0 && (
-        <div className="flex justify-between items-center px-6 py-4">
-        <select
-          className="h-8 px-2 rounded-md border border-gray-200 text-sm"
-          value={itemsPerPage}
-          onChange={(e) => {
-            setItemsPerPage(Number(e.target.value));
-            setCurrentPage(1);
-          }}
-        >
-          <option value="5">5 per page</option>
-          <option value="10">10 per page</option>
-          <option value="20">20 per page</option>
-          <option value="50">50 per page</option>
-        </select>
-        
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              {'<'}
-            </Button>
-            <span className="px-4 py-2 text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              {'>'}
-            </Button>
-          </div>
-        )}
-      </div>
-
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+          <select
+            className="h-8 px-2 rounded-md border border-gray-200 text-sm"
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+          >
+            <option value="5">5 per page</option>
+            <option value="10">10 per page</option>
+            <option value="20">20 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+          
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                {'<'}
+              </Button>
+              <span className="px-4 py-2 text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                {'>'}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Activity Details Dialog */}
