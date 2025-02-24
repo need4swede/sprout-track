@@ -403,12 +403,13 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
   };
 
   return (
-    <div className="flex flex-col h-full border-t-[1px] border-white">
+    <div className="flex flex-col h-[calc(100vh-80px)] border-t-[1px] border-white">
       {/* Header */}
       <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div className="flex justify-center sm:justify-start">
+              <div className="flex gap-1">
               <Button
                 variant="outline"
                 size="icon"
@@ -457,38 +458,59 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               >
                 <Edit className="h-4 w-4" />
               </Button>
+              </div>
+            </div>
+            <div className="flex justify-center sm:justify-end">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickFilter(2)}
+                  className="bg-gray-100 hover:bg-gray-200 text-teal-700"
+                >
+                  Last 2 Days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickFilter(7)}
+                  className="bg-gray-100 hover:bg-gray-200 text-teal-700"
+                >
+                  Last 7 Days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickFilter(30)}
+                  className="bg-gray-100 hover:bg-gray-200 text-teal-700"
+                >
+                  Last 30 Days
+                </Button>
+              </div>
             </div>
           </div>
-          
-          {/* Date Range Quick Filters */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleQuickFilter(2)}
-              className="bg-white hover:bg-gray-100"
-            >
-              Last 2 Days
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleQuickFilter(7)}
-              className="bg-white hover:bg-gray-100"
-            >
-              Last 7 Days
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleQuickFilter(30)}
-              className="bg-white hover:bg-gray-100"
-            >
-              Last 30 Days
-            </Button>
-            <div className="text-white text-sm ml-4 flex items-center">
-              <Calendar className="h-4 w-4 mr-2" />
-              {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+
+          <div className="flex justify-center items-center">
+            <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
+              <input
+                type="date"
+                className="h-8 px-2 rounded-md border border-gray-200 text-sm bg-gray-100 hover:bg-gray-200 text-teal-700"
+                value={startDate.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const newDate = new Date(e.target.value);
+                  onDateRangeChange(newDate, endDate);
+                }}
+              />
+              <span className="text-white">-</span>
+              <input
+                type="date"
+                className="h-8 px-2 rounded-md border border-gray-200 text-sm bg-gray-100 hover:bg-gray-200 text-teal-700"
+                value={endDate.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const newDate = new Date(e.target.value);
+                  onDateRangeChange(startDate, newDate);
+                }}
+              />
             </div>
           </div>
         </div>
@@ -542,7 +564,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
 
       {/* Pagination Controls */}
       {activities.length > 0 && (
-        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100 bg-gray-50">
           <select
             className="h-8 px-2 rounded-md border border-gray-200 text-sm"
             value={itemsPerPage}
