@@ -606,14 +606,16 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         
         {/* Empty State */}
         {sortedActivities.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-              <BabyIcon className="h-8 w-8 text-indigo-600" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                <BabyIcon className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
+              <p className="text-sm text-gray-500">
+                Activities will appear here once you start tracking
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
-            <p className="text-sm text-gray-500">
-              Activities will appear here once you start tracking
-            </p>
           </div>
         )}
       </div>

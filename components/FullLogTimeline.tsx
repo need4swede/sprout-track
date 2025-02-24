@@ -487,8 +487,8 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
       </CardHeader>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="divide-y divide-gray-100 bg-white">
+      <div className="flex-1 overflow-y-auto bg-white">
+        <div className="divide-y divide-gray-100 h-full">
           {sortedActivities.map((activity) => {
             const style = getActivityStyle(activity);
             const description = getActivityDescription(activity, settings);
@@ -518,14 +518,16 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
         
         {/* Empty State */}
         {sortedActivities.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-              <BabyIcon className="h-8 w-8 text-indigo-600" />
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                <BabyIcon className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
+              <p className="text-sm text-gray-500">
+                Activities will appear here once you start tracking
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No activities found</h3>
-            <p className="text-sm text-gray-500">
-              Try adjusting your filters or date range
-            </p>
           </div>
         )}
       </div>
