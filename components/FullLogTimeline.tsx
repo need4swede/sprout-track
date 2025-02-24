@@ -403,12 +403,11 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)]">
+    <div className="flex flex-col h-full border-t-[1px] border-white">
       {/* Header */}
       <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-white text-xl">Activity Log</CardTitle>
             <div className="flex gap-1">
               <Button
                 variant="outline"
@@ -552,9 +551,10 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               setCurrentPage(1);
             }}
           >
+            <option value="5">5 per page</option>
+            <option value="10">10 per page</option>
             <option value="20">20 per page</option>
             <option value="50">50 per page</option>
-            <option value="100">100 per page</option>
           </select>
           
           {totalPages > 1 && (

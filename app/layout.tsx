@@ -151,34 +151,40 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-[.5] flex items-center justify-center">
-                    <Image
-                      src="/acorn-128.png"
-                      alt="Acorn Logo"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                      onClick={() => window.location.href = '/log-entry'}
-                    >
-                      Log Entry
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                      onClick={() => window.location.href = '/full-log'}
-                    >
-                      Full Log
-                    </Button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="w-16 h-16 rounded-lg bg-white/20 backdrop-blur-sm p-[.5] flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors duration-200">
+                        <Image
+                          src="/acorn-128.png"
+                          alt="Acorn Logo"
+                          width={64}
+                          height={64}
+                          className="object-contain"
+                          priority
+                        />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuRadioGroup 
+                        value={window.location.pathname}
+                        onValueChange={(path) => window.location.href = path}
+                      >
+                        <DropdownMenuRadioItem value="/log-entry">
+                          <div className="flex flex-col">
+                            <span>Log Entry</span>
+                          </div>
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="/full-log">
+                          <div className="flex flex-col">
+                            <span>Full Log</span>
+                          </div>
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <span className="text-white text-sm font-medium">
+                    {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   {babies.length > 0 && (
