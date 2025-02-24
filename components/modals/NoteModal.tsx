@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NoteResponse } from '@/app/api/types';
 
 interface NoteModalProps {
@@ -31,6 +31,60 @@ export default function NoteModal({
     content: '',
     category: '',
   });
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Filter categories based on input
+  const filteredCategories = categories.filter(category =>
+    category.toLowerCase().includes(formData.category.toLowerCase())
+  );
+
+  useEffect(() => {
+    // Fetch existing categories
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/note?categories=true');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        if (data.success) {
+          setCategories(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Reset selected index when input changes
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [formData.category]);
 
   // Format date string to be compatible with datetime-local input
   const formatDateForInput = (dateStr: string) => {
@@ -138,14 +192,62 @@ export default function NoteModal({
               </div>
               <div>
                 <label className="form-label">Category</label>
-                <Input
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full"
-                  placeholder="e.g., Milestone, Health, General"
-                />
+                <div className="relative">
+                  <Input
+                    ref={inputRef}
+                    value={formData.category}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({ ...formData, category: value });
+                      setShowDropdown(true);
+                    }}
+                    className="w-full"
+                    placeholder="Type or select a category"
+                    onKeyDown={(e) => {
+                      const visibleCategories = categories.filter(category =>
+                        category.toLowerCase().includes(formData.category.toLowerCase())
+                      );
+
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setSelectedIndex(prev => 
+                          Math.min(prev + 1, visibleCategories.length - 1)
+                        );
+                      } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setSelectedIndex(prev => Math.max(prev - 1, -1));
+                      } else if (e.key === 'Enter' && selectedIndex !== -1) {
+                        e.preventDefault();
+                        setFormData({ ...formData, category: visibleCategories[selectedIndex] });
+                        setShowDropdown(false);
+                      } else if (e.key === 'Escape') {
+                        setShowDropdown(false);
+                      }
+                    }}
+                  />
+                  {/* Suggestions dropdown */}
+                  {showDropdown && formData.category && categories.length > 0 && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-48 overflow-auto"
+                    >
+                      {(filteredCategories.length > 0 ? filteredCategories : categories).map((category, index) => (
+                        <div
+                          key={category}
+                          className={`px-3 py-2 cursor-pointer ${
+                            index === selectedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'
+                          }`}
+                          onClick={() => {
+                            setFormData({ ...formData, category });
+                            setShowDropdown(false);
+                          }}
+                        >
+                          {category}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

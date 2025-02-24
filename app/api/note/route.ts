@@ -110,6 +110,31 @@ export async function GET(req: NextRequest) {
     const babyId = searchParams.get('babyId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const categories = searchParams.get('categories');
+
+    // If categories flag is present, return unique categories
+    if (categories === 'true') {
+      const notes = await prisma.note.findMany({
+        where: {
+          category: {
+            not: null
+          }
+        },
+        distinct: ['category'],
+        select: {
+          category: true
+        }
+      });
+      
+      const uniqueCategories = notes
+        .map(note => note.category)
+        .filter((category): category is string => category !== null);
+
+      return NextResponse.json<ApiResponse<string[]>>({
+        success: true,
+        data: uniqueCategories
+      });
+    }
 
     const queryParams = {
       ...(babyId && { babyId }),
