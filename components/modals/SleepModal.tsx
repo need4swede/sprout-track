@@ -227,13 +227,13 @@ export default function SleepModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="dialog-content">
+      <DialogContent className="dialog-content !p-4 sm:!p-6">
         <DialogHeader className="dialog-header">
           <DialogTitle className="dialog-title">{title}</DialogTitle>
           <DialogDescription className="dialog-description">{description}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label">Start Time</label>
               <Input
@@ -264,7 +264,7 @@ export default function SleepModal({
               </div>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label">Type</label>
               <Select
@@ -326,7 +326,7 @@ export default function SleepModal({
               </Select>
             </div>
           )}
-          <div className="flex justify-end gap-3 mt-8">
+          <div className="grid grid-cols-2 sm:flex sm:justify-end gap-3 mt-6">
             <Button 
               type="button" 
               variant="outline" 

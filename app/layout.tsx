@@ -147,8 +147,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
       {!isUnlocked && <Security onUnlock={() => setIsUnlocked(true)} />}
       {(isUnlocked || process.env.NODE_ENV === 'development') && (
         <div className="min-h-screen flex flex-col">
-          <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2">
+          <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-4">
                   <DropdownMenu>
@@ -264,7 +264,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
             </div>
           </header>
           
-          <main className="flex-1 w-full relative">
+          <main className="flex-1 w-full relative z-0">
             {children}
           </main>
         </div>

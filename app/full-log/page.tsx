@@ -41,15 +41,17 @@ function FullLogPage() {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full relative isolate">
       {selectedBaby ? (
-        <FullLogTimeline
+          <div className="relative z-0">
+            <FullLogTimeline
           activities={activities}
           onActivityDeleted={refreshActivities}
           startDate={startDate}
           endDate={endDate}
           onDateRangeChange={handleDateRangeChange}
-        />
+            />
+          </div>
       ) : (
         <div className="text-center py-12">
           <h2 className="text-2xl font-semibold text-gray-900">No Baby Selected</h2>

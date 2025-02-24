@@ -187,7 +187,7 @@ export default function FeedModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="dialog-content">
+      <DialogContent className="dialog-content !p-4 sm:!p-6">
         <DialogHeader className="dialog-header">
           <DialogTitle className="dialog-title">
             {activity ? 'Edit Feeding' : 'Log Feeding'}
@@ -196,8 +196,8 @@ export default function FeedModal({
             {activity ? 'Update what and when your baby ate' : 'Record what and when your baby ate'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label">Time</label>
               <Input
@@ -256,7 +256,7 @@ export default function FeedModal({
               <label className="form-label">
                 Amount {formData.type === 'SOLIDS' ? '(g)' : '(oz)'}
               </label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-[auto,1fr,auto] gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -308,7 +308,7 @@ export default function FeedModal({
             </div>
           )}
 
-          <div className="flex justify-end gap-3 mt-8">
+          <div className="grid grid-cols-2 sm:flex sm:justify-end gap-3 mt-6">
             <Button 
               type="button" 
               variant="outline" 

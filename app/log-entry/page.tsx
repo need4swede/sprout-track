@@ -257,7 +257,7 @@ function HomeContent(): React.ReactElement {
   };
 
   return (
-    <div>
+    <div className="relative isolate">
       {/* Action Buttons */}
       {selectedBaby?.id && (
         <div className="grid grid-cols-4 border-t-[1px] border-white">
@@ -372,7 +372,7 @@ function HomeContent(): React.ReactElement {
 
       {/* Timeline Section */}
       {selectedBaby && (
-        <Card className="overflow-hidden border-t-[1px] border-b-0 border-l-0 border-r-0 border-white">
+        <Card className="overflow-hidden border-t-[1px] border-b-0 border-l-0 border-r-0 border-white relative z-0">
           {activities.length > 0 ? (
             <Timeline 
               activities={activities} 
@@ -398,7 +398,7 @@ function HomeContent(): React.ReactElement {
 
       {/* Welcome Screen */}
       {!selectedBaby && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-lg p-12 text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-lg p-12 text-center relative z-0">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-teal-100 flex items-center justify-center">
             <BabyIcon className="h-10 w-10 text-teal-600" />
           </div>

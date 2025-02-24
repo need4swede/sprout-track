@@ -664,7 +664,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
       {/* Activity Details Dialog */}
       <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-        <DialogContent className="overflow-hidden p-4 w-[95%] max-w-[400px] rounded-xl">
+        <DialogContent className="dialog-content !p-4 sm:!p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <div className="flex gap-2">

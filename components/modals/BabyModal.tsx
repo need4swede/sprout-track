@@ -102,7 +102,7 @@ export default function BabyModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="dialog-content">
+      <DialogContent className="dialog-content !p-4 sm:!p-6">
         <DialogHeader className="dialog-header">
           <DialogTitle className="dialog-title">
             {isEditing ? 'Edit Baby' : 'Add New Baby'}
@@ -114,8 +114,8 @@ export default function BabyModal({
             }
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label">First Name</label>
               <Input
@@ -171,7 +171,7 @@ export default function BabyModal({
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="form-label">Feed Warning Time (hh:mm)</label>
               <Input
@@ -202,7 +202,7 @@ export default function BabyModal({
             </div>
           </div>
           {isEditing && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="inactive"
@@ -217,7 +217,7 @@ export default function BabyModal({
               </label>
             </div>
           )}
-          <div className="flex justify-end gap-3 mt-8">
+          <div className="grid grid-cols-2 sm:flex sm:justify-end gap-3 mt-6">
             <Button 
               type="button" 
               variant="outline" 
