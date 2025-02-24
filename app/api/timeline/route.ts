@@ -42,8 +42,8 @@ export async function GET(req: NextRequest) {
           babyId,
           ...(startDate && endDate ? {
             startTime: {
-              gte: new Date(startDate),
-              lte: new Date(endDate)
+              gte: startDate,
+              lte: endDate
             }
           } : {})
         },
@@ -55,8 +55,8 @@ export async function GET(req: NextRequest) {
           babyId,
           ...(startDate && endDate ? {
             time: {
-              gte: new Date(startDate),
-              lte: new Date(endDate)
+              gte: startDate,
+              lte: endDate
             }
           } : {})
         },
@@ -68,8 +68,8 @@ export async function GET(req: NextRequest) {
           babyId,
           ...(startDate && endDate ? {
             time: {
-              gte: new Date(startDate),
-              lte: new Date(endDate)
+              gte: startDate,
+              lte: endDate
             }
           } : {})
         },
@@ -81,8 +81,8 @@ export async function GET(req: NextRequest) {
           babyId,
           ...(startDate && endDate ? {
             time: {
-              gte: new Date(startDate),
-              lte: new Date(endDate)
+              gte: startDate,
+              lte: endDate
             }
           } : {})
         },

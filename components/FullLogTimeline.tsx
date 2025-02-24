@@ -299,6 +299,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - days);
+    setCurrentPage(1); // Reset to first page
     onDateRangeChange(start, end);
   };
 
@@ -465,9 +466,14 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               <input
                 type="date"
                 className="h-8 px-2 rounded-md border border-gray-200 text-sm bg-gray-100 hover:bg-gray-200 text-teal-700"
-                value={startDate.toISOString().split('T')[0]}
+                value={new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]}
                 onChange={(e) => {
-                  const newDate = new Date(e.target.value);
+                  // Create date in local timezone
+                  const localDate = new Date(e.target.value);
+                  // Adjust for timezone offset to keep the date consistent
+                  const newDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+                  newDate.setHours(0, 0, 0, 0);
+                  setCurrentPage(1); // Reset to first page
                   onDateRangeChange(newDate, endDate);
                 }}
               />
@@ -475,9 +481,14 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               <input
                 type="date"
                 className="h-8 px-2 rounded-md border border-gray-200 text-sm bg-gray-100 hover:bg-gray-200 text-teal-700"
-                value={endDate.toISOString().split('T')[0]}
+                value={new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]}
                 onChange={(e) => {
-                  const newDate = new Date(e.target.value);
+                  // Create date in local timezone
+                  const localDate = new Date(e.target.value);
+                  // Adjust for timezone offset to keep the date consistent
+                  const newDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+                  newDate.setHours(23, 59, 59, 999);
+                  setCurrentPage(1); // Reset to first page
                   onDateRangeChange(startDate, newDate);
                 }}
               />
