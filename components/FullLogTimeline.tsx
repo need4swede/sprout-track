@@ -107,7 +107,7 @@ const formatTime = (date: string, settings: Settings | null, includeDate: boolea
       : dateObj.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
-        });
+        }).replace(/(\d+)$/, '$1,');
     return `${dateStr} ${timeStr}`;
   } catch (error) {
     console.error('Error formatting time:', error);
