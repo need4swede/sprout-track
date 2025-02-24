@@ -65,7 +65,7 @@ export function StatusBubble({ status, durationInMinutes, warningTime, className
   return (
     <div
       className={cn(
-        "absolute -top-2 -right-2 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm font-medium z-50",
+        "absolute top-0 right-0 px-3 py-1 rounded-bl-2xl flex items-center gap-1.5 text-sm font-medium z-50",
         bgColor,
         className
       )}

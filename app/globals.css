@@ -93,7 +93,7 @@ body::before {
 
   /* Action Buttons */
   .action-button {
-    @apply h-36 sm:h-40 flex flex-col items-center justify-center gap-4 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl;
+    @apply h-36 sm:h-40 flex flex-col items-center justify-center gap-4 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200;
   }
 
   .action-button-icon {

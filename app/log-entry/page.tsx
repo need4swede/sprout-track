@@ -257,20 +257,20 @@ function HomeContent(): React.ReactElement {
   };
 
   return (
-    <div className="space-y-4 my-3">
+    <div>
       {/* Action Buttons */}
       {selectedBaby?.id && (
-        <div className="grid grid-cols-4 gap-3 overflow-visible">
+        <div className="grid grid-cols-4 border-t-[1px] border-white">
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl sleep-button relative overflow-visible"
+            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowSleepModal(true);
             }}
           >
-            <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 overflow-hidden">
               {renderStars(8)}
             </div>
             {selectedBaby?.id && (
@@ -294,23 +294,23 @@ function HomeContent(): React.ReactElement {
                 )
               )
             )}
-            <div className="w-12 h-12 rounded-xl bg-gray-400/20 flex items-center justify-center z-10">
-              <Moon className="h-8 w-8" />
+            <div className="w-10 h-10 bg-gray-400/20 flex items-center justify-center z-10">
+              <Moon className="h-6 w-6" />
             </div>
-            <span className="text-base font-medium z-10">
-                              {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
+            <span className="text-sm font-medium z-10">
+              {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
             </span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-white"
+            className="h-20 py-3 flex flex-col items-center justify-center gap-1 relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-white rounded-none"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
             }}
           >
-            <div className="absolute inset-0 overflow-hidden rounded-2xl before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite]" />
+            <div className="absolute inset-0 overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-sky-200 before:to-sky-200 before:h-[40%] after:absolute after:inset-0 after:bg-[#F5F5DC] after:top-[35%] after:animate-[formulaRipple_3s_ease-in-out_infinite]" />
             {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
               <StatusBubble 
                 status="feed"
@@ -321,15 +321,15 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.feedWarningTime}
               />
             )}
-            <div className="w-12 h-12 rounded-xl bg-sky-200/30 flex items-center justify-center z-10">
-              <Icon iconNode={bottleBaby} className="h-8 w-8" />
+            <div className="w-10 h-10 bg-sky-200/30 flex items-center justify-center z-10">
+              <Icon iconNode={bottleBaby} className="h-6 w-6" />
             </div>
-            <span className="text-base font-medium z-10">Feed</span>
+            <span className="text-sm font-medium z-10">Feed</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl relative overflow-visible"
+            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowDiaperModal(true);
@@ -345,25 +345,25 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.diaperWarningTime}
               />
             )}
-            <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 overflow-hidden">
               {renderPoopEmojis(4)}
             </div>
-            <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center z-10">
-              <Icon iconNode={diaper} className="h-8 w-8" />
+            <div className="w-10 h-10 bg-teal-500/20 flex items-center justify-center z-10">
+              <Icon iconNode={diaper} className="h-6 w-6" />
             </div>
-            <span className="text-base font-medium z-10">Diaper</span>
+            <span className="text-sm font-medium z-10">Diaper</span>
           </Button>
           <Button
             variant="default"
             size="lg"
-            className="h-24 sm:h-32 flex flex-col items-center justify-center gap-2 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-2xl bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)]"
+            className="h-20 py-3 flex flex-col items-center justify-center gap-1 bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[repeating-linear-gradient(transparent,transparent_19px,#ADD8E6_19px,#ADD8E6_20px)] rounded-none border-l border-white"
             onClick={() => {
               updateUnlockTimer();
               setShowNoteModal(true);
             }}
           >
-            <div className="w-12 h-12 rounded-xl bg-[#FFFF99]/30 flex items-center justify-center">
-              <Edit className="h-8 w-8" />
+            <div className="w-10 h-10 bg-[#FFFF99]/30 flex items-center justify-center">
+              <Edit className="h-6 w-6" />
             </div>
             <div className="space-y-1 text-center">
               <h3 className="font-semibold">Add Note</h3>
@@ -374,7 +374,7 @@ function HomeContent(): React.ReactElement {
 
       {/* Timeline Section */}
       {selectedBaby && (
-        <Card className="overflow-hidden border-0">
+        <Card className="overflow-hidden border-t-[1px] border-b-0 border-l-0 border-r-0 border-white">
           {activities.length > 0 ? (
             <Timeline 
               activities={activities} 
