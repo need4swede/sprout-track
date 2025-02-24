@@ -44,51 +44,38 @@ function HomeContent(): React.ReactElement {
     if (!babyId) return;
     
     try {
-      const [sleepResponse, feedResponse, diaperResponse, noteResponse] = await Promise.all([
-        fetch(`/api/sleep-log?babyId=${babyId}`),
-        fetch(`/api/feed-log?babyId=${babyId}`),
-        fetch(`/api/diaper-log?babyId=${babyId}`),
-        fetch(`/api/note?babyId=${babyId}`)
-      ]);
+      // Fetch timeline data
+      const timelineResponse = await fetch(`/api/timeline?babyId=${babyId}&limit=200`);
+      const timelineData = await timelineResponse.json();
       
-      const [sleepData, feedData, diaperData, noteData] = await Promise.all([
-        sleepResponse.json(),
-        feedResponse.json(),
-        diaperResponse.json(),
-        noteResponse.json()
-      ]);
-      
-      const allActivities = [
-        ...(sleepData.success ? sleepData.data : []),
-        ...(feedData.success ? feedData.data : []),
-        ...(diaperData.success ? diaperData.data : []),
-        ...(noteData.success ? noteData.data : [])
-      ];
-      
-      setActivities(allActivities);
+      if (timelineData.success) {
+        setActivities(timelineData.data);
 
-      // Update last feed time
-      if (feedData.success && feedData.data.length > 0) {
-        const lastFeed = feedData.data
+        // Update last feed time
+        const lastFeed = timelineData.data
+          .filter((activity: ActivityType) => 'amount' in activity)
           .sort((a: FeedLogResponse, b: FeedLogResponse) => 
             new Date(b.time).getTime() - new Date(a.time).getTime()
           )[0];
-        setLastFeedTime(prev => ({
-          ...prev,
-          [babyId]: new Date(lastFeed.time)
-        }));
-      }
+        if (lastFeed) {
+          setLastFeedTime(prev => ({
+            ...prev,
+            [babyId]: new Date(lastFeed.time)
+          }));
+        }
 
-      // Update last diaper time
-      if (diaperData.success && diaperData.data.length > 0) {
-        const lastDiaper = diaperData.data
+        // Update last diaper time
+        const lastDiaper = timelineData.data
+          .filter((activity: ActivityType) => 'condition' in activity)
           .sort((a: DiaperLogResponse, b: DiaperLogResponse) => 
             new Date(b.time).getTime() - new Date(a.time).getTime()
           )[0];
-        setLastDiaperTime(prev => ({
-          ...prev,
-          [babyId]: new Date(lastDiaper.time)
-        }));
+        if (lastDiaper) {
+          setLastDiaperTime(prev => ({
+            ...prev,
+            [babyId]: new Date(lastDiaper.time)
+          }));
+        }
       }
     } catch (error) {
       console.error('Error refreshing activities:', error);
@@ -152,23 +139,29 @@ function HomeContent(): React.ReactElement {
     lastSleepCheck.current = checkId;
 
     try {
-      const response = await fetch(`/api/sleep-log?babyId=${babyId}`);
+      const response = await fetch(`/api/timeline?babyId=${babyId}&limit=200`);
       if (!response.ok) return;
       
       const data = await response.json();
       if (!data.success) return;
       
-      const sleepLogs = data.data as SleepLogResponse[];
+      // Filter for sleep logs only
+      const sleepLogs = data.data
+        .filter((activity: ActivityType): activity is SleepLogResponse => 
+          'duration' in activity && 'startTime' in activity
+        );
       
       // Find ongoing sleep
-      const ongoingSleep = sleepLogs.find(log => !log.endTime);
+      const ongoingSleep = sleepLogs.find((log: SleepLogResponse) => !log.endTime);
       
       // Find last ended sleep
       const completedSleeps = sleepLogs
-        .filter((log): log is SleepLogResponse & { endTime: string } => 
-          log.endTime !== null
+        .filter((log: SleepLogResponse): log is SleepLogResponse & { endTime: string } => 
+          log.endTime !== null && typeof log.endTime === 'string'
         )
-        .sort((a, b) => new Date(b.endTime).getTime() - new Date(a.endTime).getTime());
+        .sort((a: SleepLogResponse & { endTime: string }, b: SleepLogResponse & { endTime: string }) => 
+          new Date(b.endTime).getTime() - new Date(a.endTime).getTime()
+        );
       
       setSleepData({
         ongoingSleep,
