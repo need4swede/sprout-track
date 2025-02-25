@@ -241,6 +241,172 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
   };
 };
 
+const getActivityDetails = (activity: ActivityType, settings: Settings | null) => {
+  if ('type' in activity) {
+    if ('duration' in activity) {
+      const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
+      const endTime = activity.endTime ? formatTime(activity.endTime, settings, false) : 'ongoing';
+      const day = formatTime(activity.startTime, settings, true).split(' ')[0];
+      const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
+      const formatSleepQuality = (quality: string) => {
+        switch (quality) {
+          case 'POOR': return 'Poor';
+          case 'FAIR': return 'Fair';
+          case 'GOOD': return 'Good';
+          case 'EXCELLENT': return 'Excellent';
+          default: return quality;
+        }
+      };
+      const formatLocation = (location: string) => {
+        if (location === 'OTHER') return 'Other';
+        
+        return location;
+      };
+      const details = [
+        { label: 'Type', value: activity.type === 'NAP' ? 'Nap' : 'Night Sleep' },
+        { label: 'Start Time', value: startTime },
+      ];
+      
+      // Only show end time and duration if sleep has ended
+      if (activity.endTime) {
+        details.push(
+          { label: 'End Time', value: endTime },
+          { label: 'Duration', value: `${activity.duration || 'unknown'} minutes` }
+        );
+        // Only show quality if sleep has ended
+        if (activity.quality) {
+          details.push({ label: 'Quality', value: formatSleepQuality(activity.quality) });
+        }
+      }
+      
+      // Always show location if specified
+      if (activity.location) {
+        details.push({ label: 'Location', value: formatLocation(activity.location) });
+      }
+
+      return {
+        title: 'Sleep Record',
+        details,
+      };
+    }
+    if ('amount' in activity) {
+      const formatFeedType = (type: string) => {
+        switch (type) {
+          case 'BREAST': return 'Breast';
+          case 'BOTTLE': return 'Bottle';
+          case 'SOLIDS': return 'Solid Food';
+          default: return type;
+        }
+      };
+      const formatBreastSide = (side: string) => {
+        switch (side) {
+          case 'LEFT': return 'Left';
+          case 'RIGHT': return 'Right';
+          default: return side;
+        }
+      };
+      const details = [
+        { label: 'Time', value: formatTime(activity.time, settings) },
+        { label: 'Type', value: formatFeedType(activity.type) },
+      ];
+
+      // Show amount for bottle and solids
+      if (activity.amount && (activity.type === 'BOTTLE' || activity.type === 'SOLIDS')) {
+        details.push({ 
+          label: 'Amount', 
+          value: `${activity.amount}${activity.type === 'BOTTLE' ? ' oz' : ' g'}`
+        });
+      }
+
+      // Show side for breast feeds
+      if (activity.type === 'BREAST') {
+        if (activity.side) {
+          details.push({ label: 'Side', value: formatBreastSide(activity.side) });
+        }
+        if (activity.amount) {
+          details.push({ label: 'Duration', value: `${activity.amount} minutes` });
+        }
+      }
+
+      // Show food for solids
+      if (activity.type === 'SOLIDS' && activity.food) {
+        details.push({ label: 'Food', value: activity.food });
+      }
+
+      return {
+        title: 'Feed Record',
+        details,
+      };
+    }
+    if ('condition' in activity) {
+      const formatDiaperType = (type: string) => {
+        switch (type) {
+          case 'WET': return 'Wet';
+          case 'DIRTY': return 'Dirty';
+          case 'BOTH': return 'Wet and Dirty';
+          default: return type;
+        }
+      };
+      const formatDiaperCondition = (condition: string) => {
+        switch (condition) {
+          case 'NORMAL': return 'Normal';
+          case 'LOOSE': return 'Loose';
+          case 'FIRM': return 'Firm';
+          case 'OTHER': return 'Other';
+          default: return condition;
+        }
+      };
+      const formatDiaperColor = (color: string) => {
+        switch (color) {
+          case 'YELLOW': return 'Yellow';
+          case 'BROWN': return 'Brown';
+          case 'GREEN': return 'Green';
+          case 'OTHER': return 'Other';
+          default: return color;
+        }
+      };
+      const details = [
+        { label: 'Time', value: formatTime(activity.time, settings) },
+        { label: 'Type', value: formatDiaperType(activity.type) },
+      ];
+
+      // Only show condition and color for DIRTY or BOTH types
+      if (activity.type !== 'WET') {
+        if (activity.condition) {
+          details.push({ label: 'Condition', value: formatDiaperCondition(activity.condition) });
+        }
+        if (activity.color) {
+          details.push({ label: 'Color', value: formatDiaperColor(activity.color) });
+        }
+      }
+
+      return {
+        title: 'Diaper Record',
+        details,
+      };
+    }
+  }
+  if ('content' in activity) {
+    return {
+      title: 'Note',
+      details: [
+        { label: 'Time', value: formatTime(activity.time, settings) },
+        { label: 'Content', value: activity.content },
+        { label: 'Category', value: activity.category || 'Not specified' },
+      ],
+    };
+  }
+  return { title: 'Activity', details: [] };
+};
+
+const getActivityEndpoint = (activity: ActivityType): string => {
+  if ('duration' in activity) return 'sleep-log';
+  if ('amount' in activity) return 'feed-log';
+  if ('condition' in activity) return 'diaper-log';
+  if ('content' in activity) return 'note';
+  return '';
+};
+
 const getActivityStyle = (activity: ActivityType): { bg: string, textColor: string } => {
   if ('type' in activity) {
     if ('duration' in activity) {
@@ -354,10 +520,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
 
-    const endpoint = 'duration' in activity ? 'sleep-log' :
-                    'amount' in activity ? 'feed-log' :
-                    'condition' in activity ? 'diaper-log' :
-                    'content' in activity ? 'note' : '';
+    const endpoint = getActivityEndpoint(activity);
 
     try {
       const response = await fetch(`/api/${endpoint}?id=${activity.id}`, {
@@ -617,14 +780,17 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
                   <Pencil className="h-4 w-4" />
                 </Button>
               </div>
-              <span>{selectedActivity ? getActivityDescription(selectedActivity, settings).type : ''}</span>
+              <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
             </DialogTitle>
           </DialogHeader>
           {selectedActivity && (
             <div className="mt-4 space-y-4">
-              <div className="text-sm text-gray-900">
-                {getActivityDescription(selectedActivity, settings).details}
-              </div>
+              {getActivityDetails(selectedActivity, settings).details.map((detail, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">{detail.label}:</span>
+                  <span className="text-sm text-gray-900">{detail.value}</span>
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>
