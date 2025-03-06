@@ -5,16 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@/src/components/ui/dialog';
+import { Button } from '@/src/components/ui/button';
+import { Input } from '@/src/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/src/components/ui/select';
 import { useState, useEffect } from 'react';
 
 interface BabyModalProps {
