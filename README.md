@@ -6,7 +6,7 @@ A Next.js application for tracking baby activities, milestones, and development.
 
 - Next.js with App Router
 - TypeScript
-- Prisma with SQLite
+- Prisma with SQLite (`/prisma`)
 - TailwindCSS for styling
 - React Query for data fetching
 - React Hook Form for form handling

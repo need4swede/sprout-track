@@ -6,7 +6,7 @@ These rules capture the key development patterns from the Web to Mobile Developm
 
 - Next.js with App Router
 - TypeScript
-- Prisma with SQLite
+- Prisma with SQLite (`/prisma`)
 - TailwindCSS for styling
 - React Query for data fetching
 - React Hook Form for form handling
