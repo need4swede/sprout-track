@@ -266,7 +266,6 @@ interface ButtonProps extends TouchableOpacityProps {
 - Uses TouchableOpacity
 - Text content must be string (not JSX)
 - Uses onPress instead of onClick
-```
 
 ### Feature Component Example: BabyFeedingCard
 
