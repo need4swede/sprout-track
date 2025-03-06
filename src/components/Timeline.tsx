@@ -1,5 +1,5 @@
 import { SleepType, FeedType, DiaperType, Settings } from '@prisma/client';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/src/components/ui/card';
 import {
   Moon,
   Baby as BabyIcon,
