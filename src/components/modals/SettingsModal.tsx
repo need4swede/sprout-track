@@ -4,25 +4,25 @@ import React, { useEffect, useState } from 'react';
 import { Baby } from '@prisma/client';
 import { Settings } from '@/app/api/types';
 import { Settings as SettingsIcon, Plus, Edit, Download, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/src/components/ui/button';
+import { Input } from '@/src/components/ui/input';
+import { Label } from '@/src/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
+} from '@/src/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import BabyModal from '@/components/modals/BabyModal';
-import ChangePinModal from '@/components/modals/ChangePinModal';
+} from '@/src/components/ui/select';
+import BabyModal from '@/src/components/modals/BabyModal';
+import ChangePinModal from '@/src/components/modals/ChangePinModal';
 
 
 interface SettingsModalProps {

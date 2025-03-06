@@ -14,13 +14,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '@/src/components/ui/dialog';
+import { Button } from '@/src/components/ui/button';
 import { useState, useEffect, useMemo } from 'react';
-import SleepModal from '@/components/modals/SleepModal';
-import FeedModal from '@/components/modals/FeedModal';
-import DiaperModal from '@/components/modals/DiaperModal';
-import NoteModal from '@/components/modals/NoteModal';
+import SleepModal from '@/src/components/modals/SleepModal';
+import FeedModal from '@/src/components/modals/FeedModal';
+import DiaperModal from '@/src/components/modals/DiaperModal';
+import NoteModal from '@/src/components/modals/NoteModal';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 
 type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;

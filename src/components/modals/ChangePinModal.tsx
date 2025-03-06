@@ -1,16 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/src/components/ui/dialog';
+import { Input } from '@/src/components/ui/input';
+import { Label } from '@/src/components/ui/label';
 
 interface ChangePinModalProps {
   open: boolean;

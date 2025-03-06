@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
+} from '@/src/components/ui/dialog';
 import { X } from 'lucide-react';
 
 interface SecurityProps {
