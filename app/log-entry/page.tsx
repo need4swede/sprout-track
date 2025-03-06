@@ -3,16 +3,16 @@
 import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
 import { Baby } from '@prisma/client';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBubble } from "@/components/ui/status-bubble";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { StatusBubble } from "@/src/components/ui/status-bubble";
 import { Baby as BabyIcon } from 'lucide-react';
-import SleepModal from '@/components/modals/SleepModal';
-import FeedModal from '@/components/modals/FeedModal';
-import DiaperModal from '@/components/modals/DiaperModal';
-import NoteModal from '@/components/modals/NoteModal';
-import Timeline from '@/components/Timeline';
-import SettingsModal from '@/components/modals/SettingsModal';
+import SleepModal from '@/src/components/modals/SleepModal';
+import FeedModal from '@/src/components/modals/FeedModal';
+import DiaperModal from '@/src/components/modals/DiaperModal';
+import NoteModal from '@/src/components/modals/NoteModal';
+import Timeline from '@/src/components/Timeline';
+import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
 
 type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;

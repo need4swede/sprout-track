@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { BabyProvider, useBaby } from './context/baby';
-import Security from '@/components/Security';
+import Security from '@/src/components/Security';
 import Image from 'next/image';
 import './globals.css';
-import SettingsModal from '@/components/modals/SettingsModal';
-import { Button } from '@/components/ui/button';
+import SettingsModal from '@/src/components/modals/SettingsModal';
+import { Button } from '@/src/components/ui/button';
 import { Settings as SettingsIcon, Baby as BabyIcon, ChevronDown, Moon } from 'lucide-react';
 import { 
   DropdownMenu,

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useBaby } from '../context/baby';
-import FullLogTimeline from '@/components/FullLogTimeline';
+import FullLogTimeline from '@/src/components/FullLogTimeline';
 
 function FullLogPage() {
   const { selectedBaby } = useBaby();
