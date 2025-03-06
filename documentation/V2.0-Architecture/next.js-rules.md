@@ -96,3 +96,12 @@ These rules capture the key development patterns from the Web to Mobile Developm
 - Consider offline capabilities from the start
 - Plan for cross-platform navigation patterns
 - Document any web-specific behavior that will need adaptation for mobile
+
+## Code Modification Guidelines
+
+- Challenge yourself to write as few lines of code as possible
+- When changing existing code, preserve all formatting and styling unless explicitly asked to modify it
+- Make only the changes that have been discussed and approved
+- Maintain all existing functionality when making modifications
+- Ask questions about any ambiguous requirements before implementing changes
+- Perform due diligence to ensure accuracy and minimize rewrites
