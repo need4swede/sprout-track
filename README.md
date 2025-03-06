@@ -4,10 +4,13 @@ A Next.js application for tracking baby activities, milestones, and development.
 
 ## Tech Stack
 
-- Next.js 14 with App Router
+- Next.js with App Router
 - TypeScript
 - Prisma with SQLite
 - TailwindCSS for styling
+- React Query for data fetching
+- React Hook Form for form handling
+- React Testing Library for testing
 
 ## Getting Started
 
