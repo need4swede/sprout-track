@@ -189,7 +189,7 @@ export default function Security({ onUnlock }: SecurityProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-4 p-6">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-r from-teal-600/90 to-teal-700/90 p-1 flex items-center justify-center">
+          <div className="w-24 h-24 p-1 flex items-center justify-center">
             <Image
                       src="/acorn-128.png"
                       alt="Acorn Logo"
