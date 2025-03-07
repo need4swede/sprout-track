@@ -97,11 +97,26 @@ model SleepLog {
   @@index([deletedAt])
 }
 
+model Unit {
+  id        String    @id @default(uuid())
+  unitAbbr  String    @unique
+  unitName  String
+  feedLogs  FeedLog[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([unitAbbr])
+}
+
 model FeedLog {
   id        String      @id @default(uuid())
   time      DateTime
+  startTime DateTime?   // Used for breast feeding duration tracking
+  endTime   DateTime?   // Used for breast feeding duration tracking
   type      FeedType
-  amount    Float?      // In ml for bottles, minutes for nursing
+  amount    Float?      // Amount in specified unit
+  unit      Unit?      @relation(fields: [unitAbbr], references: [unitAbbr])
+  unitAbbr  String?
   side      BreastSide?
   food      String?     // Description of solid foods
   createdAt DateTime    @default(now())
@@ -113,7 +128,10 @@ model FeedLog {
   babyId    String
 
   @@index([time])
+  @@index([startTime])
+  @@index([endTime])
   @@index([babyId])
+  @@index([unitAbbr])
   @@index([deletedAt])
 }
 
