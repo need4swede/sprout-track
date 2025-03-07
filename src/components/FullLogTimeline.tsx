@@ -67,13 +67,13 @@ const getActivityIcon = (activity: ActivityType) => {
 // Reuse other helper functions from Timeline component
 const getActivityTime = (activity: ActivityType): string => {
   if ('time' in activity && activity.time) {
-    return activity.time;
+    return String(activity.time);
   }
   if ('startTime' in activity && activity.startTime) {
     if ('duration' in activity && activity.endTime) {
-      return activity.endTime;
+      return String(activity.endTime);
     }
-    return activity.startTime;
+    return String(activity.startTime);
   }
   return new Date().toLocaleString();
 };
@@ -809,7 +809,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
             isSleeping={false}
             onSleepToggle={() => {}}
             babyId={selectedActivity.babyId}
-            initialTime={'startTime' in selectedActivity ? selectedActivity.startTime : getActivityTime(selectedActivity)}
+            initialTime={'startTime' in selectedActivity && selectedActivity.startTime ? String(selectedActivity.startTime) : getActivityTime(selectedActivity)}
             activity={'duration' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <FeedModal
@@ -820,7 +820,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'amount' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <DiaperModal
@@ -831,7 +831,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'condition' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <NoteModal
@@ -842,7 +842,7 @@ const FullLogTimeline = ({ activities, onActivityDeleted, startDate, endDate, on
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity : undefined}
           />
         </>
