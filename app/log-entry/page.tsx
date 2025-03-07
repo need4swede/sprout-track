@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
-import { Baby } from '@prisma/client';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '@/app/api/types';
 import { Button } from "@/src/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Card } from "@/src/components/ui/card";
 import { StatusBubble } from "@/src/components/ui/status-bubble";
 import { Baby as BabyIcon } from 'lucide-react';
 import SleepModal from '@/src/components/modals/SleepModal';
@@ -205,15 +204,34 @@ function HomeContent(): React.ReactElement {
       {/* Action Buttons */}
       {selectedBaby?.id && (
         <div className="grid grid-cols-4 border-t-[1px] border-white">
-          <Button
-            variant="custom"
-            size="lg"
-            className="h-20 p-0 flex items-center justify-center bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
+          {/* Sleep Activity Button */}
+          <div 
+            className="h-20 relative overflow-visible bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white rounded-none border-r border-white cursor-pointer"
             onClick={() => {
               updateUnlockTimer();
               setShowSleepModal(true);
             }}
           >
+            <ActivityTile
+              activity={{
+                type: 'NAP', // Using a valid SleepType enum value
+                id: 'sleep-button',
+                babyId: selectedBaby.id,
+                startTime: sleepStartTime[selectedBaby.id] ? sleepStartTime[selectedBaby.id].toISOString() : new Date().toISOString(),
+                endTime: sleepingBabies.has(selectedBaby.id) ? null : new Date().toISOString(),
+                duration: sleepingBabies.has(selectedBaby.id) ? null : 0,
+                location: null,
+                quality: null,
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as SleepLogResponse}
+              icon={<img src="/crib-256.png" alt="Sleep" className="h-full w-full object-contain" />}
+              title={selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
+              variant="sleep"
+              className="h-full w-full flex items-center justify-center"
+            />
             {selectedBaby?.id && (
               sleepingBabies.has(selectedBaby.id) ? (
                 <StatusBubble 
@@ -235,22 +253,39 @@ function HomeContent(): React.ReactElement {
                 )
               )
             )}
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img src="/crib-256.png" alt="Sleep" className="h-full w-full object-contain z-10" />
-            </div>
             <span className="absolute bottom-1 text-sm font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm">
               {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End' : 'Start'}
             </span>
-          </Button>
-          <Button
-            variant="custom"
-            size="lg"
-            className="h-20 p-0 flex items-center justify-center relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[#B8E6FE] rounded-none"
+          </div>
+          
+          {/* Feed Activity Button */}
+          <div 
+            className="h-20 relative overflow-visible bg-[#B8E6FE] text-gray-700 rounded-none cursor-pointer"
             onClick={() => {
               updateUnlockTimer();
               setShowFeedModal(true);
             }}
           >
+            <ActivityTile
+              activity={{
+                type: 'BOTTLE',
+                id: 'feed-button',
+                babyId: selectedBaby.id,
+                time: new Date().toISOString(),
+                amount: null,
+                side: null,
+                food: null,
+                unitAbbr: null,
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as FeedLogResponse}
+              icon={<img src="/bottle-256.png" alt="Feed" className="h-full w-full object-contain" />}
+              title="Feed"
+              variant="feed"
+              className="h-full w-full flex items-center justify-center"
+            />
             {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
               <StatusBubble 
                 status="feed"
@@ -261,19 +296,34 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.feedWarningTime}
               />
             )}
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img src="/bottle-256.png" alt="Feed" className="h-full w-full object-contain z-10" />
-            </div>
-          </Button>
-          <Button
-            variant="custom"
-            size="lg"
-            className="h-20 p-0 flex items-center justify-center bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
+          </div>
+          
+          {/* Diaper Activity Button */}
+          <div 
+            className="h-20 relative overflow-visible bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-none border-l border-white cursor-pointer"
             onClick={() => {
               updateUnlockTimer();
               setShowDiaperModal(true);
             }}
           >
+            <ActivityTile
+              activity={{
+                type: 'WET',
+                id: 'diaper-button',
+                babyId: selectedBaby.id,
+                time: new Date().toISOString(),
+                condition: null,
+                color: null,
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as DiaperLogResponse}
+              icon={<img src="/diaper-256.png" alt="Diaper" className="h-full w-full object-contain" />}
+              title="Diaper"
+              variant="diaper"
+              className="h-full w-full flex items-center justify-center"
+            />
             {selectedBaby?.id && lastDiaperTime[selectedBaby.id] && (
               <StatusBubble 
                 status="diaper"
@@ -284,23 +334,34 @@ function HomeContent(): React.ReactElement {
                 warningTime={selectedBaby.diaperWarningTime}
               />
             )}
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img src="/diaper-256.png" alt="Diaper" className="h-full w-full object-contain z-10" />
-            </div>
-          </Button>
-          <Button
-            variant="custom"
-            size="lg"
-            className="h-20 p-0 flex items-center justify-center bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-none border-l border-white relative overflow-hidden"
+          </div>
+          
+          {/* Note Activity Button */}
+          <div 
+            className="h-20 relative overflow-visible bg-[#FFFF99] text-gray-700 rounded-none border-l border-white cursor-pointer"
             onClick={() => {
               updateUnlockTimer();
               setShowNoteModal(true);
             }}
           >
-            <div className="absolute inset-0 flex items-center justify-center p-2">
-              <img src="/notepad-256.png" alt="Add Note" className="h-full w-full object-contain z-10" />
-            </div>
-          </Button>
+            <ActivityTile
+              activity={{
+                id: 'note-button',
+                babyId: selectedBaby.id,
+                time: new Date().toISOString(),
+                content: '',
+                category: 'Note',
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as NoteResponse}
+              icon={<img src="/notepad-256.png" alt="Add Note" className="h-full w-full object-contain" />}
+              title="Note"
+              variant="note"
+              className="h-full w-full flex items-center justify-center"
+            />
+          </div>
         </div>
       )}
 
