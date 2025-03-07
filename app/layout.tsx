@@ -153,7 +153,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center space-x-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <div className="w-16 h-16 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors duration-200">
+                      <div className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110">
                         <Image
                           src="/acorn-128.png"
                           alt="Acorn Logo"
