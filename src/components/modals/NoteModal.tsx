@@ -17,6 +17,10 @@ interface NoteModalProps {
   babyId: string | undefined;
   initialTime: string;
   activity?: NoteResponse;
+  /**
+   * Optional variant to control the modal styling
+   */
+  variant?: 'note' | 'default';
 }
 
 export default function NoteModal({
@@ -25,6 +29,7 @@ export default function NoteModal({
   babyId,
   initialTime,
   activity,
+  variant = 'default',
 }: NoteModalProps) {
   const [formData, setFormData] = useState({
     time: initialTime,

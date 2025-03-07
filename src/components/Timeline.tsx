@@ -1,4 +1,4 @@
-import { SleepType, FeedType, DiaperType, Settings } from '@prisma/client';
+import { Settings } from '@prisma/client';
 import { Card, CardHeader, CardTitle } from '@/src/components/ui/card';
 import {
   Moon,
@@ -21,9 +21,9 @@ import SleepModal from '@/src/components/modals/SleepModal';
 import FeedModal from '@/src/components/modals/FeedModal';
 import DiaperModal from '@/src/components/modals/DiaperModal';
 import NoteModal from '@/src/components/modals/NoteModal';
+import { ActivityTile, ActivityType } from '@/src/components/ui/activity-tile';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 
-type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface TimelineProps {
@@ -55,9 +55,9 @@ const getActivityTime = (activity: ActivityType): string => {
   }
   if ('startTime' in activity && activity.startTime) {
     if ('duration' in activity && activity.endTime) {
-      return activity.endTime;
+      return String(activity.endTime);
     }
-    return activity.startTime;
+    return String(activity.startTime);
   }
   return new Date().toLocaleString();
 };
@@ -573,35 +573,13 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="divide-y divide-gray-100 bg-white">
-          {sortedActivities.map((activity) => {
-          const style = getActivityStyle(activity);
-          return (
-            <div
+          {sortedActivities.map((activity) => (
+            <ActivityTile
               key={activity.id}
-              className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
+              activity={activity}
               onClick={() => setSelectedActivity(activity)}
-            >
-              <div className="flex items-center px-6 py-3">
-                <div className={`flex-shrink-0 ${style.bg} p-2 rounded-xl mr-4`}>
-                  {getActivityIcon(activity)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  {(() => {
-                    const description = getActivityDescription(activity, settings);
-                    return (
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
-                          {description.type}
-                        </span>
-                        <span className="text-gray-900">{description.details}</span>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          );
-          })}
+            />
+          ))}
         </div>
         
         {/* Empty State */}
@@ -723,7 +701,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
             isSleeping={false}
             onSleepToggle={() => {}}
             babyId={selectedActivity.babyId}
-            initialTime={'startTime' in selectedActivity ? selectedActivity.startTime : getActivityTime(selectedActivity)}
+            initialTime={'startTime' in selectedActivity && selectedActivity.startTime ? String(selectedActivity.startTime) : getActivityTime(selectedActivity)}
             activity={'duration' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <FeedModal
@@ -734,7 +712,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'amount' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <DiaperModal
@@ -745,7 +723,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'condition' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
           />
           <NoteModal
@@ -756,7 +734,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               onActivityDeleted?.();
             }}
             babyId={selectedActivity.babyId}
-            initialTime={'time' in selectedActivity ? selectedActivity.time : getActivityTime(selectedActivity)}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity : undefined}
           />
         </>

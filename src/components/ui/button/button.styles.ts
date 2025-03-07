@@ -33,6 +33,8 @@ export const buttonVariants = cva(
           "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         warning:
           "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+        custom:
+          "", // Empty string to allow full customization through className
       },
       size: {
         default: "h-10 px-5 py-2 rounded-xl",

@@ -24,6 +24,10 @@ interface DiaperModalProps {
   babyId: string | undefined;
   initialTime: string;
   activity?: DiaperLogResponse;
+  /**
+   * Optional variant to control the modal styling
+   */
+  variant?: 'diaper' | 'default';
 }
 
 export default function DiaperModal({
@@ -32,6 +36,7 @@ export default function DiaperModal({
   babyId,
   initialTime,
   activity,
+  variant = 'default',
 }: DiaperModalProps) {
   const [formData, setFormData] = useState({
     time: initialTime,

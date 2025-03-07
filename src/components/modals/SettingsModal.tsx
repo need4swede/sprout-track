@@ -31,6 +31,10 @@ interface SettingsModalProps {
   onBabySelect?: (babyId: string) => void;
   onBabyStatusChange?: () => void;
   selectedBabyId?: string;
+  /**
+   * Optional variant to control the modal styling
+   */
+  variant?: 'settings' | 'default';
 }
 
 export default function SettingsModal({ 
@@ -38,7 +42,8 @@ export default function SettingsModal({
   onClose,
   onBabySelect,
   onBabyStatusChange,
-  selectedBabyId 
+  selectedBabyId,
+  variant = 'default'
 }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [babies, setBabies] = useState<Baby[]>([]);

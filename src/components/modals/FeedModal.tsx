@@ -24,6 +24,10 @@ interface FeedModalProps {
   babyId: string | undefined;
   initialTime: string;
   activity?: FeedLogResponse;
+  /**
+   * Optional variant to control the modal styling
+   */
+  variant?: 'feed' | 'default';
 }
 
 export default function FeedModal({
@@ -32,6 +36,7 @@ export default function FeedModal({
   babyId,
   initialTime,
   activity,
+  variant = 'default',
 }: FeedModalProps) {
   const [formData, setFormData] = useState({
     time: initialTime,

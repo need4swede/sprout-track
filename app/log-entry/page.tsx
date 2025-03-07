@@ -14,8 +14,7 @@ import NoteModal from '@/src/components/modals/NoteModal';
 import Timeline from '@/src/components/Timeline';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
-
-type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
+import { ActivityTile, ActivityType } from '@/src/components/ui/activity-tile';
 
 function HomeContent(): React.ReactElement {
   const { selectedBaby, sleepingBabies, setSleepingBabies } = useBaby();
@@ -207,7 +206,7 @@ function HomeContent(): React.ReactElement {
       {selectedBaby?.id && (
         <div className="grid grid-cols-4 border-t-[1px] border-white">
           <Button
-            variant="default"
+            variant="custom"
             size="lg"
             className="h-20 p-0 flex items-center justify-center bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-r border-white"
             onClick={() => {
@@ -244,7 +243,7 @@ function HomeContent(): React.ReactElement {
             </span>
           </Button>
           <Button
-            variant="default"
+            variant="custom"
             size="lg"
             className="h-20 p-0 flex items-center justify-center relative overflow-visible text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-[#B8E6FE] rounded-none"
             onClick={() => {
@@ -267,7 +266,7 @@ function HomeContent(): React.ReactElement {
             </div>
           </Button>
           <Button
-            variant="default"
+            variant="custom"
             size="lg"
             className="h-20 p-0 flex items-center justify-center bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 relative overflow-visible rounded-none border-l border-white"
             onClick={() => {
@@ -290,7 +289,7 @@ function HomeContent(): React.ReactElement {
             </div>
           </Button>
           <Button
-            variant="default"
+            variant="custom"
             size="lg"
             className="h-20 p-0 flex items-center justify-center bg-[#FFFF99] text-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 rounded-none border-l border-white relative overflow-hidden"
             onClick={() => {
@@ -354,6 +353,7 @@ function HomeContent(): React.ReactElement {
       )}
 
       {/* Modals */}
+      {/* Sleep Modal */}
       <SleepModal
         open={showSleepModal}
         onClose={async () => {
@@ -379,7 +379,10 @@ function HomeContent(): React.ReactElement {
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}
+        variant="sleep"
       />
+      
+      {/* Feed Modal */}
       <FeedModal
         open={showFeedModal}
         onClose={() => {
@@ -390,7 +393,10 @@ function HomeContent(): React.ReactElement {
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}
+        variant="feed"
       />
+      
+      {/* Diaper Modal */}
       <DiaperModal
         open={showDiaperModal}
         onClose={() => {
@@ -401,7 +407,10 @@ function HomeContent(): React.ReactElement {
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}
+        variant="diaper"
       />
+      
+      {/* Note Modal */}
       <NoteModal
         open={showNoteModal}
         onClose={() => {
@@ -412,7 +421,10 @@ function HomeContent(): React.ReactElement {
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}
+        variant="note"
       />
+      
+      {/* Settings Modal */}
       <SettingsModal
         open={showSettingsModal}
         onClose={() => {
@@ -421,6 +433,7 @@ function HomeContent(): React.ReactElement {
             refreshActivities(selectedBaby.id);
           }
         }}
+        variant="settings"
       />
     </div>
   );

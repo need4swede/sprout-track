@@ -26,6 +26,10 @@ interface SleepModalProps {
   babyId: string | undefined;
   initialTime: string;
   activity?: SleepLogResponse;
+  /**
+   * Optional variant to control the modal styling
+   */
+  variant?: 'sleep' | 'default';
 }
 
 export default function SleepModal({
@@ -36,6 +40,7 @@ export default function SleepModal({
   babyId,
   initialTime,
   activity,
+  variant = 'default',
 }: SleepModalProps) {
   const [formData, setFormData] = useState({
     startTime: initialTime,
