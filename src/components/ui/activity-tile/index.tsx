@@ -9,7 +9,6 @@ import {
   ActivityTileContentProps, 
   ActivityType 
 } from './activity-tile.types';
-import { Settings } from '@prisma/client';
 
 /**
  * Formats time based on the provided date string and settings
