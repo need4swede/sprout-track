@@ -5,7 +5,7 @@ import { BabyProvider, useBaby } from './context/baby';
 import Security from '@/src/components/Security';
 import Image from 'next/image';
 import './globals.css';
-import SettingsModal from '@/src/components/modals/SettingsModal';
+import SettingsForm from '@/src/components/forms/SettingsForm';
 import { Button } from '@/src/components/ui/button';
 import { ChevronDown, Moon } from 'lucide-react';
 import {
@@ -262,10 +262,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <SettingsModal
-        open={settingsOpen}
+      <SettingsForm
+        isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        onBabySelect={(id) => {
+        onBabySelect={(id: string) => {
           const baby = babies.find((b: Baby) => b.id === id);
           if (baby) {
             setSelectedBaby(baby);
