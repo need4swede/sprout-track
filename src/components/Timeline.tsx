@@ -21,8 +21,7 @@ import SleepModal from '@/src/components/modals/SleepModal';
 import FeedModal from '@/src/components/modals/FeedModal';
 import DiaperModal from '@/src/components/modals/DiaperModal';
 import NoteModal from '@/src/components/modals/NoteModal';
-import { ActivityTile, ActivityType } from '@/src/components/ui/activity-tile';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
+import { ActivityType } from '@/src/components/ui/activity-tile';
 
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
@@ -618,9 +617,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
       {/* Pagination Controls */}
       {activities.length > 0 && (
-        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+        <div className="flex justify-between items-center px-6 py-2 border-t border-gray-100">
           <select
-            className="h-8 px-2 rounded-md border border-gray-200 text-sm"
+            className="h-6 px-1 rounded-md border border-gray-200 text-xs"
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
@@ -643,7 +642,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               >
                 {'<'}
               </Button>
-              <span className="px-4 py-2 text-sm">
+              <span className="px-4 py-2 text-xs">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
