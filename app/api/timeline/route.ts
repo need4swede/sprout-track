@@ -52,14 +52,14 @@ export async function GET(req: NextRequest) {
         const selectedDate = new Date(date);
         
         if (!isNaN(selectedDate.getTime())) {
-          // Set start date to beginning of the day in UTC
+          // Set start date to beginning of the day in local time
           const dayStart = new Date(selectedDate);
-          dayStart.setUTCHours(0, 0, 0, 0);
+          dayStart.setHours(0, 0, 0, 0);
           effectiveStartDate = dayStart.toISOString();
           
-          // Set end date to end of the day in UTC
+          // Set end date to end of the day in local time
           const dayEnd = new Date(selectedDate);
-          dayEnd.setUTCHours(23, 59, 59, 999);
+          dayEnd.setHours(23, 59, 59, 999);
           effectiveEndDate = dayEnd.toISOString();
           
           // Don't use limit when filtering by date
