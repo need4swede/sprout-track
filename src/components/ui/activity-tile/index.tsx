@@ -3,11 +3,12 @@ import { Moon, Edit, Icon } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { cn } from "@/src/lib/utils";
 import { activityTileStyles as styles } from './activity-tile.styles';
-import { 
-  ActivityTileProps, 
-  ActivityTileIconProps, 
-  ActivityTileContentProps, 
-  ActivityType 
+import {
+  ActivityTileProps,
+  ActivityTileIconProps,
+  ActivityTileContentProps,
+  ActivityType,
+  ActivityTileVariant
 } from './activity-tile.types';
 
 /**
@@ -214,20 +215,46 @@ const getActivityDescription = (activity: ActivityType) => {
 /**
  * ActivityTileIcon component displays the appropriate icon based on activity type
  */
-export function ActivityTileIcon({ activity, className }: ActivityTileIconProps) {
-  const variant = getActivityVariant(activity);
+export function ActivityTileIcon({
+  activity,
+  className,
+  variant: variantProp,
+  isButton = false
+}: ActivityTileIconProps & { variant?: ActivityTileVariant; isButton?: boolean }) {
+  const variant = variantProp || getActivityVariant(activity);
   
   let icon = null;
-  if ('type' in activity) {
-    if ('duration' in activity) {
-      icon = <Moon className={cn(styles.icon.base, styles.icon.variants[variant])} />;
-    } else if ('amount' in activity) {
-      icon = <Icon iconNode={bottleBaby} className={cn(styles.icon.base, styles.icon.variants[variant])} />;
-    } else if ('condition' in activity) {
-      icon = <Icon iconNode={diaper} className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+  
+  // For buttons, always use the image icons
+  if (isButton && styles.icon.defaultIcons[variant]) {
+    icon = <img
+      src={styles.icon.defaultIcons[variant]}
+      alt={variant}
+      className="h-full w-full object-contain"
+    />;
+  }
+  // For timeline view, use Lucide icons (smaller icons)
+  else if (!isButton) {
+    if ('type' in activity) {
+      if ('duration' in activity) {
+        icon = <Moon className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+      } else if ('amount' in activity) {
+        icon = <Icon iconNode={bottleBaby} className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+      } else if ('condition' in activity) {
+        icon = <Icon iconNode={diaper} className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+      }
+    } else if ('content' in activity) {
+      icon = <Edit className={cn(styles.icon.base, styles.icon.variants[variant])} />;
     }
-  } else if ('content' in activity) {
-    icon = <Edit className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+  }
+  
+  // If no icon is determined and we have a default icon for this variant, use it
+  if (!icon && styles.icon.defaultIcons[variant]) {
+    icon = <img
+      src={styles.icon.defaultIcons[variant]}
+      alt={variant}
+      className="h-full w-full object-contain"
+    />;
   }
   
   return (
@@ -270,42 +297,55 @@ export function ActivityTileContent({
 
 /**
  * ActivityTile component displays an activity in a consistent, styled manner
- * 
+ *
  * This component is designed to be used in lists of activities, such as in the Timeline component.
  * It follows the project's UI component patterns and is highly configurable through props.
- * 
+ *
  * @example
  * ```tsx
- * <ActivityTile 
- *   activity={sleepActivity} 
- *   onClick={() => handleActivityClick(sleepActivity)} 
+ * <ActivityTile
+ *   activity={sleepActivity}
+ *   onClick={() => handleActivityClick(sleepActivity)}
  * />
  * ```
  */
-export function ActivityTile({ 
-  activity, 
-  onClick, 
-  icon, 
-  title, 
-  description, 
-  variant: variantProp, 
-  className 
+export function ActivityTile({
+  activity,
+  onClick,
+  icon,
+  title,
+  description,
+  variant: variantProp,
+  className,
+  isButton = false
 }: ActivityTileProps) {
   const variant = variantProp || getActivityVariant(activity);
   
   return (
-    <div 
-      className={cn(styles.base, className)}
+    <div
+      className={cn(
+        styles.base,
+        isButton && styles.button.base,
+        isButton && styles.button.variants[variant],
+        className
+      )}
       onClick={onClick}
     >
-      <div className={styles.container}>
-        {icon || <ActivityTileIcon activity={activity} />}
-        <ActivityTileContent 
-          activity={activity} 
-          title={title} 
-          description={description} 
-        />
+      <div className={isButton ? "h-full w-full flex items-center justify-center" : styles.container}>
+        {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
+        {!isButton && (
+          <ActivityTileContent
+            activity={activity}
+            title={title}
+            description={description}
+          />
+        )}
       </div>
+      {isButton && title && (
+        <span className="absolute bottom-1 text-sm font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm">
+          {title}
+        </span>
+      )}
     </div>
   );
 }

@@ -40,6 +40,12 @@ export interface ActivityTileProps {
    * Optional additional CSS classes
    */
   className?: string;
+  
+  /**
+   * Whether this activity tile is being used as a button
+   * When true, applies button-specific styling
+   */
+  isButton?: boolean;
 }
 
 export interface ActivityTileIconProps {

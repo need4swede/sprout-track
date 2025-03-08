@@ -205,13 +205,7 @@ function HomeContent(): React.ReactElement {
       {selectedBaby?.id && (
         <div className="grid grid-cols-4 border-t-[1px] border-white">
           {/* Sleep Activity Button */}
-          <div 
-            className="h-20 relative overflow-visible bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white rounded-none border-r border-white cursor-pointer"
-            onClick={() => {
-              updateUnlockTimer();
-              setShowSleepModal(true);
-            }}
-          >
+          <div className="relative">
             <ActivityTile
               activity={{
                 type: 'NAP', // Using a valid SleepType enum value
@@ -227,14 +221,17 @@ function HomeContent(): React.ReactElement {
                 updatedAt: new Date().toISOString(),
                 deletedAt: null
               } as unknown as SleepLogResponse}
-              icon={<img src="/crib-256.png" alt="Sleep" className="h-full w-full object-contain" />}
               title={selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
               variant="sleep"
-              className="h-full w-full flex items-center justify-center"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                setShowSleepModal(true);
+              }}
             />
             {selectedBaby?.id && (
               sleepingBabies.has(selectedBaby.id) ? (
-                <StatusBubble 
+                <StatusBubble
                   status="sleeping"
                   className="overflow-visible z-40"
                   durationInMinutes={Math.floor(
@@ -243,7 +240,7 @@ function HomeContent(): React.ReactElement {
                 />
               ) : (
                 !sleepStartTime[selectedBaby.id] && lastSleepEndTime[selectedBaby.id] && (
-                  <StatusBubble 
+                  <StatusBubble
                     status="awake"
                     className="overflow-visible z-40"
                     durationInMinutes={Math.floor(
@@ -253,19 +250,10 @@ function HomeContent(): React.ReactElement {
                 )
               )
             )}
-            <span className="absolute bottom-1 text-sm font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm">
-              {selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End' : 'Start'}
-            </span>
           </div>
           
           {/* Feed Activity Button */}
-          <div 
-            className="h-20 relative overflow-visible bg-[#B8E6FE] text-gray-700 rounded-none cursor-pointer"
-            onClick={() => {
-              updateUnlockTimer();
-              setShowFeedModal(true);
-            }}
-          >
+          <div className="relative">
             <ActivityTile
               activity={{
                 type: 'BOTTLE',
@@ -281,13 +269,16 @@ function HomeContent(): React.ReactElement {
                 updatedAt: new Date().toISOString(),
                 deletedAt: null
               } as unknown as FeedLogResponse}
-              icon={<img src="/bottle-256.png" alt="Feed" className="h-full w-full object-contain" />}
               title="Feed"
               variant="feed"
-              className="h-full w-full flex items-center justify-center"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                setShowFeedModal(true);
+              }}
             />
             {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
-              <StatusBubble 
+              <StatusBubble
                 status="feed"
                 className="overflow-visible z-40"
                 durationInMinutes={Math.floor(
@@ -299,13 +290,7 @@ function HomeContent(): React.ReactElement {
           </div>
           
           {/* Diaper Activity Button */}
-          <div 
-            className="h-20 relative overflow-visible bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-none border-l border-white cursor-pointer"
-            onClick={() => {
-              updateUnlockTimer();
-              setShowDiaperModal(true);
-            }}
-          >
+          <div className="relative">
             <ActivityTile
               activity={{
                 type: 'WET',
@@ -319,13 +304,16 @@ function HomeContent(): React.ReactElement {
                 updatedAt: new Date().toISOString(),
                 deletedAt: null
               } as unknown as DiaperLogResponse}
-              icon={<img src="/diaper-256.png" alt="Diaper" className="h-full w-full object-contain" />}
               title="Diaper"
               variant="diaper"
-              className="h-full w-full flex items-center justify-center"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                setShowDiaperModal(true);
+              }}
             />
             {selectedBaby?.id && lastDiaperTime[selectedBaby.id] && (
-              <StatusBubble 
+              <StatusBubble
                 status="diaper"
                 className="overflow-visible z-40"
                 durationInMinutes={Math.floor(
@@ -337,13 +325,7 @@ function HomeContent(): React.ReactElement {
           </div>
           
           {/* Note Activity Button */}
-          <div 
-            className="h-20 relative overflow-visible bg-[#FFFF99] text-gray-700 rounded-none border-l border-white cursor-pointer"
-            onClick={() => {
-              updateUnlockTimer();
-              setShowNoteModal(true);
-            }}
-          >
+          <div className="relative">
             <ActivityTile
               activity={{
                 id: 'note-button',
@@ -356,10 +338,13 @@ function HomeContent(): React.ReactElement {
                 updatedAt: new Date().toISOString(),
                 deletedAt: null
               } as unknown as NoteResponse}
-              icon={<img src="/notepad-256.png" alt="Add Note" className="h-full w-full object-contain" />}
               title="Note"
               variant="note"
-              className="h-full w-full flex items-center justify-center"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                setShowNoteModal(true);
+              }}
             />
           </div>
         </div>
