@@ -10,7 +10,7 @@ export const activityTileStyles = {
   
   // Button styles for each variant when used as a button
   button: {
-    base: "h-20 relative overflow-visible cursor-pointer",
+    base: "h-20 relative overflow-visible cursor-pointer transition-transform duration-200 hover:scale-110",
     variants: {
       sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white border-r border-white",
       feed: "bg-[#B8E6FE] text-gray-700",
