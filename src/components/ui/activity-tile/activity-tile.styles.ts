@@ -5,12 +5,12 @@
  * This follows the project's design system and is consistent with other UI components
  */
 export const activityTileStyles = {
-  base: "group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer",
-  container: "flex items-center justify-center px-6 py-3",
+  base: "group transition-colors duration-200 cursor-pointer",
+  container: "flex items-center justify-center px-6 py-3 overflow-hidden",
   
   // Button styles for each variant when used as a button
   button: {
-    base: "h-20 relative overflow-visible cursor-pointer transition-transform duration-200 hover:scale-110",
+    base: "h-20 relative cursor-pointer",
     variants: {
       sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white border-r border-white",
       feed: "bg-[#B8E6FE] text-white",
@@ -21,13 +21,13 @@ export const activityTileStyles = {
   },
   
   iconContainer: {
-    base: "flex-shrink-0 p-2 rounded-xl items-center justify-center",
+    base: "flex-shrink-0 p-2 rounded-xl items-center justify-center transition-transform duration-200 group-hover:scale-110 overflow-hidden",
     variants: {
-      sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600",
-      feed: "bg-sky-200",
-      diaper: "bg-gradient-to-r from-teal-600 to-teal-700",
-      note: "bg-[#FFFF99]",
-      default: "bg-gray-100"
+      sleep: "bg-transparent",
+      feed: "bg-transparent",
+      diaper: "bg-transparent",
+      note: "bg-transparent",
+      default: "bg-transparent"
     }
   },
   
