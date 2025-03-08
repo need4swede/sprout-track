@@ -6,22 +6,22 @@
  */
 export const activityTileStyles = {
   base: "group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer",
-  container: "flex items-center px-6 py-3",
+  container: "flex items-center justify-center px-6 py-3",
   
   // Button styles for each variant when used as a button
   button: {
     base: "h-20 relative overflow-visible cursor-pointer transition-transform duration-200 hover:scale-110",
     variants: {
       sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white border-r border-white",
-      feed: "bg-[#B8E6FE] text-gray-700",
+      feed: "bg-[#B8E6FE] text-white",
       diaper: "bg-gradient-to-r from-teal-600 to-teal-700 text-white border-l border-white",
-      note: "bg-[#FFFF99] text-gray-700 border-l border-white",
-      default: "bg-gray-100 text-gray-700"
+      note: "bg-[#FFFF99] text-white border-l border-white",
+      default: "bg-gray-100 text-white"
     }
   },
   
   iconContainer: {
-    base: "flex-shrink-0 p-2 rounded-xl mr-4",
+    base: "flex-shrink-0 p-2 rounded-xl items-center justify-center",
     variants: {
       sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600",
       feed: "bg-sky-200",
@@ -35,10 +35,10 @@ export const activityTileStyles = {
     base: "h-4 w-4",
     variants: {
       sleep: "text-white",
-      feed: "text-gray-700",
+      feed: "text-white",
       diaper: "text-white",
-      note: "text-gray-700",
-      default: "text-gray-700"
+      note: "text-white",
+      default: "text-white"
     },
     // Default icon paths for each variant
     defaultIcons: {
