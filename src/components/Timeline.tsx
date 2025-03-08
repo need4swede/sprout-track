@@ -551,6 +551,19 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       fetchActivitiesForDate(babyId, selectedDate);
     }
   }, [activities.length, selectedDate, lastFetchedDate]); // Run when these dependencies change
+  
+  // This effect will run when the activities prop changes (e.g., when a new activity is added)
+  // It ensures the Timeline refreshes while maintaining the current date filter
+  useEffect(() => {
+    // Only refresh if we have a selected date and activities
+    if (selectedDate && activities.length > 0) {
+      const babyId = activities[0].babyId;
+      if (babyId) {
+        // Refresh data for the currently selected date
+        fetchActivitiesForDate(babyId, selectedDate);
+      }
+    }
+  }, [activities]); // Run when activities prop changes
 
   const sortedActivities = useMemo(() => {
     // Only use dateFilteredActivities, never fall back to activities from props
@@ -623,7 +636,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   return (
     <div className="flex flex-col h-[calc(100vh-162px)]">
       {/* Header */}
-      <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
+      <CardHeader className="py-1 px-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-1">
             <Button
