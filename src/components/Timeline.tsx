@@ -7,6 +7,9 @@ import {
   Icon,
   Edit,
   Pencil,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import {
@@ -16,7 +19,7 @@ import {
   DialogTitle,
 } from '@/src/components/ui/dialog';
 import { Button } from '@/src/components/ui/button';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import SleepModal from '@/src/components/modals/SleepModal';
 import FeedModal from '@/src/components/modals/FeedModal';
 import DiaperModal from '@/src/components/modals/DiaperModal';
@@ -27,7 +30,7 @@ type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface TimelineProps {
   activities: ActivityType[];
-  onActivityDeleted?: () => void;
+  onActivityDeleted?: (dateFilter?: Date) => void;
 }
 
 const getActivityIcon = (activity: ActivityType) => {
@@ -430,7 +433,101 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
+  // Keep track of the last fetched date to prevent duplicate fetches
+  const [lastFetchedDate, setLastFetchedDate] = useState<string>('');
+  
+  // State to store the activities fetched for the selected date
+  const [dateFilteredActivities, setDateFilteredActivities] = useState<ActivityType[]>([]);
+  
+  // Function to fetch activities for a specific date
+  const fetchActivitiesForDate = async (babyId: string, date: Date) => {
+    try {
+      // Format date for API request - ensure it's in ISO format
+      const formattedDate = date.toISOString();
+      
+      // Always update the selected date
+      setSelectedDate(date);
+      
+      // Update last fetched date
+      setLastFetchedDate(date.toDateString());
+      
+      console.log(`Fetching activities for date: ${formattedDate}`);
+      
+      // Add a timestamp to prevent caching
+      const timestamp = new Date().getTime();
+      
+      // Make the API call with the date parameter
+      // Explicitly include the date parameter in the URL
+      const url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(formattedDate)}&_t=${timestamp}`;
+      console.log(`API URL: ${url}`);
+      
+      const response = await fetch(url, {
+        // Add cache: 'no-store' to prevent caching
+        cache: 'no-store',
+        // Add headers to prevent caching
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Expires': '0'
+        }
+      });
+      
+      if (response.ok) {
+        console.log('Successfully fetched activities for date');
+        const data = await response.json();
+        if (data.success) {
+          // Always set the date-filtered activities, even if empty
+          setDateFilteredActivities(data.data);
+          console.log(`Received ${data.data.length} activities for date ${formattedDate}`);
+        } else {
+          // If the API call was not successful, clear the date-filtered activities
+          setDateFilteredActivities([]);
+          console.log(`No activities found for date ${formattedDate}`);
+        }
+        
+        // Notify parent that date has changed (but don't update parent's activities)
+        if (onActivityDeleted) {
+          onActivityDeleted(date);
+        }
+      } else {
+        console.error('Failed to fetch activities:', await response.text());
+        // Clear the date-filtered activities on error
+        setDateFilteredActivities([]);
+      }
+    } catch (error) {
+      console.error('Error fetching activities for date:', error);
+    }
+  };
+  
+  // Handle date change and fetch data for the selected date
+  const handleDateSelection = (newDate: Date) => {
+    setSelectedDate(newDate);
+    setCurrentPage(1); // Reset to first page when date changes
+    
+    // Get the baby ID from the first activity if available
+    const babyId = activities.length > 0 ? activities[0].babyId : null;
+    
+    if (babyId) {
+      // Directly fetch data for the selected date
+      fetchActivitiesForDate(babyId, newDate);
+      
+      // Notify parent component about the date change
+      if (onActivityDeleted) {
+        onActivityDeleted(newDate);
+      }
+    }
+  };
+  
+  // Function to handle date navigation
+  const handleDateChange = (days: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + days);
+    handleDateSelection(newDate);
+  };
+  
+  // Fetch settings on component mount
   useEffect(() => {
     const fetchSettings = async () => {
       const response = await fetch('/api/settings');
@@ -443,11 +540,23 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     };
     fetchSettings();
   }, []);
+  
+  // Initialize with the current date and fetch data when needed
+  useEffect(() => {
+    // Get the baby ID from the first activity if available
+    const babyId = activities.length > 0 ? activities[0].babyId : null;
+    
+    if (babyId && lastFetchedDate !== selectedDate.toDateString()) {
+      // Fetch data for the selected date if we haven't already
+      fetchActivitiesForDate(babyId, selectedDate);
+    }
+  }, [activities.length, selectedDate, lastFetchedDate]); // Run when these dependencies change
 
   const sortedActivities = useMemo(() => {
-    const filtered = !activeFilter 
-      ? activities 
-      : activities.filter(activity => {
+    // Only use dateFilteredActivities, never fall back to activities from props
+    const filtered = !activeFilter
+      ? dateFilteredActivities
+      : dateFilteredActivities.filter(activity => {
           switch (activeFilter) {
             case 'sleep':
               return 'duration' in activity;
@@ -470,12 +579,13 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     return sorted.slice(startIndex, startIndex + itemsPerPage);
-  }, [activities, activeFilter, currentPage, itemsPerPage]);
+  }, [dateFilteredActivities, activeFilter, currentPage, itemsPerPage]);
 
   const totalPages = useMemo(() => {
+    // Only use dateFilteredActivities, never fall back to activities from props
     const filtered = !activeFilter 
-      ? activities 
-      : activities.filter(activity => {
+      ? dateFilteredActivities 
+      : dateFilteredActivities.filter(activity => {
           switch (activeFilter) {
             case 'sleep':
               return 'duration' in activity;
@@ -490,7 +600,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           }
         });
     return Math.ceil(filtered.length / itemsPerPage);
-  }, [activities, activeFilter, itemsPerPage]);
+  }, [dateFilteredActivities, activeFilter, itemsPerPage]);
 
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
@@ -515,7 +625,42 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       {/* Header */}
       <CardHeader className="py-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-white text-xl">Recent Activity</CardTitle>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleDateChange(-1)}
+              className="h-7 w-7 bg-gray-100 hover:bg-gray-200"
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="h-3 w-3 text-teal-700" />
+            </Button>
+            
+            <input
+              type="date"
+              className="h-7 px-2 rounded-md border border-gray-200 text-xs bg-gray-100 hover:bg-gray-200 text-teal-700"
+              value={new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]}
+              onChange={(e) => {
+                // Create date in local timezone
+                const localDate = new Date(e.target.value);
+                // Adjust for timezone offset to keep the date consistent
+                const newDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+                newDate.setHours(0, 0, 0, 0);
+                handleDateSelection(newDate);
+              }}
+            />
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleDateChange(1)}
+              className="h-7 w-7 bg-gray-100 hover:bg-gray-200"
+              aria-label="Next day"
+            >
+              <ChevronRight className="h-3 w-3 text-teal-700" />
+            </Button>
+          </div>
+          
           <div className="flex gap-1">
             <Button
               variant="outline"
@@ -616,7 +761,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       </div>
 
       {/* Pagination Controls */}
-      {activities.length > 0 && (
+      {dateFilteredActivities.length > 0 && (
         <div className="flex justify-between items-center px-6 py-2 border-t border-gray-100">
           <select
             className="h-6 px-1 rounded-md border border-gray-200 text-xs"

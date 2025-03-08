@@ -30,12 +30,40 @@ function HomeContent(): React.ReactElement {
   const [lastFeedTime, setLastFeedTime] = useState<Record<string, Date>>({});
   const [lastDiaperTime, setLastDiaperTime] = useState<Record<string, Date>>({});
 
-  const refreshActivities = useCallback(async (babyId: string | undefined) => {
+  // Track the currently selected date in the Timeline component
+  const [selectedTimelineDate, setSelectedTimelineDate] = useState<Date | null>(null);
+
+  const refreshActivities = useCallback(async (babyId: string | undefined, dateFilter?: Date) => {
     if (!babyId) return;
     
     try {
+      // Add a timestamp to prevent caching
+      const timestamp = new Date().getTime();
+      
+      // If a date filter is provided, use it in the API call
+      let url = `/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}`;
+      if (dateFilter) {
+        // Update the selected date
+        setSelectedTimelineDate(dateFilter);
+        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(dateFilter.toISOString())}&_t=${timestamp}`;
+        console.log(`Refreshing activities with date filter: ${dateFilter.toISOString()}`);
+      } else if (selectedTimelineDate) {
+        // If we have a previously selected date, use it
+        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(selectedTimelineDate.toISOString())}&_t=${timestamp}`;
+        console.log(`Refreshing activities with previous date filter: ${selectedTimelineDate.toISOString()}`);
+      } else {
+        console.log(`Refreshing activities without date filter`);
+      }
+      
       // Fetch timeline data
-      const timelineResponse = await fetch(`/api/timeline?babyId=${babyId}&limit=200`);
+      const timelineResponse = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Expires': '0'
+        }
+      });
       const timelineData = await timelineResponse.json();
       
       if (timelineData.success) {
@@ -129,7 +157,17 @@ function HomeContent(): React.ReactElement {
     lastSleepCheck.current = checkId;
 
     try {
-      const response = await fetch(`/api/timeline?babyId=${babyId}&limit=200`);
+      // Add a timestamp to prevent caching
+      const timestamp = new Date().getTime();
+      
+      const response = await fetch(`/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Expires': '0'
+        }
+      });
       if (!response.ok) return;
       
       const data = await response.json();
@@ -356,9 +394,15 @@ function HomeContent(): React.ReactElement {
           {activities.length > 0 ? (
             <Timeline 
               activities={activities} 
-              onActivityDeleted={() => {
+              onActivityDeleted={(dateFilter?: Date) => {
                 if (selectedBaby?.id) {
-                  refreshActivities(selectedBaby.id);
+                  // If a date filter is provided, use it when refreshing activities
+                  if (dateFilter) {
+                    console.log(`Refreshing with date filter: ${dateFilter.toISOString()}`);
+                    // Don't call refreshActivities here, let the Timeline component handle it
+                  } else {
+                    refreshActivities(selectedBaby.id);
+                  }
                 }
               }}
             />
