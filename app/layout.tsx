@@ -7,14 +7,15 @@ import Image from 'next/image';
 import './globals.css';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { Button } from '@/src/components/ui/button';
-import { Settings as SettingsIcon, Baby as BabyIcon, ChevronDown, Moon } from 'lucide-react';
-import { 
+import { ChevronDown, Moon } from 'lucide-react';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
+import { SideNav, SideNavTrigger } from '@/src/components/ui/side-nav';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
 import { Baby } from '@prisma/client';
@@ -28,6 +29,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { selectedBaby, setSelectedBaby, sleepingBabies } = useBaby();
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sideNavOpen, setSideNavOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
   const [isUnlocked, setIsUnlocked] = useState(() => {
@@ -151,37 +153,20 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <div className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110">
-                        <Image
-                          src="/acorn-128.png"
-                          alt="Acorn Logo"
-                          width={64}
-                          height={64}
-                          className="object-contain"
-                          priority
-                        />
-                      </div>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuRadioGroup 
-                        value={window.location.pathname}
-                        onValueChange={(path) => window.location.href = path}
-                      >
-                        <DropdownMenuRadioItem value="/log-entry">
-                          <div className="flex flex-col">
-                            <span>Log Entry</span>
-                          </div>
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="/full-log">
-                          <div className="flex flex-col">
-                            <span>Full Log</span>
-                          </div>
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <SideNavTrigger
+                    onClick={() => setSideNavOpen(true)}
+                    isOpen={sideNavOpen}
+                    className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
+                  >
+                    <Image
+                      src="/acorn-128.png"
+                      alt="Acorn Logo"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                      priority
+                    />
+                  </SideNavTrigger>
                   <span className="text-white text-sm font-medium">
                     {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
                   </span>
@@ -220,8 +205,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuRadioGroup 
-                          value={selectedBaby?.id || ''} 
+                        <DropdownMenuRadioGroup
+                          value={selectedBaby?.id || ''}
                           onValueChange={(id) => {
                             const baby = babies.find((b: Baby) => b.id === id);
                             if (baby) {
@@ -230,8 +215,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
                           }}
                         >
                           {babies.map((baby) => (
-                            <DropdownMenuRadioItem 
-                              key={baby.id} 
+                            <DropdownMenuRadioItem
+                              key={baby.id}
                               value={baby.id}
                               className={`${
                                 baby.gender === 'MALE'
@@ -251,14 +236,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSettingsOpen(true)}
-                    className="h-8 w-8 text-white hover:bg-white/20 transition-colors duration-200"
-                  >
-                    <SettingsIcon className="h-5 w-5" />
-                  </Button>
                 </div>
               </div>
             </div>
@@ -267,11 +244,26 @@ function AppContent({ children }: { children: React.ReactNode }) {
           <main className="flex-1 w-full relative z-0">
             {children}
           </main>
+
+          {/* Side Navigation */}
+          <SideNav
+            isOpen={sideNavOpen}
+            onClose={() => setSideNavOpen(false)}
+            currentPath={window.location.pathname}
+            onNavigate={(path) => {
+              window.location.href = path;
+              setSideNavOpen(false);
+            }}
+            onSettingsClick={() => {
+              setSettingsOpen(true);
+              setSideNavOpen(false);
+            }}
+          />
         </div>
       )}
 
-      <SettingsModal 
-        open={settingsOpen} 
+      <SettingsModal
+        open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         onBabySelect={(id) => {
           const baby = babies.find((b: Baby) => b.id === id);
