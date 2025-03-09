@@ -18,8 +18,8 @@ export default function Security({ onUnlock }: SecurityProps) {
   const [attempts, setAttempts] = useState(0);
   const [lockoutTime, setLockoutTime] = useState<number | null>(null);
   const [authenticatedCaretakerId, setAuthenticatedCaretakerId] = useState<string | null>(null);
-  const [showPinInput, setShowPinInput] = useState(false);
   const [hasCaretakers, setHasCaretakers] = useState(false);
+  const [activeInput, setActiveInput] = useState<'loginId' | 'pin'>('loginId');
 
   // Reset unlock timer on activity
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Security({ onUnlock }: SecurityProps) {
     if (showDialog) {
       setPin('');
       setLoginId('');
-      setShowPinInput(false);
+      setActiveInput('loginId');
       setError('');
     }
   }, [showDialog]);
@@ -151,50 +151,62 @@ export default function Security({ onUnlock }: SecurityProps) {
       setLoginId(value);
       setError('');
     }
-  };
-
-  const handleLoginIdSubmit = () => {
-    if (loginId.length !== 2) {
-      setError('Login ID must be exactly 2 characters');
-      return;
+    if (value.length === 2) {
+      setActiveInput('pin');
     }
-    
-    setShowPinInput(true);
-    setError('');
   };
 
-  // Handle direct PIN entry (for system PIN when no caretakers exist)
-  const handleDirectPinEntry = (number: string) => {
-    if (lockoutTime) return; // Prevent input during lockout
-
-    const newPin = pin + number;
-    if (newPin.length <= 10) {
-      setPin(newPin);
+  const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 10) {
+      setPin(value);
       setError('');
-
-      // Check PIN length for automatic submission
-      if (newPin.length >= 6) {
-        handleAuthenticate(newPin);
+      
+      if (value.length >= 6) {
+        handleAuthenticate(value);
       }
     }
   };
 
+  // Handle number pad input for either login ID or PIN
   const handleNumberClick = (number: string) => {
     if (lockoutTime) return; // Prevent input during lockout
 
-    const newPin = pin + number;
-    if (newPin.length <= 10) {
-      setPin(newPin);
-      setError('');
+    if (activeInput === 'loginId') {
+      // Handle login ID input
+      if (loginId.length < 2) {
+        const newLoginId = loginId + number;
+        setLoginId(newLoginId);
+        setError('');
+        
+        // Automatically switch to PIN input when login ID is complete
+        if (newLoginId.length === 2) {
+          setActiveInput('pin');
+        }
+      }
+    } else {
+      // Handle PIN input
+      const newPin = pin + number;
+      if (newPin.length <= 10) {
+        setPin(newPin);
+        setError('');
 
-      // Check PIN length for automatic submission
-      if (newPin.length >= 6) {
-        handleAuthenticate(newPin);
+        // Check PIN length for automatic submission
+        if (newPin.length >= 6) {
+          handleAuthenticate(newPin);
+        }
       }
     }
   };
 
   const handleAuthenticate = async (currentPin: string) => {
+    // Don't attempt authentication if login ID is required but not complete
+    if (hasCaretakers && loginId.length !== 2) {
+      setError('Please enter a valid 2-character login ID first');
+      setActiveInput('loginId');
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
@@ -244,19 +256,24 @@ export default function Security({ onUnlock }: SecurityProps) {
 
   const handleDelete = () => {
     if (!lockoutTime) {
-      if (showPinInput) {
+      if (activeInput === 'pin' && pin.length > 0) {
         setPin(pin.slice(0, -1));
-      } else {
+      } else if (activeInput === 'loginId' && loginId.length > 0) {
         setLoginId(loginId.slice(0, -1));
+      } else if (activeInput === 'pin' && pin.length === 0 && loginId.length > 0) {
+        // Switch back to login ID if PIN is empty
+        setActiveInput('loginId');
       }
       setError('');
     }
   };
 
-  const handleBack = () => {
-    setShowPinInput(false);
-    setPin('');
-    setError('');
+  const handleFocusLoginId = () => {
+    setActiveInput('loginId');
+  };
+
+  const handleFocusPin = () => {
+    setActiveInput('pin');
   };
 
   const formatTimeRemaining = (lockoutTime: number) => {
@@ -277,9 +294,7 @@ export default function Security({ onUnlock }: SecurityProps) {
           <p id="pin-description" className="text-sm text-gray-500">
             {!hasCaretakers
               ? 'Please enter your system security PIN'
-              : showPinInput 
-                ? `Enter your security PIN for login ID: ${loginId}` 
-                : 'Please enter your 2-character login ID'}
+              : 'Please enter your login ID and security PIN'}
           </p>
         </div>
         <div className="flex flex-col items-center space-y-4 p-6">
@@ -294,61 +309,88 @@ export default function Security({ onUnlock }: SecurityProps) {
                     />
           </div>
           
-          {hasCaretakers && !showPinInput ? (
-            // Login ID input (only show if caretakers exist)
-            <div className="w-full max-w-[240px] mb-4">
-              <Input
-                value={loginId}
-                onChange={handleLoginIdChange}
-                className="text-center text-xl font-semibold"
-                placeholder="ID"
-                maxLength={2}
-                autoFocus
-                disabled={!!lockoutTime}
-              />
-              <Button 
-                onClick={handleLoginIdSubmit}
-                className="w-full mt-4"
-                disabled={loginId.length !== 2 || !!lockoutTime}
-              >
-                Continue
-              </Button>
-            </div>
-          ) : (
-            // PIN input section
-            <>
-              <h2 className="text-xl font-semibold text-gray-900">Enter PIN</h2>
+          <div className="w-full max-w-[240px] space-y-6">
+            {/* Login ID section - only show if caretakers exist */}
+            {hasCaretakers && (
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-gray-900 text-center">Login ID</h2>
+                
+                {/* Login ID Display */}
+                <div 
+                  className="flex gap-2 justify-center my-2 cursor-pointer" 
+                  onClick={handleFocusLoginId}
+                >
+                  {loginId.length === 0 ? (
+                    // Show 2 placeholder dots when no input
+                    Array.from({ length: 2 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-3 h-3 rounded-full ${activeInput === 'loginId' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
+                      />
+                    ))
+                  ) : (
+                    // Show actual characters for entered login ID
+                    Array.from({ length: 2 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-3 h-3 rounded-full ${i < loginId.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
+                      />
+                    ))
+                  )}
+                </div>
+                <Input
+                  value={loginId}
+                  onChange={handleLoginIdChange}
+                  className="text-center text-xl font-semibold sr-only"
+                  placeholder="ID"
+                  maxLength={2}
+                  autoFocus={activeInput === 'loginId'}
+                  onFocus={handleFocusLoginId}
+                  disabled={!!lockoutTime}
+                />
+              </div>
+            )}
+            
+            {/* PIN input section */}
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold text-gray-900 text-center">Security PIN</h2>
               
               {/* PIN Display */}
-              <div className="flex gap-2 my-4">
+              <div 
+                className="flex gap-2 justify-center my-2 cursor-pointer" 
+                onClick={handleFocusPin}
+              >
                 {pin.length === 0 ? (
                   // Show 6 placeholder dots when no input
                   Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className="w-3 h-3 rounded-full bg-gray-200/50"
+                      className={`w-3 h-3 rounded-full ${activeInput === 'pin' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
                     />
                   ))
                 ) : (
                   // Show actual number of dots for entered digits
-                  Array.from({ length: pin.length }).map((_, i) => (
+                  Array.from({ length: Math.max(pin.length, 6) }).map((_, i) => (
                     <div
                       key={i}
-                      className="w-3 h-3 rounded-full bg-teal-600"
+                      className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
                     />
                   ))
                 )}
               </div>
-              <Button 
-                variant="ghost" 
-                className="text-sm text-gray-500 mb-2"
-                onClick={handleBack}
+              <Input
+                type="password"
+                value={pin}
+                onChange={handlePinChange}
+                className="text-center text-xl font-semibold sr-only"
+                placeholder="PIN"
+                maxLength={10}
+                autoFocus={activeInput === 'pin'}
+                onFocus={handleFocusPin}
                 disabled={!!lockoutTime}
-              >
-                Back to Login ID
-              </Button>
-            </>
-          )}
+              />
+            </div>
+          </div>
           
           {error && (
             <p className="text-red-500 text-sm">
@@ -364,13 +406,7 @@ export default function Security({ onUnlock }: SecurityProps) {
                 key={number}
                 variant="outline"
                 className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
-                onClick={() => {
-                  if (hasCaretakers && showPinInput) {
-                    handleNumberClick(number.toString());
-                  } else if (!hasCaretakers) {
-                    handleDirectPinEntry(number.toString());
-                  }
-                }}
+                onClick={() => handleNumberClick(number.toString())}
                 disabled={!!lockoutTime}
               >
                 {number}
