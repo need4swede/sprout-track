@@ -80,6 +80,7 @@ const SelectContent = React.forwardRef<
         className
       )}
       position={position}
+      style={{ zIndex: 300 }} // Ensure higher z-index than form-page
       {...props}
     >
       <SelectScrollUpButton />

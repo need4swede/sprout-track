@@ -127,6 +127,7 @@ export function FormPage({
         )}
         onClick={onClose}
         aria-hidden="true"
+        style={{ isolation: 'isolate' }} // Create a new stacking context
       />
 
       {/* Form Page Panel */}
@@ -139,6 +140,7 @@ export function FormPage({
         role="dialog"
         aria-modal="true"
         aria-label="Form page"
+        style={{ isolation: 'isolate' }} // Create a new stacking context
       >
         <FormPageHeader 
           title={title} 
@@ -146,7 +148,9 @@ export function FormPage({
           onClose={onClose} 
         />
         
-        {children}
+        <div style={{ position: 'relative' }}> {/* Wrapper to create proper stacking context */}
+          {children}
+        </div>
       </div>
     </>
   );

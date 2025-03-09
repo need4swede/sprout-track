@@ -69,6 +69,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(styles.content, className)}
+      style={{ zIndex: 300 }} // Ensure higher z-index than form-page
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
