@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { formPageStyles } from './form-page.styles';
 import { 
