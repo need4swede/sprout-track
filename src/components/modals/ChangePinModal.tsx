@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/src/components/ui/button';
 import {
   Dialog,
@@ -30,8 +30,42 @@ export default function ChangePinModal({
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
+  const [hasCaretakers, setHasCaretakers] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check if any caretakers exist when modal opens
+  useEffect(() => {
+    if (open) {
+      const checkCaretakers = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch('/api/caretaker');
+          if (response.ok) {
+            const data = await response.json();
+            const hasActiveCaretakers = data.success && Array.isArray(data.data) && data.data.length > 0;
+            setHasCaretakers(hasActiveCaretakers);
+            
+            if (hasActiveCaretakers) {
+              setError('System PIN changes are disabled when caretakers exist. Use caretaker authentication instead.');
+            }
+          }
+        } catch (error) {
+          console.error('Error checking caretakers:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      checkCaretakers();
+    }
+  }, [open]);
 
   const handleVerifyPin = () => {
+    if (hasCaretakers) {
+      setError('System PIN changes are disabled when caretakers exist. Use caretaker authentication instead.');
+      return;
+    }
+    
     if (verifyPin === currentPin) {
       setStep('new');
       setError('');
@@ -42,6 +76,11 @@ export default function ChangePinModal({
   };
 
   const handleNewPin = () => {
+    if (hasCaretakers) {
+      setError('System PIN changes are disabled when caretakers exist. Use caretaker authentication instead.');
+      return;
+    }
+    
     if (newPin.length < 6) {
       setError('PIN must be at least 6 digits');
       return;
@@ -55,6 +94,11 @@ export default function ChangePinModal({
   };
 
   const handleConfirmPin = () => {
+    if (hasCaretakers) {
+      setError('System PIN changes are disabled when caretakers exist. Use caretaker authentication instead.');
+      return;
+    }
+    
     if (newPin === confirmPin) {
       onPinChange(newPin);
       handleClose();
@@ -99,10 +143,13 @@ export default function ChangePinModal({
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '');
                   setVerifyPin(value);
-                  setError('');
+                  if (!hasCaretakers) {
+                    setError('');
+                  }
                 }}
                 placeholder="Enter current PIN"
                 pattern="\d*"
+                disabled={hasCaretakers || loading}
               />
             </div>
           )}
@@ -117,13 +164,16 @@ export default function ChangePinModal({
                   const value = e.target.value.replace(/\D/g, '');
                   if (value.length <= 10) {
                     setNewPin(value);
-                    setError('');
+                    if (!hasCaretakers) {
+                      setError('');
+                    }
                   }
                 }}
                 placeholder="Enter new PIN"
                 minLength={6}
                 maxLength={10}
                 pattern="\d*"
+                disabled={hasCaretakers}
               />
               <p className="text-sm text-gray-500">PIN must be between 6 and 10 digits</p>
             </div>
@@ -139,13 +189,16 @@ export default function ChangePinModal({
                   const value = e.target.value.replace(/\D/g, '');
                   if (value.length <= 10) {
                     setConfirmPin(value);
-                    setError('');
+                    if (!hasCaretakers) {
+                      setError('');
+                    }
                   }
                 }}
                 placeholder="Confirm new PIN"
                 minLength={6}
                 maxLength={10}
                 pattern="\d*"
+                disabled={hasCaretakers}
               />
             </div>
           )}
@@ -164,6 +217,7 @@ export default function ChangePinModal({
                 else if (step === 'new') handleNewPin();
                 else if (step === 'confirm') handleConfirmPin();
               }}
+              disabled={hasCaretakers || loading}
             >
               {step === 'verify' && 'Verify'}
               {step === 'new' && 'Next'}

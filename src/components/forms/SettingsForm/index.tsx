@@ -225,12 +225,16 @@ export default function SettingsForm({
                   <Button
                     variant="outline"
                     onClick={() => setShowChangePinModal(true)}
-                    disabled={loading}
+                    disabled={loading || caretakers.length > 0}
                   >
                     Change PIN
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">PIN must be between 6 and 10 digits</p>
+                {caretakers.length > 0 ? (
+                  <p className="text-sm text-red-500 mt-1">System PIN is disabled when caretakers exist. Use caretaker authentication instead.</p>
+                ) : (
+                  <p className="text-sm text-gray-500 mt-1">PIN must be between 6 and 10 digits</p>
+                )}
               </div>
             </div>
             
