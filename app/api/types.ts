@@ -1,4 +1,4 @@
-import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood } from '@prisma/client';
+import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood } from '@prisma/client';
 
 // Settings types
 export type Settings = PrismaSettings;
@@ -115,4 +115,22 @@ export interface NoteCreate {
   time: string;
   content: string;
   category?: string;
+}
+
+// Caretaker types
+export type CaretakerResponse = Omit<Caretaker, 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+export interface CaretakerCreate {
+  loginId: string;
+  name: string;
+  type?: string;
+  securityPin: string;
+}
+
+export interface CaretakerUpdate extends Partial<CaretakerCreate> {
+  id: string;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Baby, Unit } from '@prisma/client';
+import { Baby, Unit, Caretaker } from '@prisma/client';
 import { Settings } from '@/app/api/types';
 import { Settings as Plus, Edit, Download, Upload } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
@@ -21,6 +21,7 @@ import {
 } from '@/src/components/ui/form-page';
 import BabyModal from '@/src/components/modals/BabyModal';
 import ChangePinModal from '@/src/components/modals/ChangePinModal';
+import CaretakerModal from '@/src/components/modals/CaretakerModal';
 
 interface SettingsFormProps {
   isOpen: boolean;
@@ -39,10 +40,13 @@ export default function SettingsForm({
 }: SettingsFormProps) {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [babies, setBabies] = useState<Baby[]>([]);
+  const [caretakers, setCaretakers] = useState<Caretaker[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBabyModal, setShowBabyModal] = useState(false);
+  const [showCaretakerModal, setShowCaretakerModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
+  const [selectedCaretaker, setSelectedCaretaker] = useState<Caretaker | null>(null);
   const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -56,10 +60,11 @@ export default function SettingsForm({
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [settingsResponse, babiesResponse, unitsResponse] = await Promise.all([
+      const [settingsResponse, babiesResponse, unitsResponse, caretakersResponse] = await Promise.all([
         fetch('/api/settings'),
         fetch('/api/baby'),
-        fetch('/api/units')
+        fetch('/api/units'),
+        fetch('/api/caretaker')
       ]);
 
       if (settingsResponse.ok) {
@@ -75,6 +80,11 @@ export default function SettingsForm({
       if (unitsResponse.ok) {
         const unitsData = await unitsResponse.json();
         setUnits(unitsData.data);
+      }
+
+      if (caretakersResponse.ok) {
+        const caretakersData = await caretakersResponse.json();
+        setCaretakers(caretakersData.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -113,6 +123,11 @@ export default function SettingsForm({
     setShowBabyModal(false);
     await fetchData(); // Refresh local babies list
     onBabyStatusChange?.(); // Refresh parent's babies list
+  };
+
+  const handleCaretakerModalClose = async () => {
+    setShowCaretakerModal(false);
+    await fetchData(); // Refresh local caretakers list
   };
 
   const handleBackup = async () => {
@@ -292,6 +307,53 @@ export default function SettingsForm({
             </div>
 
             <div className="border-t border-slate-200 pt-6">
+              <h3 className="form-label mb-4">Manage Caretakers</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 w-full">
+                  <div className="flex-1 min-w-[200px]">
+                    <Select 
+                      value={selectedCaretaker?.id || ''} 
+                      onValueChange={(caretakerId) => {
+                        const caretaker = caretakers.find(c => c.id === caretakerId);
+                        setSelectedCaretaker(caretaker || null);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a caretaker" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {caretakers.map((caretaker) => (
+                          <SelectItem key={caretaker.id} value={caretaker.id}>
+                            {caretaker.name} {caretaker.type ? `(${caretaker.type})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    disabled={!selectedCaretaker}
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowCaretakerModal(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-3 mr-2" />
+                    Edit
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setIsEditing(false);
+                    setSelectedCaretaker(null);
+                    setShowCaretakerModal(true);
+                  }}>
+                    <Plus className="h-4 w-3 mr-2" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Default Units</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -430,6 +492,13 @@ export default function SettingsForm({
         onClose={handleBabyModalClose}
         isEditing={isEditing}
         baby={selectedBaby}
+      />
+
+      <CaretakerModal
+        open={showCaretakerModal}
+        onClose={handleCaretakerModalClose}
+        isEditing={isEditing}
+        caretaker={selectedCaretaker}
       />
 
       <ChangePinModal

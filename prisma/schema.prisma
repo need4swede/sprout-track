@@ -77,6 +77,7 @@ model Baby {
 
 model Caretaker {
   id          String       @id @default(uuid())
+  loginId     String       // Two-digit login identifier for quick authentication
   name        String
   type        String?      // parent, daycare, nanny, grandparent, uncle, etc.
   securityPin String
