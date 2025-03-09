@@ -7,6 +7,7 @@ import { Card } from '@/src/components/ui/card';
 interface DailyStatsProps {
   activities: ActivityType[];
   date: Date;
+  isLoading?: boolean;
 }
 
 interface StatItemProps {
@@ -27,7 +28,7 @@ const StatItem: React.FC<StatItemProps> = ({ icon, label, value }) => (
   </div>
 );
 
-export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date }) => {
+export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoading = false }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Helper function to format minutes into hours and minutes
@@ -106,9 +107,22 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date }) => {
       }
     });
 
-    // Calculate awake time (total day minutes minus sleep minutes)
-    const totalDayMinutes = 24 * 60; // 24 hours in minutes
-    const awakeMinutes = totalDayMinutes - totalSleepMinutes;
+    // Calculate awake time (elapsed time today minus sleep minutes)
+    let totalElapsedMinutes = 24 * 60; // Default to full day (24 hours in minutes)
+    
+    // If the selected date is today, only count elapsed time
+    const now = new Date();
+    const isToday = date.getDate() === now.getDate() && 
+                    date.getMonth() === now.getMonth() && 
+                    date.getFullYear() === now.getFullYear();
+    
+    if (isToday) {
+      // Calculate minutes elapsed so far today
+      const elapsedMs = now.getTime() - startOfDay.getTime();
+      totalElapsedMinutes = Math.floor(elapsedMs / (1000 * 60));
+    }
+    
+    const awakeMinutes = totalElapsedMinutes - totalSleepMinutes;
     
     // Format consumed amounts
     const formattedConsumed = Object.entries(consumedAmounts)
@@ -125,7 +139,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date }) => {
   }, [activities, date]);
 
   return (
-    <Card className="mb-2 overflow-hidden">
+    <Card className="overflow-hidden">
       <div 
         className="flex items-center justify-between px-6 py-3 bg-gray-50 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -138,31 +152,43 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date }) => {
       
       {isExpanded && (
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
-          <StatItem 
-            icon={<Sun className="h-4 w-4 text-amber-500" />} 
-            label="Awake Time" 
-            value={awakeTime} 
-          />
-          <StatItem 
-            icon={<Moon className="h-4 w-4 text-gray-700" />} 
-            label="Sleep Time" 
-            value={sleepTime} 
-          />
-          <StatItem 
-            icon={<Icon iconNode={bottleBaby} className="h-4 w-4 text-sky-600" />} 
-            label="Consumed" 
-            value={totalConsumed} 
-          />
-          <StatItem 
-            icon={<Icon iconNode={diaper} className="h-4 w-4 text-teal-600" />} 
-            label="Diaper Changes" 
-            value={diaperChanges} 
-          />
-          <StatItem 
-            icon={<Icon iconNode={diaper} className="h-4 w-4 text-amber-700" />} 
-            label="Poops" 
-            value={poopCount} 
-          />
+          {isLoading ? (
+            <div className="col-span-2 md:col-span-5 py-4 text-center text-gray-500">
+              Loading daily statistics...
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="col-span-2 md:col-span-5 py-4 text-center text-gray-500">
+              No activities recorded for this day
+            </div>
+          ) : (
+            <>
+              <StatItem 
+                icon={<Sun className="h-4 w-4 text-amber-500" />} 
+                label="Awake Time" 
+                value={awakeTime} 
+              />
+              <StatItem 
+                icon={<Moon className="h-4 w-4 text-gray-700" />} 
+                label="Sleep Time" 
+                value={sleepTime} 
+              />
+              <StatItem 
+                icon={<Icon iconNode={bottleBaby} className="h-4 w-4 text-sky-600" />} 
+                label="Consumed" 
+                value={totalConsumed} 
+              />
+              <StatItem 
+                icon={<Icon iconNode={diaper} className="h-4 w-4 text-teal-600" />} 
+                label="Diaper Changes" 
+                value={diaperChanges} 
+              />
+              <StatItem 
+                icon={<Icon iconNode={diaper} className="h-4 w-4 text-amber-700" />} 
+                label="Poops" 
+                value={poopCount} 
+              />
+            </>
+          )}
         </div>
       )}
     </Card>

@@ -440,8 +440,12 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   // State to store the activities fetched for the selected date
   const [dateFilteredActivities, setDateFilteredActivities] = useState<ActivityType[]>([]);
   
+  // Loading state for fetching activities
+  const [isLoadingActivities, setIsLoadingActivities] = useState<boolean>(false);
+  
   // Function to fetch activities for a specific date
   const fetchActivitiesForDate = async (babyId: string, date: Date) => {
+    setIsLoadingActivities(true);
     try {
       // Format date for API request - ensure it's in ISO format
       const formattedDate = date.toISOString();
@@ -495,8 +499,12 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         // Clear the date-filtered activities on error
         setDateFilteredActivities([]);
       }
+      
+      // Set loading to false after data is processed
+      setIsLoadingActivities(false);
     } catch (error) {
       console.error('Error fetching activities for date:', error);
+      setIsLoadingActivities(false);
     }
   };
   
@@ -727,7 +735,11 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       </CardHeader>
 
       {/* Daily Stats Banner */}
-      <DailyStats activities={dateFilteredActivities} date={selectedDate} />
+      <DailyStats 
+        activities={dateFilteredActivities} 
+        date={selectedDate} 
+        isLoading={isLoadingActivities} 
+      />
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
