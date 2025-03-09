@@ -40,6 +40,13 @@ export default function Security({ onUnlock }: SecurityProps) {
     };
   }, []);
 
+  // Reset PIN when security screen appears
+  useEffect(() => {
+    if (showDialog) {
+      setPin('');
+    }
+  }, [showDialog]);
+
   // Check for inactivity and handle security state
   useEffect(() => {
     let inactivityTimer: NodeJS.Timeout;
