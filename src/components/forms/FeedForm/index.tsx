@@ -40,10 +40,14 @@ export default function FeedForm({
     time: initialTime,
     type: '' as FeedType | '',
     amount: '',
+    unit: 'OZ', // Default unit
     side: '' as BreastSide | '',
     food: '',
   });
   const [loading, setLoading] = useState(false);
+  const [defaultSettings, setDefaultSettings] = useState({
+    defaultBottleUnit: 'OZ',
+  });
 
   const fetchLastAmount = async (type: FeedType) => {
     if (!babyId) return;
@@ -56,11 +60,34 @@ export default function FeedForm({
       if (data.success && data.data?.amount) {
         setFormData(prev => ({
           ...prev,
-          amount: data.data.amount.toString()
+          amount: data.data.amount.toString(),
+          unit: data.data.unitAbbr || prev.unit
         }));
       }
     } catch (error) {
       console.error('Error fetching last amount:', error);
+    }
+  };
+
+  const fetchDefaultSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      if (data.success && data.data) {
+        setDefaultSettings({
+          defaultBottleUnit: data.data.defaultBottleUnit || 'OZ',
+        });
+        
+        // Set the default unit from settings
+        setFormData(prev => ({
+          ...prev,
+          unit: data.data.defaultBottleUnit || 'OZ'
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
     }
   };
 
@@ -81,12 +108,16 @@ export default function FeedForm({
 
   useEffect(() => {
     if (isOpen) {
+      // Fetch default settings when form opens
+      fetchDefaultSettings();
+      
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
           time: formatDateForInput(initialTime),
           type: activity.type,
           amount: activity.amount?.toString() || '',
+          unit: activity.unitAbbr || defaultSettings.defaultBottleUnit,
           side: activity.side || '',
           food: activity.food || '',
         });
@@ -159,7 +190,10 @@ export default function FeedForm({
         time: formData.time, // Send the local time directly
         type: formData.type,
         ...(formData.type === 'BREAST' && { side: formData.side }),
-        ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { amount: parseFloat(formData.amount) }),
+        ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { 
+          amount: parseFloat(formData.amount),
+          unitAbbr: formData.unit
+        }),
         ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
       };
 
@@ -184,6 +218,7 @@ export default function FeedForm({
         time: initialTime,
         type: '' as FeedType | '',
         amount: '',
+        unit: defaultSettings.defaultBottleUnit, // Add unit property
         side: '' as BreastSide | '',
         food: '',
       });
@@ -264,7 +299,7 @@ export default function FeedForm({
             
             {(formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && (
               <div>
-                <label className="form-label">Amount (oz)</label>
+                <label className="form-label">Amount ({formData.unit === 'ML' ? 'ml' : 'oz'})</label>
                 <div className="flex items-center">
                   <Button
                     type="button"
@@ -282,7 +317,7 @@ export default function FeedForm({
                     className="w-full mx-2"
                     placeholder="Enter amount"
                     min="0"
-                    step="0.5"
+                    step={formData.unit === 'ML' ? '5' : '0.5'}
                     disabled={loading}
                   />
                   <Button
@@ -293,6 +328,26 @@ export default function FeedForm({
                     disabled={loading}
                   >
                     <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="mt-2 flex space-x-2">
+                  <Button
+                    type="button"
+                    variant={formData.unit === 'OZ' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => setFormData(prev => ({ ...prev, unit: 'OZ' }))}
+                    disabled={loading}
+                  >
+                    oz
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.unit === 'ML' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => setFormData(prev => ({ ...prev, unit: 'ML' }))}
+                    disabled={loading}
+                  >
+                    ml
                   </Button>
                 </div>
               </div>

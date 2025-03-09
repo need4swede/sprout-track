@@ -65,6 +65,7 @@ export interface FeedLogCreate {
   time: string;
   type: FeedType;
   amount?: number;
+  unitAbbr?: string;
   side?: BreastSide;
   food?: string;
 }
