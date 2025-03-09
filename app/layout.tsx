@@ -42,6 +42,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
     return false;
   });
+  
+  const [caretakerName, setCaretakerName] = useState<string>('');
 
   // Function to calculate baby's age
   const calculateAge = (birthday: Date) => {
@@ -69,6 +71,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
         const settingsData = await settingsResponse.json();
         if (settingsData.success && settingsData.data.familyName) {
           setFamilyName(settingsData.data.familyName);
+        }
+      }
+      
+      // Fetch caretaker information if authenticated
+      const caretakerId = localStorage.getItem('caretakerId');
+      if (caretakerId) {
+        const caretakerResponse = await fetch(`/api/caretaker?id=${caretakerId}`);
+        if (caretakerResponse.ok) {
+          const caretakerData = await caretakerResponse.json();
+          if (caretakerData.success && caretakerData.data) {
+            setCaretakerName(caretakerData.data.name);
+          }
         }
       }
 
@@ -103,6 +117,23 @@ function AppContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     fetchData();
+
+    // Update caretaker name when component mounts
+    const caretakerId = localStorage.getItem('caretakerId');
+    if (caretakerId) {
+      if (caretakerId === 'system') {
+        setCaretakerName('System Administrator');
+      } else {
+        fetch(`/api/caretaker?id=${caretakerId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.data) {
+              setCaretakerName(data.data.name);
+            }
+          })
+          .catch(error => console.error('Error fetching caretaker:', error));
+      }
+    }
 
     // Update unlock timer on any activity
     const handleActivity = () => {
@@ -144,9 +175,30 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   if (!mounted) return null;
 
+  const handleUnlock = (caretakerId?: string) => {
+    setIsUnlocked(true);
+    fetchData();
+    
+    // Update caretaker name when unlocked
+    if (caretakerId) {
+      if (caretakerId === 'system') {
+        setCaretakerName('System Administrator');
+      } else {
+        fetch(`/api/caretaker?id=${caretakerId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.data) {
+              setCaretakerName(data.data.name);
+            }
+          })
+          .catch(error => console.error('Error fetching caretaker:', error));
+      }
+    }
+  };
+
   return (
     <>
-      <Security onUnlock={() => setIsUnlocked(true)} />
+      <Security onUnlock={handleUnlock} />
       {(isUnlocked || process.env.NODE_ENV === 'development') && (
         <div className="min-h-screen flex flex-col">
           <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-40">
@@ -167,9 +219,16 @@ function AppContent({ children }: { children: React.ReactNode }) {
                       priority
                     />
                   </SideNavTrigger>
-                  <span className="text-white text-sm font-medium">
-                    {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
-                  </span>
+                  <div className="flex flex-col">
+                    {caretakerName !== 'System Administrator' && (
+                      <span className="text-white text-xs opacity-80">
+                        Hi, {caretakerName}
+                      </span>
+                    )}
+                    <span className="text-white text-sm font-medium">
+                      {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   {babies.length > 0 && (
