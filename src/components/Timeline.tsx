@@ -7,23 +7,21 @@ import {
   Icon,
   Edit,
   Pencil,
-  Calendar,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/src/components/ui/dialog';
+  FormPage,
+  FormPageContent,
+  FormPageFooter
+} from '@/src/components/ui/form-page';
 import { Button } from '@/src/components/ui/button';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import SleepModal from '@/src/components/modals/SleepModal';
-import FeedModal from '@/src/components/modals/FeedModal';
-import DiaperModal from '@/src/components/modals/DiaperModal';
-import NoteModal from '@/src/components/modals/NoteModal';
+import { useState, useEffect, useMemo } from 'react';
+import SleepForm from '@/src/components/forms/SleepForm';
+import FeedForm from '@/src/components/forms/FeedForm';
+import DiaperForm from '@/src/components/forms/DiaperForm';
+import NoteForm from '@/src/components/forms/NoteForm';
 import { ActivityType } from '@/src/components/ui/activity-tile';
 
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
@@ -816,42 +814,15 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         </div>
       )}
 
-      {/* Activity Details Dialog */}
-      <Dialog open={!!selectedActivity} onOpenChange={() => setSelectedActivity(null)}>
-        <DialogContent className="dialog-content !p-4 sm:!p-6">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleDelete(selectedActivity!)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (selectedActivity) {
-                      if ('duration' in selectedActivity) setEditModalType('sleep');
-                      else if ('amount' in selectedActivity) setEditModalType('feed');
-                      else if ('condition' in selectedActivity) setEditModalType('diaper');
-                      else if ('content' in selectedActivity) setEditModalType('note');
-                    }
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </div>
-              <span>{selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}</span>
-            </DialogTitle>
-          </DialogHeader>
+      {/* Activity Details FormPage */}
+      <FormPage 
+        isOpen={!!selectedActivity} 
+        onClose={() => setSelectedActivity(null)}
+        title={selectedActivity ? getActivityDetails(selectedActivity, settings).title : ''}
+      >
+        <FormPageContent>
           {selectedActivity && (
-            <div className="mt-4 space-y-4">
+            <div className="space-y-4 p-4">
               {getActivityDetails(selectedActivity, settings).details.map((detail, index) => (
                 <div key={index} className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">{detail.label}:</span>
@@ -860,57 +831,106 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               ))}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </FormPageContent>
+        <FormPageFooter>
+          <div className="flex justify-between w-full px-4 py-2">
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(selectedActivity!)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (selectedActivity) {
+                    if ('duration' in selectedActivity) setEditModalType('sleep');
+                    else if ('amount' in selectedActivity) setEditModalType('feed');
+                    else if ('condition' in selectedActivity) setEditModalType('diaper');
+                    else if ('content' in selectedActivity) setEditModalType('note');
+                  }
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedActivity(null)}
+            >
+              Close
+            </Button>
+          </div>
+        </FormPageFooter>
+      </FormPage>
 
-      {/* Edit Modals */}
+      {/* Edit Forms */}
       {selectedActivity && (
         <>
-          <SleepModal
-            open={editModalType === 'sleep'}
+          <SleepForm
+            isOpen={editModalType === 'sleep'}
             onClose={() => {
               setEditModalType(null);
               setSelectedActivity(null);
-              onActivityDeleted?.();
             }}
             isSleeping={false}
             onSleepToggle={() => {}}
             babyId={selectedActivity.babyId}
             initialTime={'startTime' in selectedActivity && selectedActivity.startTime ? String(selectedActivity.startTime) : getActivityTime(selectedActivity)}
             activity={'duration' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
-          />
-          <FeedModal
-            open={editModalType === 'feed'}
-            onClose={() => {
+            onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);
               onActivityDeleted?.();
+            }}
+          />
+          <FeedForm
+            isOpen={editModalType === 'feed'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
             }}
             babyId={selectedActivity.babyId}
             initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'amount' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
-          />
-          <DiaperModal
-            open={editModalType === 'diaper'}
-            onClose={() => {
+            onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);
               onActivityDeleted?.();
+            }}
+          />
+          <DiaperForm
+            isOpen={editModalType === 'diaper'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
             }}
             babyId={selectedActivity.babyId}
             initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'condition' in selectedActivity && 'type' in selectedActivity ? selectedActivity : undefined}
-          />
-          <NoteModal
-            open={editModalType === 'note'}
-            onClose={() => {
+            onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);
               onActivityDeleted?.();
             }}
+          />
+          <NoteForm
+            isOpen={editModalType === 'note'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+            }}
             babyId={selectedActivity.babyId}
             initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity : undefined}
+            onSuccess={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
           />
         </>
       )}

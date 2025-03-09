@@ -6,14 +6,14 @@ import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import { StatusBubble } from "@/src/components/ui/status-bubble";
 import { Baby as BabyIcon } from 'lucide-react';
-import SleepModal from '@/src/components/modals/SleepModal';
-import FeedModal from '@/src/components/modals/FeedModal';
-import DiaperModal from '@/src/components/modals/DiaperModal';
-import NoteModal from '@/src/components/modals/NoteModal';
 import Timeline from '@/src/components/Timeline';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
 import { ActivityTile, ActivityType } from '@/src/components/ui/activity-tile';
+import SleepForm from '@/src/components/forms/SleepForm';
+import FeedForm from '@/src/components/forms/FeedForm';
+import DiaperForm from '@/src/components/forms/DiaperForm';
+import NoteForm from '@/src/components/forms/NoteForm';
 
 function HomeContent(): React.ReactElement {
   const { selectedBaby, sleepingBabies, setSleepingBabies } = useBaby();
@@ -442,16 +442,12 @@ function HomeContent(): React.ReactElement {
         </div>
       )}
 
-      {/* Modals */}
-      {/* Sleep Modal */}
-      <SleepModal
-        open={showSleepModal}
+      {/* Forms */}
+      {/* Sleep Form */}
+      <SleepForm
+        isOpen={showSleepModal}
         onClose={async () => {
           setShowSleepModal(false);
-          if (selectedBaby?.id) {
-            await refreshActivities(selectedBaby.id);
-            await checkSleepStatus(selectedBaby.id);
-          }
         }}
         isSleeping={selectedBaby?.id ? sleepingBabies.has(selectedBaby.id) : false}
         onSleepToggle={() => {
@@ -469,49 +465,57 @@ function HomeContent(): React.ReactElement {
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}
-        variant="sleep"
+        onSuccess={async () => {
+          if (selectedBaby?.id) {
+            await refreshActivities(selectedBaby.id);
+            await checkSleepStatus(selectedBaby.id);
+          }
+        }}
       />
       
-      {/* Feed Modal */}
-      <FeedModal
-        open={showFeedModal}
+      {/* Feed Form */}
+      <FeedForm
+        isOpen={showFeedModal}
         onClose={() => {
           setShowFeedModal(false);
+        }}
+        babyId={selectedBaby?.id || ''}
+        initialTime={localTime}
+        onSuccess={() => {
           if (selectedBaby?.id) {
             refreshActivities(selectedBaby.id);
           }
         }}
-        babyId={selectedBaby?.id || ''}
-        initialTime={localTime}
-        variant="feed"
       />
       
-      {/* Diaper Modal */}
-      <DiaperModal
-        open={showDiaperModal}
+      {/* Diaper Form */}
+      <DiaperForm
+        isOpen={showDiaperModal}
         onClose={() => {
           setShowDiaperModal(false);
+        }}
+        babyId={selectedBaby?.id || ''}
+        initialTime={localTime}
+        onSuccess={() => {
           if (selectedBaby?.id) {
             refreshActivities(selectedBaby.id);
           }
         }}
-        babyId={selectedBaby?.id || ''}
-        initialTime={localTime}
-        variant="diaper"
       />
       
-      {/* Note Modal */}
-      <NoteModal
-        open={showNoteModal}
+      {/* Note Form */}
+      <NoteForm
+        isOpen={showNoteModal}
         onClose={() => {
           setShowNoteModal(false);
+        }}
+        babyId={selectedBaby?.id || ''}
+        initialTime={localTime}
+        onSuccess={() => {
           if (selectedBaby?.id) {
             refreshActivities(selectedBaby.id);
           }
         }}
-        babyId={selectedBaby?.id || ''}
-        initialTime={localTime}
-        variant="note"
       />
       
       {/* Settings Modal */}
