@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Baby } from '@prisma/client';
 import { Settings } from '@/app/api/types';
-import { Settings as SettingsIcon, Plus, Edit, Download, Upload } from 'lucide-react';
+import { Settings as Plus, Edit, Download, Upload } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
