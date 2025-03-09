@@ -8,7 +8,7 @@ import { cva } from "class-variance-authority";
  */
 export const formPageStyles = {
   // Main container
-  container: "fixed inset-y-0 right-0 z-[99] flex flex-col bg-white/95 backdrop-blur-sm shadow-xl transform transition-transform duration-300 ease-in-out w-full sm:max-w-lg md:max-w-xl border-l border-slate-200",
+  container: "fixed inset-y-0 right-0 z-[99] flex flex-col bg-white/95 backdrop-blur-sm shadow-xl transform transition-transform duration-300 ease-in-out w-full sm:max-w-lg md:max-w-xl border-l border-slate-200 overflow-hidden",
   
   // Container when open
   containerOpen: "translate-x-0",
@@ -41,13 +41,13 @@ export const formPageStyles = {
   closeButton: "text-gray-500 hover:text-gray-700 transition-colors duration-200 p-2 rounded-full hover:bg-slate-100/80",
   
   // Content container (scrollable area)
-  content: "flex-1 overflow-y-auto p-4",
+  content: "flex-1 overflow-y-auto p-4 pb-20", // Added bottom padding to ensure content doesn't get hidden behind fixed footer
   
   // Form content alignment for mobile and desktop
   formContent: "flex flex-col space-y-6 mx-auto max-w-md sm:mx-0",
   
   // Footer section
-  footer: "border-t border-gray-200 p-4 flex justify-end gap-2",
+  footer: "border-t border-gray-200 p-4 flex justify-end gap-2 bg-white/95 backdrop-blur-sm absolute bottom-0 left-0 right-0 z-10",
 };
 
 /**

@@ -147,9 +147,8 @@ export function FormPage({
           onClose={onClose} 
         />
         
-        <div style={{ position: 'relative' }}> {/* Wrapper to create proper stacking context */}
-          {children}
-        </div>
+        {/* Removed the relative positioning wrapper that was causing issues */}
+        {children}
       </div>
     </>
   );
