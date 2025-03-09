@@ -22,6 +22,7 @@ import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
+import DailyStats from '@/src/components/DailyStats';
 import { ActivityType } from '@/src/components/ui/activity-tile';
 
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
@@ -724,6 +725,9 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           </div>
         </div>
       </CardHeader>
+
+      {/* Daily Stats Banner */}
+      <DailyStats activities={dateFilteredActivities} date={selectedDate} />
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
