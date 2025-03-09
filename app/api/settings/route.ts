@@ -13,6 +13,11 @@ export async function GET() {
         data: {
           familyName: 'My Family', // Default family name
           timezone: 'America/Chicago', // Default timezone
+          defaultBottleUnit: 'OZ',
+          defaultSolidsUnit: 'TBSP',
+          defaultHeightUnit: 'IN',
+          defaultWeightUnit: 'LB',
+          defaultTempUnit: 'F',
         },
       });
     }
@@ -42,6 +47,11 @@ export async function POST(req: NextRequest) {
         familyName: body.familyName,
         timezone: body.timezone,
         securityPin: body.securityPin,
+        defaultBottleUnit: body.defaultBottleUnit,
+        defaultSolidsUnit: body.defaultSolidsUnit,
+        defaultHeightUnit: body.defaultHeightUnit,
+        defaultWeightUnit: body.defaultWeightUnit,
+        defaultTempUnit: body.defaultTempUnit,
       },
     });
 
@@ -84,6 +94,11 @@ export async function PUT(req: NextRequest) {
         familyName: body.familyName,
         timezone: body.timezone,
         securityPin: body.securityPin,
+        defaultBottleUnit: body.defaultBottleUnit,
+        defaultSolidsUnit: body.defaultSolidsUnit,
+        defaultHeightUnit: body.defaultHeightUnit,
+        defaultWeightUnit: body.defaultWeightUnit,
+        defaultTempUnit: body.defaultTempUnit,
       },
     });
 

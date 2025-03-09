@@ -222,10 +222,15 @@ model Note {
 }
 
 model Settings {
-  id          String   @id @default(uuid())
-  familyName  String   @default("My Family")
-  timezone    String   @default("America/Chicago")
-  securityPin String   @default("111222")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  familyName          String   @default("My Family")
+  timezone            String   @default("America/Chicago")
+  securityPin         String   @default("111222")
+  defaultBottleUnit   String   @default("OZ")  // Default unit for bottle feeding
+  defaultSolidsUnit   String   @default("TBSP") // Default unit for solid feeding
+  defaultHeightUnit   String   @default("IN")  // Default unit for height measurement
+  defaultWeightUnit   String   @default("LB")  // Default unit for weight measurement
+  defaultTempUnit     String   @default("F")   // Default unit for temperature
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }

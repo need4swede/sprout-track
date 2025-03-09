@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Baby } from '@prisma/client';
+import { Baby, Unit } from '@prisma/client';
 import { Settings } from '@/app/api/types';
 import { Settings as Plus, Edit, Download, Upload } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
@@ -46,6 +46,7 @@ export default function SettingsForm({
   const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [units, setUnits] = useState<Unit[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -55,9 +56,10 @@ export default function SettingsForm({
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [settingsResponse, babiesResponse] = await Promise.all([
+      const [settingsResponse, babiesResponse, unitsResponse] = await Promise.all([
         fetch('/api/settings'),
-        fetch('/api/baby')
+        fetch('/api/baby'),
+        fetch('/api/units')
       ]);
 
       if (settingsResponse.ok) {
@@ -68,6 +70,11 @@ export default function SettingsForm({
       if (babiesResponse.ok) {
         const babiesData = await babiesResponse.json();
         setBabies(babiesData.data);
+      }
+
+      if (unitsResponse.ok) {
+        const unitsData = await unitsResponse.json();
+        setUnits(unitsData.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -280,6 +287,128 @@ export default function SettingsForm({
                     <Plus className="h-4 w-3 mr-2" />
                     Add
                   </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="form-label mb-4">Default Units</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Bottle Feeding Unit */}
+                  <div>
+                    <Label className="form-label">Bottle Feeding</Label>
+                    <Select
+                      value={settings?.defaultBottleUnit || 'OZ'}
+                      onValueChange={(value) => handleSettingsChange({ defaultBottleUnit: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units
+                          .filter(unit => ['OZ', 'ML'].includes(unit.unitAbbr))
+                          .map((unit) => (
+                            <SelectItem key={unit.unitAbbr} value={unit.unitAbbr}>
+                              {unit.unitName} ({unit.unitAbbr})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Solid Feeding Unit */}
+                  <div>
+                    <Label className="form-label">Solid Feeding</Label>
+                    <Select
+                      value={settings?.defaultSolidsUnit || 'TBSP'}
+                      onValueChange={(value) => handleSettingsChange({ defaultSolidsUnit: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units
+                          .filter(unit => ['TBSP', 'G'].includes(unit.unitAbbr))
+                          .map((unit) => (
+                            <SelectItem key={unit.unitAbbr} value={unit.unitAbbr}>
+                              {unit.unitName} ({unit.unitAbbr})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Height Unit */}
+                  <div>
+                    <Label className="form-label">Height</Label>
+                    <Select
+                      value={settings?.defaultHeightUnit || 'IN'}
+                      onValueChange={(value) => handleSettingsChange({ defaultHeightUnit: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units
+                          .filter(unit => ['IN', 'CM'].includes(unit.unitAbbr))
+                          .map((unit) => (
+                            <SelectItem key={unit.unitAbbr} value={unit.unitAbbr}>
+                              {unit.unitName} ({unit.unitAbbr})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Weight Unit */}
+                  <div>
+                    <Label className="form-label">Weight</Label>
+                    <Select
+                      value={settings?.defaultWeightUnit || 'LB'}
+                      onValueChange={(value) => handleSettingsChange({ defaultWeightUnit: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units
+                          .filter(unit => ['LB', 'KG', 'G'].includes(unit.unitAbbr))
+                          .map((unit) => (
+                            <SelectItem key={unit.unitAbbr} value={unit.unitAbbr}>
+                              {unit.unitName} ({unit.unitAbbr})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Temperature Unit */}
+                  <div>
+                    <Label className="form-label">Temperature</Label>
+                    <Select
+                      value={settings?.defaultTempUnit || 'F'}
+                      onValueChange={(value) => handleSettingsChange({ defaultTempUnit: value })}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {units
+                          .filter(unit => ['F', 'C'].includes(unit.unitAbbr))
+                          .map((unit) => (
+                            <SelectItem key={unit.unitAbbr} value={unit.unitAbbr}>
+                              {unit.unitName} ({unit.unitAbbr})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
