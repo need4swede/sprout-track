@@ -88,6 +88,7 @@ model Caretaker {
   sleepLogs   SleepLog[]
   feedLogs    FeedLog[]
   diaperLogs  DiaperLog[]
+  moodLogs    MoodLog[]
   notes       Note[]
 
   @@index([deletedAt])
@@ -182,21 +183,24 @@ model DiaperLog {
 }
 
 model MoodLog {
-  id        String    @id @default(uuid())
-  time      DateTime
-  mood      Mood
-  intensity Int?      @default(3) // Scale of 1-5
-  duration  Int?      // Duration in minutes
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id          String    @id @default(uuid())
+  time        DateTime
+  mood        Mood
+  intensity   Int?      @default(3) // Scale of 1-5
+  duration    Int?      // Duration in minutes
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
   
   // Relationships
-  baby      Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
-  babyId    String
+  baby        Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId      String
+  caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
+  caretakerId String?
 
   @@index([time])
   @@index([babyId])
+  @@index([caretakerId])
   @@index([deletedAt])
 }
 
