@@ -146,7 +146,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {!isUnlocked && <Security onUnlock={() => setIsUnlocked(true)} />}
+      <Security onUnlock={() => setIsUnlocked(true)} />
       {(isUnlocked || process.env.NODE_ENV === 'development') && (
         <div className="min-h-screen flex flex-col">
           <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-40">

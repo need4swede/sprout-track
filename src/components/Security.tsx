@@ -3,13 +3,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/src/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/src/components/ui/dialog';
 import { X } from 'lucide-react';
 
 interface SecurityProps {
@@ -180,14 +173,17 @@ export default function Security({ onUnlock }: SecurityProps) {
   };
 
   return (
-    <Dialog open={showDialog} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" aria-describedby="pin-description" hideClose>
-        <DialogHeader className="text-center">
-          <DialogTitle>Security Check</DialogTitle>
-          <DialogDescription id="pin-description">
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-white ${showDialog ? 'block' : 'hidden'}`}
+      aria-describedby="pin-description"
+    >
+      <div className="w-full max-w-md mx-auto p-6">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold">Security Check</h2>
+          <p id="pin-description" className="text-sm text-gray-500">
             Please enter your PIN to access the app
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
         <div className="flex flex-col items-center space-y-4 p-6">
           <div className="w-24 h-24 p-1 flex items-center justify-center">
             <Image
@@ -253,7 +249,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
