@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { formPageStyles } from './form-page.styles';
@@ -83,6 +84,15 @@ export function FormPage({
   children,
   className,
 }: FormPageProps) {
+  // State to track if we're in a browser environment
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted state to true after component mounts
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   // Close the form page when pressing Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,7 +116,8 @@ export function FormPage({
     };
   }, [isOpen, onClose]);
 
-  return (
+  // Content to be rendered
+  const content = (
     <>
       {/* Overlay */}
       <div 
@@ -139,6 +150,11 @@ export function FormPage({
       </div>
     </>
   );
+
+  // Use createPortal to render at the root level when in browser environment
+  return mounted && typeof document !== 'undefined'
+    ? createPortal(content, document.body)
+    : null;
 }
 
 export default FormPage;
