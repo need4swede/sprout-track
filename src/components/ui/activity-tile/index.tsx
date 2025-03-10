@@ -53,7 +53,7 @@ export function ActivityTile({
         )}
       </div>
       {isButton && title && (
-        <span className="absolute bottom-1 text-sm font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm left-0 right-0 mx-auto text-center w-max">
+        <span className="absolute bottom-1 text-xs font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm left-0 right-0 mx-auto text-center w-max">
           {title}
         </span>
       )}

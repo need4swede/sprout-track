@@ -297,7 +297,7 @@ export default function Security({ onUnlock }: SecurityProps) {
       aria-describedby="pin-description"
     >
       <div className="w-full max-w-md mx-auto p-6">
-        <div className="text-center mb-6">
+        <div className="text-center mt-2 mb-4">
           <h2 className="text-xl font-semibold">Security Check</h2>
           <p id="pin-description" className="text-sm text-gray-500">
             {!hasCaretakers
@@ -305,7 +305,7 @@ export default function Security({ onUnlock }: SecurityProps) {
               : 'Please enter your login ID and security PIN'}
           </p>
         </div>
-        <div className="flex flex-col items-center space-y-4 p-6">
+        <div className="flex flex-col items-center space-y-4 pb-6 pl-6 pr-6">
           <div className="w-24 h-24 p-1 flex items-center justify-center">
             <Image
                       src="/acorn-128.png"

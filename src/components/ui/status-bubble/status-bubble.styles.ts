@@ -1,5 +1,5 @@
 export const statusBubbleStyles = {
-  base: "absolute top-0 right-0 px-3 py-1 rounded-bl-2xl flex items-center gap-1.5 text-sm font-medium z-50",
+  base: "absolute top-0 right-0 px-3 py-1 rounded-bl-2xl flex items-center gap-1.5 text-xs font-medium z-50",
   icon: "h-3.5 w-3.5",
   statusStyles: {
     sleeping: {
