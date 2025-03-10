@@ -142,6 +142,7 @@ model FeedLog {
   time        DateTime
   startTime   DateTime?   // Used for breast feeding duration tracking
   endTime     DateTime?   // Used for breast feeding duration tracking
+  feedDuration Int?       // Duration in seconds, useful for tracking actual feeding time
   type        FeedType
   amount      Float?      // Amount in specified unit
   unit        Unit?      @relation(fields: [unitAbbr], references: [unitAbbr])

@@ -10,12 +10,20 @@ async function handlePost(req: NextRequest, authContext: AuthResult) {
     
     // Ensure time is saved as local time
     const localTime = new Date(body.time);
+    
+    // Process startTime, endTime, and feedDuration if provided
+    const data = {
+      ...body,
+      time: localTime,
+      caretakerId: authContext.caretakerId,
+      ...(body.startTime && { startTime: new Date(body.startTime) }),
+      ...(body.endTime && { endTime: new Date(body.endTime) }),
+      // Ensure feedDuration is properly included
+      ...(body.feedDuration !== undefined && { feedDuration: body.feedDuration }),
+    };
+    
     const feedLog = await prisma.feedLog.create({
-      data: {
-        ...body,
-        time: localTime,
-        caretakerId: authContext.caretakerId,
-      },
+      data,
     });
 
     const response: FeedLogResponse = {
@@ -48,10 +56,16 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
     const id = searchParams.get('id');
     const body: Partial<FeedLogCreate> = await req.json();
 
-    // Ensure time is saved as local time if provided
-    const data = body.time
-      ? { ...body, time: new Date(body.time) }
-      : body;
+    // Process all date fields
+    const data = {
+      ...(body.time ? { time: new Date(body.time) } : {}),
+      ...(body.startTime ? { startTime: new Date(body.startTime) } : {}),
+      ...(body.endTime ? { endTime: new Date(body.endTime) } : {}),
+      ...(body.feedDuration !== undefined ? { feedDuration: body.feedDuration } : {}),
+      ...Object.entries(body)
+        .filter(([key]) => !['time', 'startTime', 'endTime', 'feedDuration'].includes(key))
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+    };
 
     if (!id) {
       return NextResponse.json<ApiResponse<FeedLogResponse>>(

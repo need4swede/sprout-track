@@ -68,6 +68,9 @@ export interface FeedLogCreate {
   unitAbbr?: string;
   side?: BreastSide;
   food?: string;
+  startTime?: string;
+  endTime?: string;
+  feedDuration?: number; // Duration in seconds for feeding time
 }
 
 // Diaper log types
