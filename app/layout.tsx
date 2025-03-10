@@ -161,7 +161,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkUnlockStatus = () => {
       const unlockTime = localStorage.getItem('unlockTime');
-      const newUnlockState = !!(unlockTime && Date.now() - parseInt(unlockTime) <= 60 * 1000);
+      const newUnlockState = !!(unlockTime && Date.now() - parseInt(unlockTime) <= 30 * 60 * 1000); // 30 minutes to match Security.tsx
       setIsUnlocked(newUnlockState);
     };
 
