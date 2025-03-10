@@ -5,6 +5,21 @@ import jwt from 'jsonwebtoken';
 // Secret key for JWT signing - in production, use environment variable
 const JWT_SECRET = process.env.JWT_SECRET || 'baby-tracker-jwt-secret';
 
+// In-memory token blacklist (in a production app, this would be in Redis or similar)
+// This is a simple Map that stores invalidated tokens with their expiry time
+const tokenBlacklist = new Map<string, number>();
+
+// Clean up expired tokens from the blacklist every hour
+setInterval(() => {
+  const now = Date.now();
+  // Use Array.from to avoid TypeScript iterator issues
+  Array.from(tokenBlacklist.entries()).forEach(([token, expiry]) => {
+    if (now > expiry) {
+      tokenBlacklist.delete(token);
+    }
+  });
+}, 60 * 60 * 1000); // 1 hour
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -52,6 +67,11 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<AuthResult
     
     // If we have a JWT token, verify it
     if (token) {
+      // Check if token is blacklisted
+      if (tokenBlacklist.has(token)) {
+        return { authenticated: false, error: 'Token has been invalidated' };
+      }
+      
       try {
         // Verify and decode the token
         const decoded = jwt.verify(token, JWT_SECRET) as {
@@ -197,4 +217,28 @@ export function withAuthContext<T>(
     
     return handler(req, authResult);
   };
+}
+
+/**
+ * Invalidates a JWT token by adding it to the blacklist
+ * @param token The JWT token to invalidate
+ * @returns True if the token was successfully invalidated
+ */
+export function invalidateToken(token: string): boolean {
+  try {
+    // Decode the token without verification to get expiry
+    const decoded = jwt.decode(token) as { exp?: number };
+    
+    if (decoded && decoded.exp) {
+      // Store the token in the blacklist until its original expiry time
+      const expiryMs = decoded.exp * 1000; // Convert seconds to milliseconds
+      tokenBlacklist.set(token, expiryMs);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error invalidating token:', error);
+    return false;
+  }
 }

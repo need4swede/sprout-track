@@ -402,7 +402,7 @@ export default function Security({ onUnlock }: SecurityProps) {
 
           {/* Number Pad */}
           <div className="grid grid-cols-3 gap-4 w-full max-w-[240px]">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
               <Button
                 key={number}
                 variant="outline"
@@ -414,6 +414,15 @@ export default function Security({ onUnlock }: SecurityProps) {
               </Button>
             ))}
             <Button
+              key="0"
+              variant="outline"
+              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
+              onClick={() => handleNumberClick("0")}
+              disabled={!!lockoutTime}
+            >
+              0
+            </Button>
+            <Button
               variant="outline"
               className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-red-50 disabled:opacity-50"
               onClick={handleDelete}
@@ -421,17 +430,16 @@ export default function Security({ onUnlock }: SecurityProps) {
             >
               <X className="h-6 w-6" />
             </Button>
+            {/* Go Button integrated into keypad */}
+            <Button
+              variant="default"
+              className="w-14 h-14 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50"
+              onClick={handleAuthenticate}
+              disabled={!!lockoutTime || (hasCaretakers && loginId.length !== 2) || pin.length < 6}
+            >
+              Go
+            </Button>
           </div>
-          
-          {/* Go Button */}
-          <Button
-            variant="default"
-            className="w-full mt-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl disabled:opacity-50"
-            onClick={handleAuthenticate}
-            disabled={!!lockoutTime || (hasCaretakers && loginId.length !== 2) || pin.length < 6}
-          >
-            Go
-          </Button>
         </div>
       </div>
     </div>

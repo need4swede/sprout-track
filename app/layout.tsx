@@ -138,33 +138,22 @@ function AppContent({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Update unlock timer on any activity
-    const handleActivity = () => {
-      const unlockTime = localStorage.getItem('unlockTime');
-      if (unlockTime) {
-        localStorage.setItem('unlockTime', Date.now().toString());
-      }
-    };
-
-    // Add listeners for user activity
-    window.addEventListener('click', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('touchstart', handleActivity);
-
+    // We no longer need to track activity here as the JWT token handles expiration
+    // and the Security component will handle showing the login screen when needed
+    
     return () => {
-      window.removeEventListener('click', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('touchstart', handleActivity);
+      // Empty cleanup function
     };
   }, []);
 
-  // Check unlock status periodically
+  // Check unlock status based on JWT token
   useEffect(() => {
     const checkUnlockStatus = () => {
+      const authToken = localStorage.getItem('authToken');
       const unlockTime = localStorage.getItem('unlockTime');
-      const newUnlockState = !!(unlockTime && Date.now() - parseInt(unlockTime) <= 30 * 60 * 1000); // 30 minutes to match Security.tsx
+      
+      // Consider unlocked if we have both a token and an unlock time
+      const newUnlockState = !!(authToken && unlockTime);
       setIsUnlocked(newUnlockState);
     };
 
@@ -201,10 +190,29 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const handleLogout = () => {
-    // Clear authentication data
+  const handleLogout = async () => {
+    // Get the token to invalidate it server-side
+    const token = localStorage.getItem('authToken');
+    
+    // Call the logout API to clear server-side cookies and invalidate the token
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+    
+    // Clear all client-side authentication data including JWT token
     localStorage.removeItem('unlockTime');
     localStorage.removeItem('caretakerId');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('attempts');
+    localStorage.removeItem('lockoutTime');
     
     // Reset state
     setIsUnlocked(false);
