@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, FeedLogCreate, FeedLogResponse } from '../types';
 import { FeedType } from '@prisma/client';
-import { withAuth } from '../utils/auth';
+import { withAuthContext, AuthResult } from '../utils/auth';
 
-async function handlePost(req: NextRequest) {
+async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: FeedLogCreate = await req.json();
     
@@ -14,6 +14,7 @@ async function handlePost(req: NextRequest) {
       data: {
         ...body,
         time: localTime,
+        caretakerId: authContext.caretakerId,
       },
     });
 
@@ -41,7 +42,7 @@ async function handlePost(req: NextRequest) {
   }
 }
 
-async function handlePut(req: NextRequest) {
+async function handlePut(req: NextRequest, authContext: AuthResult) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -105,7 +106,7 @@ async function handlePut(req: NextRequest) {
   }
 }
 
-async function handleGet(req: NextRequest) {
+async function handleGet(req: NextRequest, authContext: AuthResult) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -185,7 +186,7 @@ async function handleGet(req: NextRequest) {
   }
 }
 
-async function handleDelete(req: NextRequest) {
+async function handleDelete(req: NextRequest, authContext: AuthResult) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -221,7 +222,7 @@ async function handleDelete(req: NextRequest) {
 
 // Apply authentication middleware to all handlers
 // Use type assertions to handle the multiple return types
-export const GET = withAuth(handleGet as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
-export const POST = withAuth(handlePost as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
-export const PUT = withAuth(handlePut as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
-export const DELETE = withAuth(handleDelete as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
+export const GET = withAuthContext(handleGet as (req: NextRequest, authContext: AuthResult) => Promise<NextResponse<ApiResponse<any>>>);
+export const POST = withAuthContext(handlePost as (req: NextRequest, authContext: AuthResult) => Promise<NextResponse<ApiResponse<any>>>);
+export const PUT = withAuthContext(handlePut as (req: NextRequest, authContext: AuthResult) => Promise<NextResponse<ApiResponse<any>>>);
+export const DELETE = withAuthContext(handleDelete as (req: NextRequest, authContext: AuthResult) => Promise<NextResponse<ApiResponse<any>>>);

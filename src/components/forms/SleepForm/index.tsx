@@ -78,7 +78,14 @@ export default function SleepForm({
         // Ending sleep mode - fetch current sleep
         const fetchCurrentSleep = async () => {
           try {
-            const response = await fetch(`/api/sleep-log?babyId=${babyId}`);
+            // Get auth token from localStorage
+            const authToken = localStorage.getItem('authToken');
+
+            const response = await fetch(`/api/sleep-log?babyId=${babyId}`, {
+              headers: {
+                'Authorization': authToken ? `Bearer ${authToken}` : ''
+              }
+            });
             if (!response.ok) return;
             
             const data = await response.json();
@@ -155,16 +162,27 @@ export default function SleepForm({
           quality: formData.quality || null,
         };
 
+        // Get auth token from localStorage
+        const authToken = localStorage.getItem('authToken');
+
         response = await fetch(`/api/sleep-log?id=${activity.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify(payload),
         });
       } else if (isSleeping) {
         // Ending sleep - update existing record
-        const sleepResponse = await fetch(`/api/sleep-log?babyId=${babyId}`);
+        // Get auth token from localStorage
+        const authToken = localStorage.getItem('authToken');
+
+        const sleepResponse = await fetch(`/api/sleep-log?babyId=${babyId}`, {
+          headers: {
+            'Authorization': authToken ? `Bearer ${authToken}` : ''
+          }
+        });
         if (!sleepResponse.ok) throw new Error('Failed to fetch sleep logs');
         const sleepData = await sleepResponse.json();
         if (!sleepData.success) throw new Error('Failed to fetch sleep logs');
@@ -176,6 +194,7 @@ export default function SleepForm({
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify({
             endTime,
@@ -195,10 +214,14 @@ export default function SleepForm({
           quality: null,
         };
 
+        // Get auth token from localStorage
+        const authToken = localStorage.getItem('authToken');
+
         response = await fetch('/api/sleep-log', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify(payload),
         });

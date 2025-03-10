@@ -197,10 +197,14 @@ export default function FeedForm({
         ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
       };
 
+      // Get auth token from localStorage
+      const authToken = localStorage.getItem('authToken');
+
       const response = await fetch(`/api/feed-log${activity ? `?id=${activity.id}` : ''}`, {
         method: activity ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': authToken ? `Bearer ${authToken}` : '',
         },
         body: JSON.stringify(payload),
       });

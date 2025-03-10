@@ -99,10 +99,14 @@ export default function DiaperForm({
         color: formData.color || null,
       };
 
+      // Get auth token from localStorage
+      const authToken = localStorage.getItem('authToken');
+
       const response = await fetch(`/api/diaper-log${activity ? `?id=${activity.id}` : ''}`, {
         method: activity ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': authToken ? `Bearer ${authToken}` : '',
         },
         body: JSON.stringify(payload),
       });
