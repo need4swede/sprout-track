@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import prisma from '../db';
+import { withAuth, ApiResponse } from '../utils/auth';
 
 // Helper to ensure database is closed before operations
 async function disconnectPrisma() {
   await prisma.$disconnect();
 }
 
-export async function GET(req: NextRequest) {
+// Original GET handler
+async function getHandler(req: NextRequest): Promise<NextResponse<ApiResponse<any>>> {
   try {
     // Ensure database connection is closed
     await disconnectPrisma();
@@ -25,14 +27,21 @@ export async function GET(req: NextRequest) {
     response.headers.set('Content-Type', 'application/octet-stream');
     response.headers.set('Content-Disposition', `attachment; filename="baby-tracker-backup-${new Date().toISOString().split('T')[0]}.db"`);
     
-    return response;
+    return response as unknown as NextResponse<ApiResponse<any>>;
   } catch (error) {
     console.error('Backup error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to create backup' }, { status: 500 });
+    return NextResponse.json<ApiResponse<null>>(
+      { 
+        success: false, 
+        error: 'Failed to create backup' 
+      }, 
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(req: NextRequest) {
+// Original POST handler
+async function postHandler(req: NextRequest): Promise<NextResponse<ApiResponse<any>>> {
   try {
     // Ensure database connection is closed
     await disconnectPrisma();
@@ -41,7 +50,13 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File;
     
     if (!file) {
-      return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
+      return NextResponse.json<ApiResponse<null>>(
+        { 
+          success: false, 
+          error: 'No file provided' 
+        }, 
+        { status: 400 }
+      );
     }
 
     const dbPath = path.resolve('./db/baby-tracker.db');
@@ -51,7 +66,13 @@ export async function POST(req: NextRequest) {
     
     // Validate file is a SQLite database
     if (!buffer.toString('utf8', 0, 16).includes('SQLite')) {
-      return NextResponse.json({ success: false, error: 'Invalid database file' }, { status: 400 });
+      return NextResponse.json<ApiResponse<null>>(
+        { 
+          success: false, 
+          error: 'Invalid database file' 
+        }, 
+        { status: 400 }
+      );
     }
     
     // Create backup of existing database
@@ -61,9 +82,20 @@ export async function POST(req: NextRequest) {
     // Write new database file
     await fs.promises.writeFile(dbPath, buffer);
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json<ApiResponse<null>>({ success: true });
   } catch (error) {
     console.error('Restore error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to restore backup' }, { status: 500 });
+    return NextResponse.json<ApiResponse<null>>(
+      { 
+        success: false, 
+        error: 'Failed to restore backup' 
+      }, 
+      { status: 500 }
+    );
   }
 }
+
+// Export the wrapped handlers with authentication
+// Database operations should be accessible to all authenticated users
+export const GET = withAuth(getHandler);
+export const POST = withAuth(postHandler);

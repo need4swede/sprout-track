@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
       const settings = await prisma.settings.findFirst();
       
       if (settings && settings.securityPin === securityPin) {
-        return NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
+        // Create response with cookie
+        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
           {
             success: true,
             data: {
@@ -40,6 +41,17 @@ export async function POST(req: NextRequest) {
             },
           }
         );
+        
+        // Set the caretakerId cookie
+        response.cookies.set('caretakerId', 'system', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 30 * 60, // 30 minutes
+          path: '/',
+        });
+        
+        return response;
       }
     } else if (loginId) {
       // If caretakers exist, require loginId and check caretaker credentials
@@ -52,7 +64,8 @@ export async function POST(req: NextRequest) {
       });
 
       if (caretaker) {
-        return NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
+        // Create response with cookie
+        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
           {
             success: true,
             data: {
@@ -62,6 +75,17 @@ export async function POST(req: NextRequest) {
             },
           }
         );
+        
+        // Set the caretakerId cookie
+        response.cookies.set('caretakerId', caretaker.id, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 30 * 60, // 30 minutes
+          path: '/',
+        });
+        
+        return response;
       }
     }
     
