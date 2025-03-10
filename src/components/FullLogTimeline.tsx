@@ -23,7 +23,11 @@ import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
 
-type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
+// Define the extended ActivityType that includes caretaker information
+type ActivityType = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse) & {
+  caretakerId?: string | null;
+  caretakerName?: string;
+};
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface ActivityDetail {
@@ -121,6 +125,8 @@ const formatDuration = (minutes: number): string => {
 };
 
 const getActivityDescription = (activity: ActivityType, settings: Settings | null) => {
+  // Get caretaker name for display
+  const caretakerInfo = activity.caretakerName ? ` (${activity.caretakerName})` : '';
   if ('type' in activity) {
     if ('duration' in activity) {
       const startTimeFormatted = activity.startTime ? formatTime(activity.startTime, settings, true) : 'unknown';
@@ -130,7 +136,7 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' ');
       return {
-        type: `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}${location ? ` - ${location}` : ''}`,
+        type: `${activity.type === 'NAP' ? 'Nap' : 'Night Sleep'}${location ? ` - ${location}` : ''}${caretakerInfo}`,
         details: `${startTimeFormatted} - ${endTimeFormatted.split(' ').slice(-2).join(' ')}${duration}`
       };
     }
@@ -171,7 +177,7 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       
       const time = formatTime(activity.time, settings, true);
       return {
-        type: formatFeedType(activity.type),
+        type: `${formatFeedType(activity.type)}${caretakerInfo}`,
         details: `${details} - ${time}`
       };
     }
@@ -221,7 +227,7 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       
       const time = formatTime(activity.time, settings, true);
       return {
-        type: formatDiaperType(activity.type),
+        type: `${formatDiaperType(activity.type)}${caretakerInfo}`,
         details: `${details}${time}`
       };
     }
@@ -230,17 +236,22 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
     const time = formatTime(activity.time, settings, true);
     const truncatedContent = activity.content.length > 50 ? activity.content.substring(0, 50) + '...' : activity.content;
     return {
-      type: activity.category || 'Note',
+      type: `${activity.category || 'Note'}${caretakerInfo}`,
       details: `${time} - ${truncatedContent}`
     };
   }
   return {
-    type: 'Activity',
+    type: `Activity${caretakerInfo}`,
     details: 'logged'
   };
 };
 
 const getActivityDetails = (activity: ActivityType, settings: Settings | null) => {
+  // Common details that should be added to all activity types if caretaker name exists
+  const caretakerDetail = activity.caretakerName ? [
+    { label: 'Caretaker', value: activity.caretakerName }
+  ] : [];
+  
   if ('type' in activity) {
     if ('duration' in activity) {
       const startTime = activity.startTime ? formatTime(activity.startTime, settings, false) : 'unknown';
@@ -285,7 +296,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 
       return {
         title: 'Sleep Record',
-        details,
+        details: [...details, ...caretakerDetail],
       };
     }
     if ('amount' in activity) {
@@ -334,7 +345,7 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 
       return {
         title: 'Feed Record',
-        details,
+        details: [...details, ...caretakerDetail],
       };
     }
     if ('condition' in activity) {
@@ -381,21 +392,23 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
 
       return {
         title: 'Diaper Record',
-        details,
+        details: [...details, ...caretakerDetail],
       };
     }
   }
   if ('content' in activity) {
+    const noteDetails = [
+      { label: 'Time', value: formatTime(activity.time, settings) },
+      { label: 'Content', value: activity.content },
+      { label: 'Category', value: activity.category || 'Not specified' },
+    ];
+    
     return {
       title: 'Note',
-      details: [
-        { label: 'Time', value: formatTime(activity.time, settings) },
-        { label: 'Content', value: activity.content },
-        { label: 'Category', value: activity.category || 'Not specified' },
-      ],
+      details: [...noteDetails, ...caretakerDetail],
     };
   }
-  return { title: 'Activity', details: [] };
+  return { title: 'Activity', details: [...caretakerDetail] };
 };
 
 const getActivityEndpoint = (activity: ActivityType): string => {

@@ -3,7 +3,13 @@ import prisma from '../db';
 import { ApiResponse, SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '../types';
 import { withAuth } from '../utils/auth';
 
-type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse;
+// Extended activity types with caretaker information
+type ActivityTypeWithCaretaker = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse) & { 
+  caretakerId?: string | null;
+  caretakerName?: string;
+};
+
+type ActivityType = ActivityTypeWithCaretaker;
 
 const getActivityTime = (activity: any): number => {
   if ('time' in activity && activity.time) {
@@ -97,7 +103,7 @@ async function handleGet(req: NextRequest) {
     console.log(`Effective start date: ${effectiveStartDate}`);
     console.log(`Effective end date: ${effectiveEndDate}`);
     
-    // Get recent activities from each type
+    // Get recent activities from each type with caretaker information
     const [sleepLogs, feedLogs, diaperLogs, noteLogs] = await Promise.all([
       prisma.sleepLog.findMany({
         where: {
@@ -126,6 +132,9 @@ async function handleGet(req: NextRequest) {
             ]
           } : {})
         },
+        include: {
+          caretaker: true
+        },
         orderBy: { startTime: 'desc' },
         ...(useLimit && limit ? { take: limit } : {})
       }),
@@ -138,6 +147,9 @@ async function handleGet(req: NextRequest) {
               lte: new Date(effectiveEndDate)
             }
           } : {})
+        },
+        include: {
+          caretaker: true
         },
         orderBy: { time: 'desc' },
         ...(useLimit && limit ? { take: limit } : {})
@@ -152,6 +164,9 @@ async function handleGet(req: NextRequest) {
             }
           } : {})
         },
+        include: {
+          caretaker: true
+        },
         orderBy: { time: 'desc' },
         ...(useLimit && limit ? { take: limit } : {})
       }),
@@ -165,6 +180,9 @@ async function handleGet(req: NextRequest) {
             }
           } : {})
         },
+        include: {
+          caretaker: true
+        },
         orderBy: { time: 'desc' },
         ...(useLimit && limit ? { take: limit } : {})
       })
@@ -172,39 +190,67 @@ async function handleGet(req: NextRequest) {
     
     console.log(`Results - sleepLogs: ${sleepLogs.length}, feedLogs: ${feedLogs.length}, diaperLogs: ${diaperLogs.length}, noteLogs: ${noteLogs.length}`);
 
-    // Format the responses
-    const formattedSleepLogs: SleepLogResponse[] = sleepLogs.map(log => ({
-      ...log,
-      startTime: log.startTime.toLocaleString(),
-      endTime: log.endTime?.toLocaleString() || null,
-      createdAt: log.createdAt.toLocaleString(),
-      updatedAt: log.updatedAt.toLocaleString(),
-      deletedAt: log.deletedAt?.toLocaleString() || null,
-    }));
+    // Format the responses with caretaker information
+    const formattedSleepLogs: ActivityTypeWithCaretaker[] = sleepLogs
+      .map(log => {
+        // Create a new object without the caretaker property
+        const { caretaker, ...logWithoutCaretaker } = log;
+        return {
+          ...logWithoutCaretaker,
+          startTime: log.startTime.toLocaleString(),
+          endTime: log.endTime?.toLocaleString() || null,
+          createdAt: log.createdAt.toLocaleString(),
+          updatedAt: log.updatedAt.toLocaleString(),
+          deletedAt: log.deletedAt?.toLocaleString() || null,
+          caretakerId: log.caretakerId,
+          caretakerName: log.caretaker ? log.caretaker.name : undefined,
+        };
+      });
 
-    const formattedFeedLogs: FeedLogResponse[] = feedLogs.map(log => ({
-      ...log,
-      time: log.time.toLocaleString(),
-      createdAt: log.createdAt.toLocaleString(),
-      updatedAt: log.updatedAt.toLocaleString(),
-      deletedAt: log.deletedAt?.toLocaleString() || null,
-    }));
+    const formattedFeedLogs: ActivityTypeWithCaretaker[] = feedLogs
+      .map(log => {
+        // Create a new object without the caretaker property
+        const { caretaker, ...logWithoutCaretaker } = log;
+        return {
+          ...logWithoutCaretaker,
+          time: log.time.toLocaleString(),
+          createdAt: log.createdAt.toLocaleString(),
+          updatedAt: log.updatedAt.toLocaleString(),
+          deletedAt: log.deletedAt?.toLocaleString() || null,
+          caretakerId: log.caretakerId,
+          caretakerName: log.caretaker ? log.caretaker.name : undefined,
+        };
+      });
 
-    const formattedDiaperLogs: DiaperLogResponse[] = diaperLogs.map(log => ({
-      ...log,
-      time: log.time.toLocaleString(),
-      createdAt: log.createdAt.toLocaleString(),
-      updatedAt: log.updatedAt.toLocaleString(),
-      deletedAt: log.deletedAt?.toLocaleString() || null,
-    }));
+    const formattedDiaperLogs: ActivityTypeWithCaretaker[] = diaperLogs
+      .map(log => {
+        // Create a new object without the caretaker property
+        const { caretaker, ...logWithoutCaretaker } = log;
+        return {
+          ...logWithoutCaretaker,
+          time: log.time.toLocaleString(),
+          createdAt: log.createdAt.toLocaleString(),
+          updatedAt: log.updatedAt.toLocaleString(),
+          deletedAt: log.deletedAt?.toLocaleString() || null,
+          caretakerId: log.caretakerId,
+          caretakerName: log.caretaker ? log.caretaker.name : undefined,
+        };
+      });
 
-    const formattedNoteLogs: NoteResponse[] = noteLogs.map(log => ({
-      ...log,
-      time: log.time.toLocaleString(),
-      createdAt: log.createdAt.toLocaleString(),
-      updatedAt: log.updatedAt.toLocaleString(),
-      deletedAt: log.deletedAt?.toLocaleString() || null,
-    }));
+    const formattedNoteLogs: ActivityTypeWithCaretaker[] = noteLogs
+      .map(log => {
+        // Create a new object without the caretaker property
+        const { caretaker, ...logWithoutCaretaker } = log;
+        return {
+          ...logWithoutCaretaker,
+          time: log.time.toLocaleString(),
+          createdAt: log.createdAt.toLocaleString(),
+          updatedAt: log.updatedAt.toLocaleString(),
+          deletedAt: log.deletedAt?.toLocaleString() || null,
+          caretakerId: log.caretakerId,
+          caretakerName: log.caretaker ? log.caretaker.name : undefined,
+        };
+      });
 
     // Combine and sort all activities
     const allActivities = [
