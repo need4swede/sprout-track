@@ -31,13 +31,14 @@ export async function POST(req: NextRequest) {
       
       if (settings && settings.securityPin === securityPin) {
         // Create response with cookie
-        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
+        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null; role: string }>>(
           {
             success: true,
             data: {
               id: 'system',
               name: 'System Administrator',
               type: 'admin',
+              role: 'ADMIN',
             },
           }
         );
@@ -65,13 +66,15 @@ export async function POST(req: NextRequest) {
 
       if (caretaker) {
         // Create response with cookie
-        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null }>>(
+        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null; role: string }>>(
           {
             success: true,
             data: {
               id: caretaker.id,
               name: caretaker.name,
               type: caretaker.type,
+              // Use type assertion for role until Prisma types are updated
+              role: (caretaker as any).role || 'USER',
             },
           }
         );

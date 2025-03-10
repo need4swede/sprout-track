@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, CaretakerCreate, CaretakerUpdate, CaretakerResponse } from '../types';
+import { withAuth } from '../utils/auth';
 import { formatLocalTime } from '../utils/timezone';
 
-export async function POST(req: NextRequest) {
+async function postHandler(req: NextRequest) {
   try {
     const body: CaretakerCreate = await req.json();
 
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function putHandler(req: NextRequest) {
   try {
     const body: CaretakerUpdate = await req.json();
     const { id, ...updateData } = body;
@@ -124,7 +125,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function deleteHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -160,7 +161,7 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -231,3 +232,11 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+// Export the handlers with appropriate authentication
+// Use type assertions to handle both single and array response types
+// Allow unauthenticated access for GET requests
+export const GET = getHandler as any;
+export const POST = withAuth(postHandler as any);
+export const PUT = withAuth(putHandler as any);
+export const DELETE = withAuth(deleteHandler as any);

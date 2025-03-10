@@ -1,4 +1,4 @@
-import { Caretaker as PrismaCaretaker } from '@prisma/client';
+import { Caretaker as PrismaCaretaker, UserRole } from '@prisma/client';
 
 // Extended type to include the new loginId field
 interface Caretaker extends PrismaCaretaker {
@@ -13,6 +13,13 @@ import {
 } from '@/src/components/ui/dialog';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/src/components/ui/select';
 import { useState, useEffect } from 'react';
 
 interface CaretakerModalProps {
@@ -26,6 +33,7 @@ const defaultFormData = {
   loginId: '',
   name: '',
   type: '',
+  role: 'USER' as UserRole,
   securityPin: '',
 };
 
@@ -47,6 +55,7 @@ export default function CaretakerModal({
         loginId: caretaker.loginId || '',
         name: caretaker.name,
         type: caretaker.type || '',
+        role: caretaker.role || 'USER',
         securityPin: caretaker.securityPin,
       });
       setConfirmPin(caretaker.securityPin);
@@ -189,6 +198,26 @@ export default function CaretakerModal({
               className="w-full"
               placeholder="Parent, Grandparent, Nanny, etc."
             />
+          </div>
+          <div>
+            <label className="form-label">Role</label>
+            <Select
+              value={formData.role}
+              onValueChange={(value) =>
+                setFormData({ ...formData, role: value as UserRole })
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USER">Regular User</SelectItem>
+                <SelectItem value="ADMIN">Administrator</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">
+              Administrators have access to system settings and administrative functions
+            </p>
           </div>
           <div>
             <label className="form-label">Security PIN</label>

@@ -51,6 +51,11 @@ enum Mood {
   CRYING
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model Baby {
   id                String   @id @default(uuid())
   firstName         String
@@ -80,6 +85,7 @@ model Caretaker {
   loginId     String       // Two-digit login identifier for quick authentication
   name        String
   type        String?      // parent, daycare, nanny, grandparent, uncle, etc.
+  role        UserRole     @default(USER) // User role for authentication permissions
   securityPin String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

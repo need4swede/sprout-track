@@ -14,6 +14,7 @@ export interface AuthResult {
   authenticated: boolean;
   caretakerId?: string;
   caretakerType?: string | null;
+  caretakerRole?: string;
   error?: string;
 }
 
@@ -51,7 +52,8 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<AuthResult
       return { 
         authenticated: true, 
         caretakerId: 'system',
-        caretakerType: 'admin'
+        caretakerType: 'admin',
+        caretakerRole: 'ADMIN'
       };
     }
     
@@ -67,7 +69,9 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<AuthResult
       return { 
         authenticated: true, 
         caretakerId: caretaker.id,
-        caretakerType: caretaker.type 
+        caretakerType: caretaker.type,
+        // Use type assertion for role until Prisma types are updated
+        caretakerRole: (caretaker as any).role || 'USER'
       };
     }
     
@@ -124,8 +128,8 @@ export function withAdminAuth<T>(
       );
     }
     
-    // Check if user is an admin
-    if (authResult.caretakerType !== 'admin' && authResult.caretakerId !== 'system') {
+    // Check if user is an admin (either by role or special system ID)
+    if (authResult.caretakerRole !== 'ADMIN' && authResult.caretakerId !== 'system') {
       return NextResponse.json<ApiResponse<null>>(
         {
           success: false,
