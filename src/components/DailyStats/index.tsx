@@ -126,7 +126,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
     
     // Format consumed amounts
     const formattedConsumed = Object.entries(consumedAmounts)
-      .map(([unit, amount]) => `${amount} ${unit}`)
+      .map(([unit, amount]) => `${amount} ${unit.toLowerCase()}`)
       .join(', ');
     
     return {
