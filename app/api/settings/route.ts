@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse } from '../types';
 import { Settings } from '@prisma/client';
+import { withAuth } from '../utils/auth';
 
-export async function GET() {
+async function handleGet() {
   try {
     // Get the first settings record or create default
     let settings = await prisma.settings.findFirst();
@@ -38,7 +39,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   try {
     const body = await req.json();
     
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function handlePut(req: NextRequest) {
   try {
     const body = await req.json();
     
@@ -117,3 +118,9 @@ export async function PUT(req: NextRequest) {
     );
   }
 }
+
+// Apply authentication middleware to all handlers
+// Use type assertions to handle the multiple return types
+export const GET = withAuth(handleGet as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
+export const POST = withAuth(handlePost as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
+export const PUT = withAuth(handlePut as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);

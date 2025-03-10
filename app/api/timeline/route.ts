@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '../types';
+import { withAuth } from '../utils/auth';
 
 type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse;
 
@@ -17,7 +18,7 @@ const getActivityTime = (activity: any): number => {
   return new Date().getTime();
 };
 
-export async function GET(req: NextRequest) {
+async function handleGet(req: NextRequest) {
   try {
     // Get the full URL to debug
     const fullUrl = req.url;
@@ -234,3 +235,7 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+// Apply authentication middleware to all handlers
+// Use type assertions to handle the multiple return types
+export const GET = withAuth(handleGet as (req: NextRequest) => Promise<NextResponse<ApiResponse<any>>>);
