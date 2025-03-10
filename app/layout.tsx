@@ -119,24 +119,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setMounted(true);
     fetchData();
 
-    // Update caretaker name and role when component mounts
-    const caretakerId = localStorage.getItem('caretakerId');
-    if (caretakerId) {
-      if (caretakerId === 'system') {
-        setCaretakerName('System Administrator');
-        setIsAdmin(true);
-      } else {
-        fetch(`/api/caretaker?id=${caretakerId}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.data) {
-              setCaretakerName(data.data.name);
-              setIsAdmin(data.data.role === 'ADMIN');
-            }
-          })
-          .catch(error => console.error('Error fetching caretaker:', error));
-      }
-    }
+    // We now get caretaker info from JWT token in the checkUnlockStatus effect
+    // This is kept for backward compatibility
 
     // We no longer need to track activity here as the JWT token handles expiration
     // and the Security component will handle showing the login screen when needed
@@ -146,7 +130,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Check unlock status based on JWT token
+  // Check unlock status based on JWT token and extract user info
   useEffect(() => {
     const checkUnlockStatus = () => {
       const authToken = localStorage.getItem('authToken');
@@ -155,6 +139,25 @@ function AppContent({ children }: { children: React.ReactNode }) {
       // Consider unlocked if we have both a token and an unlock time
       const newUnlockState = !!(authToken && unlockTime);
       setIsUnlocked(newUnlockState);
+      
+      // Extract user information from JWT token
+      if (authToken) {
+        try {
+          // JWT tokens are in format: header.payload.signature
+          // We need the payload part (index 1)
+          const payload = authToken.split('.')[1];
+          // The payload is base64 encoded, so we need to decode it
+          const decodedPayload = JSON.parse(atob(payload));
+          
+          // Set caretaker name and admin status from token
+          if (decodedPayload.name) {
+            setCaretakerName(decodedPayload.name);
+            setIsAdmin(decodedPayload.role === 'ADMIN');
+          }
+        } catch (error) {
+          console.error('Error parsing JWT token:', error);
+        }
+      }
     };
 
     // Check immediately on mount
@@ -171,23 +174,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setIsUnlocked(true);
     fetchData();
     
-    // Update caretaker name and role when unlocked
-    if (caretakerId) {
-      if (caretakerId === 'system') {
-        setCaretakerName('System Administrator');
-        setIsAdmin(true);
-      } else {
-        fetch(`/api/caretaker?id=${caretakerId}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.data) {
-              setCaretakerName(data.data.name);
-              setIsAdmin(data.data.role === 'ADMIN');
-            }
-          })
-          .catch(error => console.error('Error fetching caretaker:', error));
-      }
-    }
+    // The caretaker name and role will be extracted from the JWT token
+    // in the checkUnlockStatus effect
   };
   
   const handleLogout = async () => {
@@ -245,7 +233,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     />
                   </SideNavTrigger>
                   <div className="flex flex-col">
-                    {caretakerName !== 'System Administrator' && (
+                    {caretakerName && caretakerName !== 'System Administrator' && (
                       <span className="text-white text-xs opacity-80">
                         Hi, {caretakerName}
                       </span>

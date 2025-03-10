@@ -4,22 +4,23 @@ This document describes the authentication system used in the Baby Tracker appli
 
 ## Overview
 
-The Baby Tracker application uses a cookie-based authentication system with two levels of access:
+The Baby Tracker application uses a JWT-based authentication system with two levels of access:
 
 1. **User Authentication**: Regular authenticated users who can access most application features
 2. **Admin Authentication**: Admin users who have elevated privileges for certain operations
 
-Authentication is managed through HTTP-only cookies and is implemented using middleware functions that wrap API route handlers.
+Authentication is managed through JWT tokens stored in localStorage with fallback support for HTTP-only cookies (for backward compatibility). The system is implemented using middleware functions that wrap API route handlers.
 
 ## Authentication Flow
 
 1. Users authenticate through the `/api/auth` endpoint by providing their login ID and security PIN
 2. Upon successful authentication, the server:
-   - Sets an HTTP-only cookie (`caretakerId`) containing the user's ID
-   - Returns user information to the client
-3. The client stores the user ID in localStorage for client-side checks
-4. All subsequent API requests include the cookie automatically
-5. API routes use middleware functions to verify the cookie before processing requests
+   - Generates a JWT token containing the user's ID, name, type, and role
+   - Returns the token and user information to the client
+3. The client stores the JWT token in localStorage as `authToken`
+4. All subsequent API requests include the token in the Authorization header (`Bearer <token>`)
+5. API routes use middleware functions to verify the token before processing requests
+6. When a user logs out, the token is invalidated by adding it to a server-side blacklist
 
 ## Authentication Utilities
 
@@ -29,6 +30,7 @@ The authentication system is centralized in `/app/api/utils/auth.ts` and provide
 
 - `verifyAuthentication(req)`: Checks if a request is authenticated
 - `getAuthenticatedUser(req)`: Retrieves authenticated user information from a request
+- `invalidateToken(token)`: Adds a token to the blacklist to invalidate it
 
 ### Middleware
 
@@ -52,6 +54,17 @@ async function handler(req: NextRequest): Promise<NextResponse<ApiResponse<any>>
 
 export const GET = withAuth(handler);
 export const POST = withAuth(handler);
+```
+
+The client should include the JWT token in the Authorization header:
+
+```typescript
+const token = localStorage.getItem('authToken');
+const response = await fetch('/api/protected-route', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
 ```
 
 ### Admin-Only Authentication
@@ -79,7 +92,7 @@ import { withAuthContext, ApiResponse, AuthResult } from '../utils/auth';
 
 async function handler(req: NextRequest, authContext: AuthResult): Promise<NextResponse<ApiResponse<any>>> {
   // Access user information from authContext
-  const { caretakerId, caretakerType } = authContext;
+  const { caretakerId, caretakerType, caretakerRole } = authContext;
   
   // Your handler logic here
   return NextResponse.json({ success: true, data: result });
@@ -98,6 +111,39 @@ interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+}
+```
+
+## Logout Process
+
+The logout process involves the following steps:
+
+1. The client calls the `/api/auth/logout` endpoint with the JWT token in the Authorization header
+2. The server adds the token to a blacklist to invalidate it immediately
+3. The server clears any authentication cookies (for backward compatibility)
+4. The client removes the token and other authentication data from localStorage
+
+```typescript
+// Client-side logout example
+async function logout() {
+  const token = localStorage.getItem('authToken');
+  
+  // Call the logout API
+  await fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    }
+  });
+  
+  // Clear client-side auth data
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('unlockTime');
+  localStorage.removeItem('caretakerId');
+  
+  // Reset application state
+  // ...
 }
 ```
 

@@ -49,10 +49,11 @@ export default function Security({ onUnlock }: SecurityProps) {
     if (showDialog) {
       setPin('');
       setLoginId('');
-      setActiveInput('loginId');
+      // Set active input based on whether caretakers exist
+      setActiveInput(hasCaretakers ? 'loginId' : 'pin');
       setError('');
     }
-  }, [showDialog]);
+  }, [showDialog, hasCaretakers]);
 
   // Check for inactivity and handle security state
   useEffect(() => {
@@ -137,7 +138,13 @@ export default function Security({ onUnlock }: SecurityProps) {
         const response = await fetch('/api/auth/caretaker-exists');
         if (response.ok) {
           const data = await response.json();
-          setHasCaretakers(data.success && data.data.exists);
+          const caretakersExist = data.success && data.data.exists;
+          setHasCaretakers(caretakersExist);
+          
+          // If no caretakers exist, focus on the PIN field immediately
+          if (!caretakersExist) {
+            setActiveInput('pin');
+          }
         }
       } catch (error) {
         console.error('Error checking caretakers:', error);
