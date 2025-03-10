@@ -150,18 +150,22 @@ export default function FeedForm({
 
   const incrementAmount = () => {
     const currentAmount = parseFloat(formData.amount || '0');
+    const step = formData.unit === 'ML' ? 5 : 0.5;
+    const newAmount = currentAmount + step;
     setFormData(prev => ({
       ...prev,
-      amount: (currentAmount + 1).toString()
+      amount: newAmount.toString()
     }));
   };
 
   const decrementAmount = () => {
     const currentAmount = parseFloat(formData.amount || '0');
-    if (currentAmount > 0) {
+    const step = formData.unit === 'ML' ? 5 : 0.5;
+    if (currentAmount >= step) {
+      const newAmount = currentAmount - step;
       setFormData(prev => ({
         ...prev,
-        amount: (currentAmount - 1).toString()
+        amount: newAmount.toString()
       }));
     }
   };
@@ -303,23 +307,24 @@ export default function FeedForm({
             
             {(formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && (
               <div>
-                <label className="form-label">Amount ({formData.unit === 'ML' ? 'ml' : 'oz'})</label>
-                <div className="flex items-center">
+                <label className="form-label mb-6">Amount ({formData.unit === 'ML' ? 'ml' : 'oz'})</label>
+                <div className="flex items-center justify-center mb-6">
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
                     onClick={decrementAmount}
                     disabled={loading}
+                    className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-5 w-5 text-white" />
                   </Button>
                   <Input
                     type="number"
                     value={formData.amount}
                     onChange={(e) => handleAmountChange(e.target.value)}
-                    className="w-full mx-2"
-                    placeholder="Enter amount"
+                    className="w-24 mx-3 text-center"
+                    placeholder="Amount"
                     min="0"
                     step={formData.unit === 'ML' ? '5' : '0.5'}
                     disabled={loading}
@@ -330,8 +335,9 @@ export default function FeedForm({
                     size="icon"
                     onClick={incrementAmount}
                     disabled={loading}
+                    className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-5 w-5 text-white" />
                   </Button>
                 </div>
                 <div className="mt-2 flex space-x-2">
