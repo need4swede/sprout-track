@@ -9,7 +9,8 @@ import { Baby as BabyIcon } from 'lucide-react';
 import Timeline from '@/src/components/Timeline';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
-import { ActivityTile, ActivityType } from '@/src/components/ui/activity-tile';
+import { ActivityType } from '@/src/components/ui/activity-tile';
+import { ActivityTileGroup } from '@/src/components/features/ActivityTileGroup';
 import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
@@ -239,153 +240,21 @@ function HomeContent(): React.ReactElement {
 
   return (
     <div className="relative isolate">
-      {/* Action Buttons */}
+      {/* Activity Tile Group */}
       {selectedBaby?.id && (
-        <div className="grid grid-cols-4 border-t-[1px] border-white">
-          {/* Sleep Activity Button */}
-          <div className="relative">
-            <ActivityTile
-              activity={{
-                type: 'NAP', // Using a valid SleepType enum value
-                id: 'sleep-button',
-                babyId: selectedBaby.id,
-                startTime: sleepStartTime[selectedBaby.id] ? sleepStartTime[selectedBaby.id].toISOString() : new Date().toISOString(),
-                endTime: sleepingBabies.has(selectedBaby.id) ? null : new Date().toISOString(),
-                duration: sleepingBabies.has(selectedBaby.id) ? null : 0,
-                location: null,
-                quality: null,
-                caretakerId: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                deletedAt: null
-              } as unknown as SleepLogResponse}
-              title={selectedBaby?.id && sleepingBabies.has(selectedBaby.id) ? 'End Sleep' : 'Start Sleep'}
-              variant="sleep"
-              isButton={true}
-              onClick={() => {
-                updateUnlockTimer();
-                setShowSleepModal(true);
-              }}
-            />
-            {selectedBaby?.id && (
-              sleepingBabies.has(selectedBaby.id) ? (
-                <StatusBubble
-                  status="sleeping"
-                  className="overflow-visible z-40"
-                  durationInMinutes={Math.floor(
-                    (new Date().getTime() - sleepStartTime[selectedBaby.id]?.getTime() || 0) / 60000
-                  )}
-                />
-              ) : (
-                !sleepStartTime[selectedBaby.id] && lastSleepEndTime[selectedBaby.id] && (
-                  <StatusBubble
-                    status="awake"
-                    className="overflow-visible z-40"
-                    durationInMinutes={Math.floor(
-                      (new Date().getTime() - lastSleepEndTime[selectedBaby.id].getTime()) / 60000
-                    )}
-                  />
-                )
-              )
-            )}
-          </div>
-          
-          {/* Feed Activity Button */}
-          <div className="relative">
-            <ActivityTile
-              activity={{
-                type: 'BOTTLE',
-                id: 'feed-button',
-                babyId: selectedBaby.id,
-                time: new Date().toISOString(),
-                amount: null,
-                side: null,
-                food: null,
-                unitAbbr: null,
-                caretakerId: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                deletedAt: null
-              } as unknown as FeedLogResponse}
-              title="Feed"
-              variant="feed"
-              isButton={true}
-              onClick={() => {
-                updateUnlockTimer();
-                setShowFeedModal(true);
-              }}
-            />
-            {selectedBaby?.id && lastFeedTime[selectedBaby.id] && (
-              <StatusBubble
-                status="feed"
-                className="overflow-visible z-40"
-                durationInMinutes={Math.floor(
-                  (new Date().getTime() - lastFeedTime[selectedBaby.id].getTime()) / 60000
-                )}
-                warningTime={selectedBaby.feedWarningTime}
-              />
-            )}
-          </div>
-          
-          {/* Diaper Activity Button */}
-          <div className="relative">
-            <ActivityTile
-              activity={{
-                type: 'WET',
-                id: 'diaper-button',
-                babyId: selectedBaby.id,
-                time: new Date().toISOString(),
-                condition: null,
-                color: null,
-                caretakerId: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                deletedAt: null
-              } as unknown as DiaperLogResponse}
-              title="Diaper"
-              variant="diaper"
-              isButton={true}
-              onClick={() => {
-                updateUnlockTimer();
-                setShowDiaperModal(true);
-              }}
-            />
-            {selectedBaby?.id && lastDiaperTime[selectedBaby.id] && (
-              <StatusBubble
-                status="diaper"
-                className="overflow-visible z-40"
-                durationInMinutes={Math.floor(
-                  (new Date().getTime() - lastDiaperTime[selectedBaby.id].getTime()) / 60000
-                )}
-                warningTime={selectedBaby.diaperWarningTime}
-              />
-            )}
-          </div>
-          
-          {/* Note Activity Button */}
-          <div className="relative">
-            <ActivityTile
-              activity={{
-                id: 'note-button',
-                babyId: selectedBaby.id,
-                time: new Date().toISOString(),
-                content: '',
-                category: 'Note',
-                caretakerId: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                deletedAt: null
-              } as unknown as NoteResponse}
-              title="Note"
-              variant="note"
-              isButton={true}
-              onClick={() => {
-                updateUnlockTimer();
-                setShowNoteModal(true);
-              }}
-            />
-          </div>
-        </div>
+        <ActivityTileGroup
+          selectedBaby={selectedBaby}
+          sleepingBabies={sleepingBabies}
+          sleepStartTime={sleepStartTime}
+          lastSleepEndTime={lastSleepEndTime}
+          lastFeedTime={lastFeedTime}
+          lastDiaperTime={lastDiaperTime}
+          updateUnlockTimer={updateUnlockTimer}
+          onSleepClick={() => setShowSleepModal(true)}
+          onFeedClick={() => setShowFeedModal(true)}
+          onDiaperClick={() => setShowDiaperModal(true)}
+          onNoteClick={() => setShowNoteModal(true)}
+        />
       )}
 
       {/* Timeline Section */}
