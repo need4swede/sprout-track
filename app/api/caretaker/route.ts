@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, CaretakerCreate, CaretakerUpdate, CaretakerResponse } from '../types';
-import { withAuth } from '../utils/auth';
+import { withAdminAuth } from '../utils/auth';
 import { formatLocalTime } from '../utils/timezone';
 
 async function postHandler(req: NextRequest) {
@@ -235,8 +235,8 @@ async function getHandler(req: NextRequest) {
 
 // Export the handlers with appropriate authentication
 // Use type assertions to handle both single and array response types
-// Allow unauthenticated access for GET requests
-export const GET = getHandler as any;
-export const POST = withAuth(postHandler as any);
-export const PUT = withAuth(putHandler as any);
-export const DELETE = withAuth(deleteHandler as any);
+// All caretaker operations now require admin authentication
+export const GET = withAdminAuth(getHandler as any);
+export const POST = withAdminAuth(postHandler as any);
+export const PUT = withAdminAuth(putHandler as any);
+export const DELETE = withAdminAuth(deleteHandler as any);

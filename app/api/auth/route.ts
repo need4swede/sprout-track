@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse } from '../types';
+import jwt from 'jsonwebtoken';
+
+// Secret key for JWT signing - in production, use environment variable
+const JWT_SECRET = process.env.JWT_SECRET || 'baby-tracker-jwt-secret';
 
 // Authentication endpoint for caretakers or system PIN
 export async function POST(req: NextRequest) {
@@ -30,8 +34,26 @@ export async function POST(req: NextRequest) {
       const settings = await prisma.settings.findFirst();
       
       if (settings && settings.securityPin === securityPin) {
-        // Create response with cookie
-        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null; role: string }>>(
+        // Create JWT token for system admin
+        const token = jwt.sign(
+          {
+            id: 'system',
+            name: 'System Administrator',
+            type: 'admin',
+            role: 'ADMIN',
+          },
+          JWT_SECRET,
+          { expiresIn: '30m' } // Token expires in 30 minutes
+        );
+        
+        // Create response with token
+        const response = NextResponse.json<ApiResponse<{ 
+          id: string; 
+          name: string; 
+          type: string | null; 
+          role: string;
+          token: string;
+        }>>(
           {
             success: true,
             data: {
@@ -39,11 +61,12 @@ export async function POST(req: NextRequest) {
               name: 'System Administrator',
               type: 'admin',
               role: 'ADMIN',
+              token: token,
             },
           }
         );
         
-        // Set the caretakerId cookie
+        // Also set the caretakerId cookie for backward compatibility
         response.cookies.set('caretakerId', 'system', {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -65,8 +88,26 @@ export async function POST(req: NextRequest) {
       });
 
       if (caretaker) {
-        // Create response with cookie
-        const response = NextResponse.json<ApiResponse<{ id: string; name: string; type: string | null; role: string }>>(
+        // Create JWT token for caretaker
+        const token = jwt.sign(
+          {
+            id: caretaker.id,
+            name: caretaker.name,
+            type: caretaker.type,
+            role: (caretaker as any).role || 'USER',
+          },
+          JWT_SECRET,
+          { expiresIn: '30m' } // Token expires in 30 minutes
+        );
+        
+        // Create response with token
+        const response = NextResponse.json<ApiResponse<{ 
+          id: string; 
+          name: string; 
+          type: string | null; 
+          role: string;
+          token: string;
+        }>>(
           {
             success: true,
             data: {
@@ -75,11 +116,12 @@ export async function POST(req: NextRequest) {
               type: caretaker.type,
               // Use type assertion for role until Prisma types are updated
               role: (caretaker as any).role || 'USER',
+              token: token,
             },
           }
         );
         
-        // Set the caretakerId cookie
+        // Also set the caretakerId cookie for backward compatibility
         response.cookies.set('caretakerId', caretaker.id, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -100,8 +142,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 401 }
     );
-
-
   } catch (error) {
     console.error('Authentication error:', error);
     return NextResponse.json<ApiResponse<null>>(

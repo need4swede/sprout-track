@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
+import jwt from 'jsonwebtoken';
+
+// Secret key for JWT signing - in production, use environment variable
+const JWT_SECRET = process.env.JWT_SECRET || 'baby-tracker-jwt-secret';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -35,47 +39,73 @@ export async function verifyAuthentication(req: NextRequest): Promise<boolean> {
  */
 export async function getAuthenticatedUser(req: NextRequest): Promise<AuthResult> {
   try {
-    // Extract caretakerId from cookies
+    // First try to get the JWT token from the Authorization header
+    const authHeader = req.headers.get('Authorization');
+    let token: string | undefined;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    }
+    
+    // If no token in header, try to get caretakerId from cookies (backward compatibility)
     const caretakerId = req.cookies.get('caretakerId')?.value;
     
-    // Debug: Log all cookies to see what's available
-    console.log('All cookies:', req.cookies.getAll());
-    console.log('CaretakerId from cookie:', caretakerId);
-    
-    if (!caretakerId) {
-      console.log('No caretakerId found in cookies');
-      return { authenticated: false, error: 'No authentication token found' };
+    // If we have a JWT token, verify it
+    if (token) {
+      try {
+        // Verify and decode the token
+        const decoded = jwt.verify(token, JWT_SECRET) as {
+          id: string;
+          name: string;
+          type: string | null;
+          role: string;
+        };
+        
+        // Return authenticated user info from token
+        return {
+          authenticated: true,
+          caretakerId: decoded.id,
+          caretakerType: decoded.type,
+          caretakerRole: decoded.role
+        };
+      } catch (jwtError) {
+        console.error('JWT verification error:', jwtError);
+        return { authenticated: false, error: 'Invalid or expired token' };
+      }
     }
     
-    // Check if caretakerId is 'system' (system admin)
-    if (caretakerId === 'system') {
-      return { 
-        authenticated: true, 
-        caretakerId: 'system',
-        caretakerType: 'admin',
-        caretakerRole: 'ADMIN'
-      };
+    // If no token but we have a caretakerId cookie, use the old method (backward compatibility)
+    if (caretakerId) {
+      // Check if caretakerId is 'system' (system admin)
+      if (caretakerId === 'system') {
+        return { 
+          authenticated: true, 
+          caretakerId: 'system',
+          caretakerType: 'admin',
+          caretakerRole: 'ADMIN'
+        };
+      }
+      
+      // Verify caretaker exists in database
+      const caretaker = await prisma.caretaker.findFirst({
+        where: {
+          id: caretakerId,
+          deletedAt: null,
+        },
+      });
+      
+      if (caretaker) {
+        return { 
+          authenticated: true, 
+          caretakerId: caretaker.id,
+          caretakerType: caretaker.type,
+          // Use type assertion for role until Prisma types are updated
+          caretakerRole: (caretaker as any).role || 'USER'
+        };
+      }
     }
     
-    // Verify caretaker exists in database
-    const caretaker = await prisma.caretaker.findFirst({
-      where: {
-        id: caretakerId,
-        deletedAt: null,
-      },
-    });
-    
-    if (caretaker) {
-      return { 
-        authenticated: true, 
-        caretakerId: caretaker.id,
-        caretakerType: caretaker.type,
-        // Use type assertion for role until Prisma types are updated
-        caretakerRole: (caretaker as any).role || 'USER'
-      };
-    }
-    
-    return { authenticated: false, error: 'Invalid authentication token' };
+    return { authenticated: false, error: 'No valid authentication found' };
   } catch (error) {
     console.error('Authentication verification error:', error);
     return { authenticated: false, error: 'Authentication verification failed' };

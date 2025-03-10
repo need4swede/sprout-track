@@ -125,17 +125,19 @@ export default function Security({ onUnlock }: SecurityProps) {
   // and check if any caretakers exist
   useEffect(() => {
     const storedCaretakerId = localStorage.getItem('caretakerId');
+    const storedToken = localStorage.getItem('authToken');
+    
     if (storedCaretakerId) {
       setAuthenticatedCaretakerId(storedCaretakerId);
     }
 
-    // Check if any caretakers exist
+    // Check if any caretakers exist using the new caretaker-exists API
     const checkCaretakers = async () => {
       try {
-        const response = await fetch('/api/caretaker');
+        const response = await fetch('/api/auth/caretaker-exists');
         if (response.ok) {
           const data = await response.json();
-          setHasCaretakers(data.success && Array.isArray(data.data) && data.data.length > 0);
+          setHasCaretakers(data.success && data.data.exists);
         }
       } catch (error) {
         console.error('Error checking caretakers:', error);
@@ -161,10 +163,6 @@ export default function Security({ onUnlock }: SecurityProps) {
     if (value.length <= 10) {
       setPin(value);
       setError('');
-      
-      if (value.length >= 6) {
-        handleAuthenticate(value);
-      }
     }
   };
 
@@ -190,20 +188,22 @@ export default function Security({ onUnlock }: SecurityProps) {
       if (newPin.length <= 10) {
         setPin(newPin);
         setError('');
-
-        // Check PIN length for automatic submission
-        if (newPin.length >= 6) {
-          handleAuthenticate(newPin);
-        }
       }
     }
   };
 
-  const handleAuthenticate = async (currentPin: string) => {
+  const handleAuthenticate = async () => {
     // Don't attempt authentication if login ID is required but not complete
     if (hasCaretakers && loginId.length !== 2) {
       setError('Please enter a valid 2-character login ID first');
       setActiveInput('loginId');
+      return;
+    }
+
+    // Don't attempt authentication if PIN is too short
+    if (pin.length < 6) {
+      setError('Please enter a PIN with at least 6 digits');
+      setActiveInput('pin');
       return;
     }
 
@@ -215,16 +215,17 @@ export default function Security({ onUnlock }: SecurityProps) {
         },
         body: JSON.stringify({
           loginId: hasCaretakers ? loginId : undefined,
-          securityPin: currentPin,
+          securityPin: pin,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Store unlock time and hide dialog
+        // Store unlock time, token, and caretaker ID
         localStorage.setItem('unlockTime', Date.now().toString());
         localStorage.setItem('caretakerId', data.data.id);
+        localStorage.setItem('authToken', data.data.token);
         localStorage.removeItem('attempts');
         setAttempts(0);
         setAuthenticatedCaretakerId(data.data.id);
@@ -421,6 +422,16 @@ export default function Security({ onUnlock }: SecurityProps) {
               <X className="h-6 w-6" />
             </Button>
           </div>
+          
+          {/* Go Button */}
+          <Button
+            variant="default"
+            className="w-full mt-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl disabled:opacity-50"
+            onClick={handleAuthenticate}
+            disabled={!!lockoutTime || (hasCaretakers && loginId.length !== 2) || pin.length < 6}
+          >
+            Go
+          </Button>
         </div>
       </div>
     </div>
