@@ -47,6 +47,7 @@ export default function CaretakerModal({
   const [confirmPin, setConfirmPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isFirstCaretaker, setIsFirstCaretaker] = useState(false);
 
   // Reset form when modal opens/closes or caretaker changes
   useEffect(() => {
@@ -59,12 +60,38 @@ export default function CaretakerModal({
         securityPin: caretaker.securityPin,
       });
       setConfirmPin(caretaker.securityPin);
+      setIsFirstCaretaker(false);
     } else if (!open) {
       setFormData(defaultFormData);
       setConfirmPin('');
       setError('');
     }
   }, [caretaker, open]);
+
+  // Check if this is the first caretaker in the system
+  useEffect(() => {
+    if (!isEditing && open) {
+      const checkFirstCaretaker = async () => {
+        try {
+          const response = await fetch('/api/caretaker');
+          if (response.ok) {
+            const data = await response.json();
+            const isFirst = !data.data || data.data.length === 0;
+            setIsFirstCaretaker(isFirst);
+            
+            // If this is the first caretaker, set role to ADMIN
+            if (isFirst) {
+              setFormData(prev => ({ ...prev, role: 'ADMIN' }));
+            }
+          }
+        } catch (error) {
+          console.error('Error checking caretakers:', error);
+        }
+      };
+      
+      checkFirstCaretaker();
+    }
+  }, [isEditing, open]);
 
   const validatePIN = () => {
     if (formData.securityPin.length < 6) {
@@ -206,6 +233,7 @@ export default function CaretakerModal({
               onValueChange={(value) =>
                 setFormData({ ...formData, role: value as UserRole })
               }
+              disabled={isFirstCaretaker}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a role" />
@@ -215,9 +243,15 @@ export default function CaretakerModal({
                 <SelectItem value="ADMIN">Administrator</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500 mt-1">
-              Administrators have access to system settings and administrative functions
-            </p>
+            {isFirstCaretaker ? (
+              <p className="text-xs text-amber-600 mt-1">
+                The first caretaker must be an administrator to manage the system
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">
+                Administrators have access to system settings and administrative functions
+              </p>
+            )}
           </div>
           <div>
             <label className="form-label">Security PIN</label>
