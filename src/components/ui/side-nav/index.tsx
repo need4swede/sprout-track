@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Settings } from 'lucide-react';
+import { X, Settings, LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/src/lib/utils';
 import { sideNavStyles, triggerButtonVariants } from './side-nav.styles';
@@ -65,6 +65,8 @@ export const SideNav: React.FC<SideNavProps> = ({
   currentPath,
   onNavigate,
   onSettingsClick,
+  onLogout,
+  isAdmin,
   className,
 }) => {
   // Close the side nav when pressing Escape key
@@ -151,14 +153,23 @@ export const SideNav: React.FC<SideNavProps> = ({
           />
         </nav>
 
-        {/* Footer with Settings */}
+        {/* Footer with Settings and Logout */}
         <div className={sideNavStyles.footer}>
+          {isAdmin && (
+            <button
+              className={sideNavStyles.settingsButton}
+              onClick={onSettingsClick}
+            >
+              <Settings className={sideNavStyles.settingsIcon} />
+              <span className={sideNavStyles.settingsLabel}>Settings</span>
+            </button>
+          )}
           <button
             className={sideNavStyles.settingsButton}
-            onClick={onSettingsClick}
+            onClick={onLogout}
           >
-            <Settings className={sideNavStyles.settingsIcon} />
-            <span className={sideNavStyles.settingsLabel}>Settings</span>
+            <LogOut className={sideNavStyles.settingsIcon} />
+            <span className={sideNavStyles.settingsLabel}>Logout</span>
           </button>
         </div>
       </div>

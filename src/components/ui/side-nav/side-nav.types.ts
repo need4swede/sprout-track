@@ -30,6 +30,16 @@ export interface SideNavProps {
   onSettingsClick: () => void;
   
   /**
+   * Function to call when the logout button is clicked
+   */
+  onLogout: () => void;
+  
+  /**
+   * Whether the current user is an admin
+   */
+  isAdmin: boolean;
+  
+  /**
    * Additional CSS classes to apply to the side navigation
    */
   className?: string;

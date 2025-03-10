@@ -44,6 +44,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   });
   
   const [caretakerName, setCaretakerName] = useState<string>('');
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Function to calculate baby's age
   const calculateAge = (birthday: Date) => {
@@ -118,17 +119,19 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setMounted(true);
     fetchData();
 
-    // Update caretaker name when component mounts
+    // Update caretaker name and role when component mounts
     const caretakerId = localStorage.getItem('caretakerId');
     if (caretakerId) {
       if (caretakerId === 'system') {
         setCaretakerName('System Administrator');
+        setIsAdmin(true);
       } else {
         fetch(`/api/caretaker?id=${caretakerId}`)
           .then(response => response.json())
           .then(data => {
             if (data.success && data.data) {
               setCaretakerName(data.data.name);
+              setIsAdmin(data.data.role === 'ADMIN');
             }
           })
           .catch(error => console.error('Error fetching caretaker:', error));
@@ -179,21 +182,35 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setIsUnlocked(true);
     fetchData();
     
-    // Update caretaker name when unlocked
+    // Update caretaker name and role when unlocked
     if (caretakerId) {
       if (caretakerId === 'system') {
         setCaretakerName('System Administrator');
+        setIsAdmin(true);
       } else {
         fetch(`/api/caretaker?id=${caretakerId}`)
           .then(response => response.json())
           .then(data => {
             if (data.success && data.data) {
               setCaretakerName(data.data.name);
+              setIsAdmin(data.data.role === 'ADMIN');
             }
           })
           .catch(error => console.error('Error fetching caretaker:', error));
       }
     }
+  };
+  
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem('unlockTime');
+    localStorage.removeItem('caretakerId');
+    
+    // Reset state
+    setIsUnlocked(false);
+    setCaretakerName('');
+    setIsAdmin(false);
+    setSideNavOpen(false);
   };
 
   return (
@@ -317,6 +334,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
               setSettingsOpen(true);
               setSideNavOpen(false);
             }}
+            onLogout={handleLogout}
+            isAdmin={isAdmin}
           />
         </div>
       )}
