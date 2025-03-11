@@ -47,6 +47,7 @@ export default function FeedForm({
     activeBreast: '' as 'LEFT' | 'RIGHT' | '', // Currently active breast for timer
   });
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [defaultSettings, setDefaultSettings] = useState({
     defaultBottleUnit: 'OZ',
     defaultSolidsUnit: 'TBSP',
@@ -141,7 +142,7 @@ export default function FeedForm({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isInitialized) {
       // Fetch default settings when form opens
       fetchDefaultSettings();
       
@@ -190,8 +191,14 @@ export default function FeedForm({
         // Fetch the last feed type to pre-populate the form
         fetchLastFeedType();
       }
+      
+      // Mark as initialized
+      setIsInitialized(true);
+    } else if (!isOpen) {
+      // Reset initialization flag when form closes
+      setIsInitialized(false);
     }
-  }, [isOpen, initialTime, activity]);
+  }, [isOpen, initialTime, activity, isInitialized]);
 
   useEffect(() => {
     if (formData.type === 'BOTTLE' || formData.type === 'SOLIDS') {

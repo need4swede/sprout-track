@@ -105,6 +105,7 @@ The component dynamically shows different fields based on the selected feeding t
 - Implements a modular component architecture for better maintainability
 - Manages shared state in the main component while delegating UI rendering to subcomponents
 - Implements useEffect hooks to populate form data when editing
+- Uses an initialization flag to prevent form reset when initialTime prop changes
 - Automatically fetches the last feeding type and amount for convenience
 - Fetches default units from user settings
 - Provides validation before submission

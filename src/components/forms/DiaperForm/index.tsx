@@ -42,6 +42,7 @@ export default function DiaperForm({
     color: '',
   });
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Format date string to be compatible with datetime-local input
   const formatDateForInput = (dateStr: string) => {
@@ -59,7 +60,7 @@ export default function DiaperForm({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isInitialized) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
@@ -75,8 +76,14 @@ export default function DiaperForm({
           time: formatDateForInput(initialTime)
         }));
       }
+      
+      // Mark as initialized
+      setIsInitialized(true);
+    } else if (!isOpen) {
+      // Reset initialization flag when form closes
+      setIsInitialized(false);
     }
-  }, [isOpen, initialTime, activity]);
+  }, [isOpen, initialTime, activity, isInitialized]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

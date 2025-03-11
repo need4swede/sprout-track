@@ -76,6 +76,7 @@ The component includes the following fields:
 
 - Uses the FormPage component for consistent UI across the application
 - Implements different form states based on whether starting sleep, ending sleep, or editing a sleep record
+- Uses an initialization flag to prevent form reset when initialTime prop changes
 - Automatically calculates sleep duration based on start and end times
 - Fetches current sleep data when ending an ongoing sleep session
 - Handles API calls for creating and updating sleep records

@@ -62,6 +62,7 @@ The component includes the following fields:
 
 - Uses the FormPage component for consistent UI across the application
 - Implements useEffect hooks to populate form data when editing
+- Uses an initialization flag to prevent form reset when initialTime prop changes
 - Fetches existing categories from the API for auto-suggestion
 - Provides an interactive dropdown for category selection with keyboard navigation
 - Handles API calls for creating and updating notes

@@ -68,6 +68,7 @@ Additional fields are shown when the type is "Dirty" or "Both":
 
 - Uses the FormPage component for consistent UI across the application
 - Implements useEffect hooks to populate form data when editing
+- Uses an initialization flag to prevent form reset when initialTime prop changes
 - Conditionally renders fields based on the selected diaper type
 - Provides validation before submission
 - Handles API calls for creating and updating diaper change records

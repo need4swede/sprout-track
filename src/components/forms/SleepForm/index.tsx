@@ -47,6 +47,7 @@ export default function SleepForm({
     quality: '' as SleepQuality | '',
   });
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Format date string to be compatible with datetime-local input
   const formatDateForInput = (dateStr: string) => {
@@ -64,7 +65,7 @@ export default function SleepForm({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isInitialized) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
@@ -74,6 +75,9 @@ export default function SleepForm({
           location: activity.location || '',
           quality: activity.quality || '',
         });
+        
+        // Mark as initialized
+        setIsInitialized(true);
       } else if (isSleeping && babyId) {
         // Ending sleep mode - fetch current sleep
         const fetchCurrentSleep = async () => {
@@ -102,10 +106,14 @@ export default function SleepForm({
                   location: currentSleep.location || '',
                   quality: 'GOOD', // Default to GOOD when ending sleep
                 }));
-              return;
             }
+            
+            // Mark as initialized
+            setIsInitialized(true);
           } catch (error) {
             console.error('Error fetching current sleep:', error);
+            // Mark as initialized even on error to prevent infinite retries
+            setIsInitialized(true);
           }
         };
         fetchCurrentSleep();
@@ -119,9 +127,13 @@ export default function SleepForm({
           location: prev.location,
           quality: isSleeping ? 'GOOD' : prev.quality,
         }));
+        
+        // Mark as initialized
+        setIsInitialized(true);
       }
-    } else {
-      // Reset form when modal closes
+    } else if (!isOpen) {
+      // Reset initialization flag and form when modal closes
+      setIsInitialized(false);
       setFormData({
         startTime: initialTime,
         endTime: '',
@@ -130,7 +142,7 @@ export default function SleepForm({
         quality: '' as SleepQuality | '',
       });
     }
-  }, [isOpen, initialTime, isSleeping, babyId, activity?.id]);
+  }, [isOpen, initialTime, isSleeping, babyId, activity?.id, isInitialized]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

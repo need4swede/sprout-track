@@ -37,6 +37,7 @@ export default function NoteForm({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -105,7 +106,7 @@ export default function NoteForm({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isInitialized) {
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
@@ -120,8 +121,14 @@ export default function NoteForm({
           time: formatDateForInput(initialTime)
         }));
       }
+      
+      // Mark as initialized
+      setIsInitialized(true);
+    } else if (!isOpen) {
+      // Reset initialization flag when form closes
+      setIsInitialized(false);
     }
-  }, [isOpen, initialTime, activity]);
+  }, [isOpen, initialTime, activity, isInitialized]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
