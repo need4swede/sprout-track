@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useBaby } from '../context/baby';
 import FullLogTimeline from '@/src/components/FullLogTimeline';
 
@@ -46,6 +46,31 @@ function FullLogPage() {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
   };
+
+  // Update unlock timer on any activity
+  const updateUnlockTimer = () => {
+    const unlockTime = localStorage.getItem('unlockTime');
+    if (unlockTime) {
+      localStorage.setItem('unlockTime', Date.now().toString());
+    }
+  };
+
+  // Add activity tracking
+  useEffect(() => {
+    // Add listeners for user activity
+    window.addEventListener('click', updateUnlockTimer);
+    window.addEventListener('keydown', updateUnlockTimer);
+    window.addEventListener('mousemove', updateUnlockTimer);
+    window.addEventListener('touchstart', updateUnlockTimer);
+
+    return () => {
+      // Clean up event listeners
+      window.removeEventListener('click', updateUnlockTimer);
+      window.removeEventListener('keydown', updateUnlockTimer);
+      window.removeEventListener('mousemove', updateUnlockTimer);
+      window.removeEventListener('touchstart', updateUnlockTimer);
+    };
+  }, []);
 
   return (
     <div className="h-full relative isolate">

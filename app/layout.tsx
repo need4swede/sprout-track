@@ -115,18 +115,30 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Update unlock timer on any activity
+  const updateUnlockTimer = () => {
+    const unlockTime = localStorage.getItem('unlockTime');
+    if (unlockTime) {
+      localStorage.setItem('unlockTime', Date.now().toString());
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     fetchData();
 
-    // We now get caretaker info from JWT token in the checkUnlockStatus effect
-    // This is kept for backward compatibility
+    // Add listeners for user activity
+    window.addEventListener('click', updateUnlockTimer);
+    window.addEventListener('keydown', updateUnlockTimer);
+    window.addEventListener('mousemove', updateUnlockTimer);
+    window.addEventListener('touchstart', updateUnlockTimer);
 
-    // We no longer need to track activity here as the JWT token handles expiration
-    // and the Security component will handle showing the login screen when needed
-    
     return () => {
-      // Empty cleanup function
+      // Clean up event listeners
+      window.removeEventListener('click', updateUnlockTimer);
+      window.removeEventListener('keydown', updateUnlockTimer);
+      window.removeEventListener('mousemove', updateUnlockTimer);
+      window.removeEventListener('touchstart', updateUnlockTimer);
     };
   }, []);
 

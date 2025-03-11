@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
             role: 'ADMIN',
           },
           JWT_SECRET,
-          { expiresIn: '30m' } // Token expires in 30 minutes
+          { expiresIn: '8h' } // Token expires in 8 hours
         );
         
         // Create response with token
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 30 * 60, // 30 minutes
+          maxAge: 8 * 60 * 60, // 8 hours
           path: '/',
         });
         
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
             role: (caretaker as any).role || 'USER',
           },
           JWT_SECRET,
-          { expiresIn: '30m' } // Token expires in 30 minutes
+          { expiresIn: '8h' } // Token expires in 8 hours
         );
         
         // Create response with token
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 30 * 60, // 30 minutes
+          maxAge: 8 * 60 * 60, // 8 hours
           path: '/',
         });
         

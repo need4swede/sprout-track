@@ -86,12 +86,32 @@ export default function Security({ onUnlock }: SecurityProps) {
         setShowDialog(true);
       } else {
         const timeSinceUnlock = Date.now() - parseInt(unlockTime);
-        if (timeSinceUnlock > 30 * 60 * 1000) { // 30 minutes inactivity
-          setShowDialog(true);
-          localStorage.removeItem('unlockTime');
-          localStorage.removeItem('caretakerId');
-          setAuthenticatedCaretakerId(null);
-        }
+          if (timeSinceUnlock > 30 * 60 * 1000) { // 30 minutes inactivity
+            // Get the token to invalidate it server-side
+            const token = localStorage.getItem('authToken');
+            
+            // Call the logout API to invalidate the token
+            if (token) {
+              fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+              }).catch(error => {
+                console.error('Error during auto-logout:', error);
+              });
+            }
+            
+            // Clear all client-side authentication data
+            setShowDialog(true);
+            localStorage.removeItem('unlockTime');
+            localStorage.removeItem('caretakerId');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('attempts');
+            localStorage.removeItem('lockoutTime');
+            setAuthenticatedCaretakerId(null);
+          }
       }
     };
 
