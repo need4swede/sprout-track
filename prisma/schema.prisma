@@ -1,6 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -56,48 +55,81 @@ enum UserRole {
   ADMIN
 }
 
+enum MilestoneCategory {
+  MOTOR
+  COGNITIVE
+  SOCIAL
+  LANGUAGE
+  CUSTOM
+}
+
+enum PlayType {
+  TUMMY_TIME
+  INDOOR_PLAY
+  OUTDOOR_PLAY
+  CUSTOM
+}
+
+enum MeasurementType {
+  HEIGHT
+  WEIGHT
+  HEAD_CIRCUMFERENCE
+  TEMPERATURE
+  CUSTOM
+}
+
 model Baby {
-  id                String   @id @default(uuid())
-  firstName         String
-  lastName          String
-  birthDate         DateTime
-  gender            Gender?
-  inactive          Boolean  @default(false)
-  feedWarningTime   String   @default("03:00") // Default 3 hours
-  diaperWarningTime String   @default("02:00") // Default 2 hours
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
-
+  id               String        @id @default(uuid())
+  firstName        String
+  lastName         String
+  birthDate        DateTime
+  gender           Gender?
+  inactive         Boolean       @default(false)
+  feedWarningTime  String        @default("03:00") // Default 3 hours
+  diaperWarningTime String       @default("02:00") // Default 2 hours
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+  
   // Relationships
-  sleepLogs   SleepLog[]
-  feedLogs    FeedLog[]
-  diaperLogs  DiaperLog[]
-  moodLogs    MoodLog[]
-  notes       Note[]
-
+  sleepLogs        SleepLog[]
+  feedLogs         FeedLog[]
+  diaperLogs       DiaperLog[]
+  moodLogs         MoodLog[]
+  notes            Note[]
+  milestones       Milestone[]
+  pumpLogs         PumpLog[]
+  playLogs         PlayLog[]
+  bathLogs         BathLog[]
+  measurements     Measurement[]
+  
   @@index([birthDate])
   @@index([deletedAt])
 }
 
 model Caretaker {
-  id          String       @id @default(uuid())
-  loginId     String       // Two-digit login identifier for quick authentication
-  name        String
-  type        String?      // parent, daycare, nanny, grandparent, uncle, etc.
-  role        UserRole     @default(USER) // User role for authentication permissions
-  securityPin String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
-
+  id           String    @id @default(uuid())
+  loginId      String    // Two-digit login identifier for quick authentication
+  name         String
+  type         String?   // parent, daycare, nanny, grandparent, uncle, etc.
+  role         UserRole  @default(USER) // User role for authentication permissions
+  securityPin  String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  
   // Relationships
-  sleepLogs   SleepLog[]
-  feedLogs    FeedLog[]
-  diaperLogs  DiaperLog[]
-  moodLogs    MoodLog[]
-  notes       Note[]
-
+  sleepLogs    SleepLog[]
+  feedLogs     FeedLog[]
+  diaperLogs   DiaperLog[]
+  moodLogs     MoodLog[]
+  notes        Note[]
+  milestones   Milestone[]
+  pumpLogs     PumpLog[]
+  playLogs     PlayLog[]
+  bathLogs     BathLog[]
+  measurements Measurement[]
+  
   @@index([deletedAt])
 }
 
@@ -114,11 +146,11 @@ model SleepLog {
   deletedAt   DateTime?
   
   // Relationships
-  baby        Baby        @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  baby        Baby         @relation(fields: [babyId], references: [id], onDelete: Cascade)
   babyId      String
-  caretaker   Caretaker?  @relation(fields: [caretakerId], references: [id])
+  caretaker   Caretaker?   @relation(fields: [caretakerId], references: [id])
   caretakerId String?
-
+  
   @@index([startTime])
   @@index([endTime])
   @@index([babyId])
@@ -131,6 +163,7 @@ model Unit {
   unitAbbr  String    @unique
   unitName  String
   feedLogs  FeedLog[]
+  pumpLogs  PumpLog[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   
@@ -138,27 +171,27 @@ model Unit {
 }
 
 model FeedLog {
-  id          String      @id @default(uuid())
-  time        DateTime
-  startTime   DateTime?   // Used for breast feeding duration tracking
-  endTime     DateTime?   // Used for breast feeding duration tracking
-  feedDuration Int?       // Duration in seconds, useful for tracking actual feeding time
-  type        FeedType
-  amount      Float?      // Amount in specified unit
-  unit        Unit?      @relation(fields: [unitAbbr], references: [unitAbbr])
-  unitAbbr    String?
-  side        BreastSide?
-  food        String?     // Description of solid foods
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?
+  id           String      @id @default(uuid())
+  time         DateTime
+  startTime    DateTime?   // Used for breast feeding duration tracking
+  endTime      DateTime?   // Used for breast feeding duration tracking
+  feedDuration Int?        // Duration in seconds, useful for tracking actual feeding time
+  type         FeedType
+  amount       Float?      // Amount in specified unit
+  unit         Unit?       @relation(fields: [unitAbbr], references: [unitAbbr])
+  unitAbbr     String?
+  side         BreastSide?
+  food         String?     // Description of solid foods
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?
   
   // Relationships
-  baby        Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
-  babyId      String
-  caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
-  caretakerId String?
-
+  baby         Baby        @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId       String
+  caretaker    Caretaker?  @relation(fields: [caretakerId], references: [id])
+  caretakerId  String?
+  
   @@index([time])
   @@index([startTime])
   @@index([endTime])
@@ -169,13 +202,13 @@ model FeedLog {
 }
 
 model DiaperLog {
-  id          String      @id @default(uuid())
+  id          String     @id @default(uuid())
   time        DateTime
   type        DiaperType
   condition   String?
   color       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
   
   // Relationships
@@ -183,7 +216,7 @@ model DiaperLog {
   babyId      String
   caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
   caretakerId String?
-
+  
   @@index([time])
   @@index([babyId])
   @@index([caretakerId])
@@ -201,11 +234,11 @@ model MoodLog {
   deletedAt   DateTime?
   
   // Relationships
-  baby        Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  baby        Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
   babyId      String
   caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
   caretakerId String?
-
+  
   @@index([time])
   @@index([babyId])
   @@index([caretakerId])
@@ -222,11 +255,11 @@ model Note {
   deletedAt   DateTime?
   
   // Relationships
-  baby        Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  baby        Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
   babyId      String
   caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
   caretakerId String?
-
+  
   @@index([time])
   @@index([babyId])
   @@index([caretakerId])
@@ -234,15 +267,141 @@ model Note {
 }
 
 model Settings {
-  id                  String   @id @default(uuid())
-  familyName          String   @default("My Family")
-  timezone            String   @default("America/Chicago")
-  securityPin         String   @default("111222")
-  defaultBottleUnit   String   @default("OZ")  // Default unit for bottle feeding
-  defaultSolidsUnit   String   @default("TBSP") // Default unit for solid feeding
-  defaultHeightUnit   String   @default("IN")  // Default unit for height measurement
-  defaultWeightUnit   String   @default("LB")  // Default unit for weight measurement
-  defaultTempUnit     String   @default("F")   // Default unit for temperature
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                String   @id @default(uuid())
+  familyName        String   @default("My Family")
+  timezone          String   @default("America/Chicago")
+  securityPin       String   @default("111222")
+  defaultBottleUnit String   @default("OZ")    // Default unit for bottle feeding
+  defaultSolidsUnit String   @default("TBSP")  // Default unit for solid feeding
+  defaultHeightUnit String   @default("IN")    // Default unit for height measurement
+  defaultWeightUnit String   @default("LB")    // Default unit for weight measurement
+  defaultTempUnit   String   @default("F")     // Default unit for temperature
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// New models for additional activity logs
+
+model Milestone {
+  id          String           @id @default(uuid())
+  date        DateTime
+  title       String
+  description String?
+  category    MilestoneCategory
+  ageInDays   Int?             // Optional calculated field based on baby's birthdate
+  photo       String?          // Path to photo if you want to store milestone photos
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  
+  // Relationships
+  baby        Baby             @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId      String
+  caretaker   Caretaker?       @relation(fields: [caretakerId], references: [id])
+  caretakerId String?
+  
+  @@index([date])
+  @@index([babyId])
+  @@index([caretakerId])
+  @@index([deletedAt])
+}
+
+model PumpLog {
+  id             String         @id @default(uuid())
+  startTime      DateTime
+  endTime        DateTime?
+  duration       Int?           // Duration in minutes
+  leftAmount     Float?         // Amount in specified unit
+  rightAmount    Float?         // Amount in specified unit
+  totalAmount    Float?         // Total amount pumped
+  unit           Unit?          @relation(fields: [unitAbbr], references: [unitAbbr])
+  unitAbbr       String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+  
+  // Relationships
+  baby           Baby           @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId         String
+  caretaker      Caretaker?     @relation(fields: [caretakerId], references: [id])
+  caretakerId    String?
+  
+  @@index([startTime])
+  @@index([endTime])
+  @@index([babyId])
+  @@index([caretakerId])
+  @@index([unitAbbr])
+  @@index([deletedAt])
+}
+
+model PlayLog {
+  id          String    @id @default(uuid())
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?      // Duration in minutes
+  type        PlayType
+  location    String?
+  activities  String?   // Description of activities during play
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  // Relationships
+  baby        Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId      String
+  caretaker   Caretaker? @relation(fields: [caretakerId], references: [id])
+  caretakerId String?
+  
+  @@index([startTime])
+  @@index([endTime])
+  @@index([babyId])
+  @@index([caretakerId])
+  @@index([deletedAt])
+}
+
+model BathLog {
+  id              String           @id @default(uuid())
+  time            DateTime         // Single time when the bath occurred
+  soapUsed        Boolean          @default(true)
+  shampooUsed     Boolean          @default(true)
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  
+  // Relationships
+  baby            Baby             @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId          String
+  caretaker       Caretaker?       @relation(fields: [caretakerId], references: [id])
+  caretakerId     String?
+  
+  @@index([time])
+  @@index([babyId])
+  @@index([caretakerId])
+  @@index([deletedAt])
+}
+
+model Measurement {
+  id          String           @id @default(uuid())
+  date        DateTime
+  type        MeasurementType
+  value       Float
+  unit        String           // Unit of measurement (in, cm, lb, kg, etc.)
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  
+  // Relationships
+  baby        Baby             @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId      String
+  caretaker   Caretaker?       @relation(fields: [caretakerId], references: [id])
+  caretakerId String?
+  
+  @@index([date])
+  @@index([type])
+  @@index([babyId])
+  @@index([caretakerId])
+  @@index([deletedAt])
 }
