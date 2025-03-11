@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Sun, Icon, Moon } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { ActivityType } from '../ui/activity-tile/activity-tile.types';
 import { Card } from '@/src/components/ui/card';
@@ -39,7 +39,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   };
 
   // Calculate time awake and asleep
-  const { awakeTime, sleepTime, totalConsumed, diaperChanges, poopCount } = useMemo(() => {
+  const { awakeTime, sleepTime, totalConsumed, diaperChanges, poopCount, leftBreastTime, rightBreastTime, noteCount, solidsConsumed } = useMemo(() => {
     // Set start and end of the selected day
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -53,9 +53,19 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
     // For calculating consumed amounts
     const consumedAmounts: Record<string, number> = {};
     
+    // For calculating solids consumed amounts
+    const solidsAmounts: Record<string, number> = {};
+    
     // For counting diapers and poops
     let diaperCount = 0;
     let poopCount = 0;
+    
+    // For tracking breast feeding per side
+    let leftBreastSeconds = 0;
+    let rightBreastSeconds = 0;
+    
+    // For counting notes
+    let noteCount = 0;
 
     // Process each activity
     activities.forEach(activity => {
@@ -84,10 +94,36 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
         // Only count feeds that occurred on the selected day
         if (time >= startOfDay && time <= endOfDay) {
           const unit = activity.unitAbbr || 'oz';
-          if (!consumedAmounts[unit]) {
-            consumedAmounts[unit] = 0;
+          
+          // Separate tracking for solids vs bottle feeds
+          if ('type' in activity && activity.type === 'SOLIDS') {
+            if (!solidsAmounts[unit]) {
+              solidsAmounts[unit] = 0;
+            }
+            solidsAmounts[unit] += activity.amount;
+          } else {
+            if (!consumedAmounts[unit]) {
+              consumedAmounts[unit] = 0;
+            }
+            consumedAmounts[unit] += activity.amount;
           }
-          consumedAmounts[unit] += activity.amount;
+        }
+      }
+      
+      // Breast feed activities with duration
+      if ('type' in activity && activity.type === 'BREAST' && 'feedDuration' in activity && activity.feedDuration) {
+        const time = new Date(activity.time);
+        
+        // Only count feeds that occurred on the selected day
+        if (time >= startOfDay && time <= endOfDay) {
+          // Track duration per side
+          if ('side' in activity && activity.side) {
+            if (activity.side === 'LEFT') {
+              leftBreastSeconds += activity.feedDuration;
+            } else if (activity.side === 'RIGHT') {
+              rightBreastSeconds += activity.feedDuration;
+            }
+          }
         }
       }
       
@@ -103,6 +139,16 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
           if (activity.type === 'DIRTY' || activity.type === 'BOTH') {
             poopCount++;
           }
+        }
+      }
+      
+      // Note activities
+      if ('content' in activity) {
+        const time = new Date(activity.time);
+        
+        // Only count notes that occurred on the selected day
+        if (time >= startOfDay && time <= endOfDay) {
+          noteCount++;
         }
       }
     });
@@ -128,13 +174,22 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
     const formattedConsumed = Object.entries(consumedAmounts)
       .map(([unit, amount]) => `${amount} ${unit.toLowerCase()}`)
       .join(', ');
+      
+    // Format solids consumed amounts
+    const formattedSolidsConsumed = Object.entries(solidsAmounts)
+      .map(([unit, amount]) => `${amount} ${unit.toLowerCase()}`)
+      .join(', ');
     
     return {
       awakeTime: formatMinutes(awakeMinutes),
       sleepTime: formatMinutes(totalSleepMinutes),
       totalConsumed: formattedConsumed || 'None',
       diaperChanges: diaperCount.toString(),
-      poopCount: poopCount.toString()
+      poopCount: poopCount.toString(),
+      leftBreastTime: formatMinutes(Math.floor(leftBreastSeconds / 60)),
+      rightBreastTime: formatMinutes(Math.floor(rightBreastSeconds / 60)),
+      noteCount: noteCount.toString(),
+      solidsConsumed: formattedSolidsConsumed || 'None'
     };
   }, [activities, date]);
 
@@ -172,21 +227,55 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
                 label="Sleep Time" 
                 value={sleepTime} 
               />
-              <StatItem 
-                icon={<Icon iconNode={bottleBaby} className="h-4 w-4 text-sky-600" />} 
-                label="Consumed" 
-                value={totalConsumed} 
-              />
-              <StatItem 
-                icon={<Icon iconNode={diaper} className="h-4 w-4 text-teal-600" />} 
-                label="Diaper Changes" 
-                value={diaperChanges} 
-              />
-              <StatItem 
-                icon={<Icon iconNode={diaper} className="h-4 w-4 text-amber-700" />} 
-                label="Poops" 
-                value={poopCount} 
-              />
+              {totalConsumed !== 'None' && (
+                <StatItem 
+                  icon={<Icon iconNode={bottleBaby} className="h-4 w-4 text-sky-600" />} 
+                  label="Consumed" 
+                  value={totalConsumed} 
+                />
+              )}
+              {diaperChanges !== '0' && (
+                <StatItem 
+                  icon={<Icon iconNode={diaper} className="h-4 w-4 text-teal-600" />} 
+                  label="Diaper Changes" 
+                  value={diaperChanges} 
+                />
+              )}
+              {poopCount !== '0' && (
+                <StatItem 
+                  icon={<Icon iconNode={diaper} className="h-4 w-4 text-amber-700" />} 
+                  label="Poops" 
+                  value={poopCount} 
+                />
+              )}
+              {solidsConsumed !== 'None' && (
+                <StatItem 
+                  icon={<Utensils className="h-4 w-4 text-green-600" />} 
+                  label="Solids" 
+                  value={solidsConsumed} 
+                />
+              )}
+              {leftBreastTime !== '0h 0m' && (
+                <StatItem 
+                  icon={<Droplet className="h-4 w-4 text-blue-500" />} 
+                  label="Left Breast" 
+                  value={leftBreastTime} 
+                />
+              )}
+              {rightBreastTime !== '0h 0m' && (
+                <StatItem 
+                  icon={<Droplet className="h-4 w-4 text-red-500" />} 
+                  label="Right Breast" 
+                  value={rightBreastTime} 
+                />
+              )}
+              {noteCount !== '0' && (
+                <StatItem 
+                  icon={<StickyNote className="h-4 w-4 text-yellow-500" />} 
+                  label="Notes" 
+                  value={noteCount} 
+                />
+              )}
             </>
           )}
         </div>
