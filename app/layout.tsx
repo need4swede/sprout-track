@@ -8,6 +8,7 @@ import './globals.css';
 import SettingsForm from '@/src/components/forms/SettingsForm';
 import { Button } from '@/src/components/ui/button';
 import { ChevronDown, Moon } from 'lucide-react';
+import { DebugSessionTimer } from '@/src/components/debugSessionTimer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -360,6 +361,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
         onBabyStatusChange={fetchData}
         selectedBabyId={selectedBaby?.id || ''}
       />
+      
+      {/* Debug Session Timer - only visible in development mode */}
+      <DebugSessionTimer />
     </>
   );
 }
