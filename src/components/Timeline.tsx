@@ -23,18 +23,22 @@ import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
 import DailyStats from '@/src/components/DailyStats';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, MoodLogResponse } from '@/app/api/types';
+import { ActivityType as ImportedActivityType } from '@/src/components/ui/activity-tile/activity-tile.types';
 
 // Define the extended ActivityType that includes caretaker information
-type ActivityType = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse) & {
+type TimelineActivityType = ImportedActivityType & {
   caretakerId?: string | null;
   caretakerName?: string;
 };
 
+// Use TimelineActivityType for internal component logic
+type ActivityType = TimelineActivityType;
+
 type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
 
 interface TimelineProps {
-  activities: ActivityType[];
+  activities: ImportedActivityType[];
   onActivityDeleted?: (dateFilter?: Date) => void;
 }
 
