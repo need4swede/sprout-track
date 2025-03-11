@@ -15,6 +15,7 @@ interface BreastFeedFormProps {
   onTimerStart: (breast: 'LEFT' | 'RIGHT') => void;
   onTimerStop: () => void;
   onDurationChange: (breast: 'LEFT' | 'RIGHT', seconds: number) => void;
+  isEditing?: boolean; // New prop to indicate if we're editing an existing record
 }
 
 // Extract hours, minutes, seconds from total seconds
@@ -48,6 +49,7 @@ export default function BreastFeedForm({
   onTimerStart,
   onTimerStop,
   onDurationChange,
+  isEditing = false, // Default to false
 }: BreastFeedFormProps) {
   const [isEditingLeft, setIsEditingLeft] = useState(false);
   const [isEditingRight, setIsEditingRight] = useState(false);
@@ -114,11 +116,13 @@ export default function BreastFeedForm({
           <Button
             type="button"
             onClick={() => {
-              // Toggle the side selection
-              const newSide = side === 'LEFT' ? '' : 'LEFT';
-              onSideChange(newSide as BreastSide | '');
+              // Toggle the side selection only if not editing an existing record
+              if (!isEditing) {
+                const newSide = side === 'LEFT' ? '' : 'LEFT';
+                onSideChange(newSide as BreastSide | '');
+              }
             }}
-            disabled={loading}
+            disabled={loading || (isEditing && side !== 'LEFT')} // Disable if editing and not LEFT
             variant={side === 'LEFT' ? 'default' : 'outline'}
             className="w-full"
           >
@@ -128,11 +132,13 @@ export default function BreastFeedForm({
           <Button
             type="button"
             onClick={() => {
-              // Toggle the side selection
-              const newSide = side === 'RIGHT' ? '' : 'RIGHT';
-              onSideChange(newSide as BreastSide | '');
+              // Toggle the side selection only if not editing an existing record
+              if (!isEditing) {
+                const newSide = side === 'RIGHT' ? '' : 'RIGHT';
+                onSideChange(newSide as BreastSide | '');
+              }
             }}
-            disabled={loading}
+            disabled={loading || (isEditing && side !== 'RIGHT')} // Disable if editing and not RIGHT
             variant={side === 'RIGHT' ? 'default' : 'outline'}
             className="w-full"
           >

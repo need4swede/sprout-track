@@ -146,29 +146,40 @@ export default function FeedForm({
       fetchDefaultSettings();
       
       if (activity) {
-        // Editing mode - populate with activity data
-        // Calculate feedDuration from startTime and endTime if available for breastfeeding
-        let feedDuration = 0;
-        if (activity.type === 'BREAST' && activity.startTime && activity.endTime) {
-          const start = new Date(activity.startTime);
-          const end = new Date(activity.endTime);
-          feedDuration = Math.floor((end.getTime() - start.getTime()) / 1000);
-        }
-        
-        setFormData({
-          time: formatDateForInput(initialTime),
-          type: activity.type,
-          amount: activity.amount?.toString() || '',
-          unit: activity.unitAbbr || 
-            (activity.type === 'BOTTLE' ? defaultSettings.defaultBottleUnit : 
-             activity.type === 'SOLIDS' ? defaultSettings.defaultSolidsUnit : ''),
-          side: activity.side || '',
-          food: activity.food || '',
-          feedDuration: feedDuration,
-          leftDuration: activity.side === 'LEFT' ? feedDuration : 0,
-          rightDuration: activity.side === 'RIGHT' ? feedDuration : 0,
-          activeBreast: ''
-        });
+      // Editing mode - populate with activity data
+      // Calculate feedDuration from different sources based on what's available
+      let feedDuration = 0;
+      
+      // First try to get duration from feedDuration field (added in recent migration)
+      if (activity.type === 'BREAST' && activity.feedDuration) {
+        feedDuration = activity.feedDuration;
+      } 
+      // Then try to calculate from startTime and endTime if available
+      else if (activity.type === 'BREAST' && activity.startTime && activity.endTime) {
+        const start = new Date(activity.startTime);
+        const end = new Date(activity.endTime);
+        feedDuration = Math.floor((end.getTime() - start.getTime()) / 1000);
+      }
+      // Finally, fall back to amount field (which was used for duration in minutes in older records)
+      else if (activity.type === 'BREAST' && activity.amount) {
+        // Convert minutes to seconds
+        feedDuration = activity.amount * 60;
+      }
+      
+      setFormData({
+        time: formatDateForInput(initialTime),
+        type: activity.type,
+        amount: activity.amount?.toString() || '',
+        unit: activity.unitAbbr || 
+          (activity.type === 'BOTTLE' ? defaultSettings.defaultBottleUnit : 
+           activity.type === 'SOLIDS' ? defaultSettings.defaultSolidsUnit : ''),
+        side: activity.side || '',
+        food: activity.food || '',
+        feedDuration: feedDuration,
+        leftDuration: activity.side === 'LEFT' ? feedDuration : 0,
+        rightDuration: activity.side === 'RIGHT' ? feedDuration : 0,
+        activeBreast: ''
+      });
       } else {
         // New entry mode - set the time and fetch the last feed type
         setFormData(prev => ({
@@ -238,9 +249,9 @@ export default function FeedForm({
       return;
     }
 
-    // Validate breast feeding side
-    if (formData.type === 'BREAST' && !formData.side) {
-      console.error('Side is required for breast feeding');
+    // For breast feeding, at least one side must have a duration
+    if (formData.type === 'BREAST' && formData.leftDuration === 0 && formData.rightDuration === 0) {
+      console.error('At least one breast must have a duration');
       return;
     }
     
@@ -252,8 +263,22 @@ export default function FeedForm({
     setLoading(true);
 
     try {
-      // Create a single entry for the selected breast side
-      await createSingleFeedEntry();
+      if (formData.type === 'BREAST' && !activity) {
+        // For new breast feeding entries, create entries for both sides if they have durations
+        if (formData.leftDuration > 0 && formData.rightDuration > 0) {
+          // Create entries for both sides
+          await createBreastFeedingEntries();
+        } else if (formData.leftDuration > 0) {
+          // Create only left side entry
+          await createSingleFeedEntry('LEFT');
+        } else if (formData.rightDuration > 0) {
+          // Create only right side entry
+          await createSingleFeedEntry('RIGHT');
+        }
+      } else {
+        // For editing or non-breast feeding entries, use the single entry method
+        await createSingleFeedEntry(formData.side as BreastSide);
+      }
 
       onClose();
       onSuccess?.();
@@ -278,27 +303,48 @@ export default function FeedForm({
     }
   };
 
+  // Helper function to create entries for both breast sides
+  const createBreastFeedingEntries = async () => {
+    // Create left side entry
+    if (formData.leftDuration > 0) {
+      await createSingleFeedEntry('LEFT');
+    }
+    
+    // Create right side entry
+    if (formData.rightDuration > 0) {
+      await createSingleFeedEntry('RIGHT');
+    }
+  };
+
   // Helper function to create a single feed entry
-  const createSingleFeedEntry = async () => {
+  const createSingleFeedEntry = async (breastSide?: BreastSide) => {
+    // For breast feeding, use the provided side or the form data side
+    const side = formData.type === 'BREAST' ? (breastSide || formData.side) : undefined;
+    
     // Calculate start and end times for breastfeeding based on feedDuration
-    let startTime, endTime;
-    if (formData.type === 'BREAST' && formData.feedDuration > 0) {
-      const timeDate = new Date(formData.time);
-      endTime = new Date(timeDate);
-      startTime = new Date(timeDate.getTime() - formData.feedDuration * 1000);
+    let startTime, endTime, duration;
+    if (formData.type === 'BREAST') {
+      // Use the appropriate duration based on the side
+      duration = side === 'LEFT' ? formData.leftDuration : 
+                 side === 'RIGHT' ? formData.rightDuration : 
+                 formData.feedDuration;
+      
+      if (duration > 0) {
+        const timeDate = new Date(formData.time);
+        endTime = new Date(timeDate);
+        startTime = new Date(timeDate.getTime() - duration * 1000);
+      }
     }
     
     const payload = {
       babyId,
       time: formData.time, // Send the local time directly
       type: formData.type,
-      ...(formData.type === 'BREAST' && { 
-        side: formData.side,
+      ...(formData.type === 'BREAST' && side && { 
+        side,
         ...(startTime && { startTime: startTime.toISOString() }),
         ...(endTime && { endTime: endTime.toISOString() }),
-        feedDuration: formData.type === 'BREAST' && formData.side === 'LEFT' ? formData.leftDuration : 
-                      formData.type === 'BREAST' && formData.side === 'RIGHT' ? formData.rightDuration : 
-                      formData.feedDuration // Use the appropriate duration
+        feedDuration: duration
       }),
       ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { 
         amount: parseFloat(formData.amount),
@@ -326,8 +372,6 @@ export default function FeedForm({
 
     return response;
   };
-
-  // We've simplified the implementation to only use createSingleFeedEntry
 
   // This section is now handled in the createSingleFeedEntry and createBreastFeedingEntries functions
 
@@ -520,6 +564,7 @@ export default function FeedForm({
                     setFormData(prev => ({ ...prev, rightDuration: seconds }));
                   }
                 }}
+                isEditing={!!activity} // Pass true if editing an existing record
               />
             )}
             

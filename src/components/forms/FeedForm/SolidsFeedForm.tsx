@@ -83,7 +83,7 @@ export default function SolidsFeedForm({
           </Button>
         </div>
       </div>
-      <div>
+      <div className="mb-6">
         <label className="form-label">Food</label>
         <Input
           value={food}

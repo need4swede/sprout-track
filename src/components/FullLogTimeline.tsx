@@ -164,7 +164,19 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       let details = '';
       if (activity.type === 'BREAST') {
         const side = activity.side ? `Side: ${formatBreastSide(activity.side)}` : '';
-        const duration = activity.amount ? `${activity.amount} min` : '';
+        
+        // Get duration from feedDuration (in seconds) or fall back to amount (in minutes)
+        let duration = '';
+        if (activity.feedDuration) {
+          const minutes = Math.floor(activity.feedDuration / 60);
+          const seconds = activity.feedDuration % 60;
+          duration = seconds > 0 ? 
+            `${minutes}m ${seconds}s` : 
+            `${minutes} min`;
+        } else if (activity.amount) {
+          duration = `${activity.amount} min`;
+        }
+        
         details = [side, duration].filter(Boolean).join(', ');
       } else if (activity.type === 'BOTTLE') {
         details = `${activity.amount || 'unknown'} oz`;
@@ -333,7 +345,18 @@ const getActivityDetails = (activity: ActivityType, settings: Settings | null) =
         if (activity.side) {
           details.push({ label: 'Side', value: formatBreastSide(activity.side) });
         }
-        if (activity.amount) {
+        
+        // Show duration from feedDuration (in seconds) or fall back to amount (in minutes)
+        if (activity.feedDuration) {
+          const minutes = Math.floor(activity.feedDuration / 60);
+          const seconds = activity.feedDuration % 60;
+          details.push({ 
+            label: 'Duration', 
+            value: seconds > 0 ? 
+              `${minutes} min ${seconds} sec` : 
+              `${minutes} minutes` 
+          });
+        } else if (activity.amount) {
           details.push({ label: 'Duration', value: `${activity.amount} minutes` });
         }
       }
