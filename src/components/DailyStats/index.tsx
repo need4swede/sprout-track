@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { ActivityType } from '../ui/activity-tile/activity-tile.types';
@@ -16,6 +16,73 @@ interface StatItemProps {
   value: string;
 }
 
+interface StatsTickerProps {
+  stats: {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+  }[];
+}
+
+const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const [animationDuration, setAnimationDuration] = useState(30); // seconds
+  
+  useEffect(() => {
+    if (tickerRef.current) {
+      // Calculate animation duration based on content width
+      const contentWidth = tickerRef.current.scrollWidth;
+      const containerWidth = tickerRef.current.clientWidth;
+      
+      // Only animate if content is wider than container
+      if (contentWidth > containerWidth) {
+        // Adjust speed based on content length (longer content = faster scroll)
+        const newDuration = Math.max(20, Math.min(40, contentWidth / 50));
+        setAnimationDuration(newDuration);
+      }
+    }
+  }, [stats]);
+
+  if (stats.length === 0) return null;
+
+  // Create duplicate content to ensure seamless looping
+  const tickerContent = (
+    <>
+      {stats.map((stat, index) => (
+        <div key={index} className="inline-flex items-center mr-6">
+          <div className="mr-1">{stat.icon}</div>
+          <span className="text-xs text-gray-600">{stat.label}: </span>
+          <span className="text-xs font-medium ml-1">{stat.value}</span>
+        </div>
+      ))}
+    </>
+  );
+
+  return (
+    <div className="relative overflow-hidden flex-1 mx-4">
+      <div 
+        ref={tickerRef}
+        className="whitespace-nowrap animate-marquee inline-block"
+        style={{ 
+          animationDuration: `${animationDuration}s`,
+          animationTimingFunction: 'linear',
+          animationIterationCount: 'infinite',
+          animationName: 'marquee'
+        }}
+      >
+        {tickerContent}
+        {tickerContent} {/* Duplicate content for seamless looping */}
+      </div>
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 const StatItem: React.FC<StatItemProps> = ({ icon, label, value }) => (
   <div className="flex items-center gap-2">
     <div className="flex-shrink-0 p-2 rounded-xl bg-gray-100">
@@ -29,7 +96,7 @@ const StatItem: React.FC<StatItemProps> = ({ icon, label, value }) => (
 );
 
 export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoading = false }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Helper function to format minutes into hours and minutes
   const formatMinutes = (minutes: number): string => {
@@ -196,11 +263,28 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   return (
     <Card className="overflow-hidden">
       <div 
-        className="flex items-center justify-between px-6 py-3 bg-gray-50 cursor-pointer"
+        className="flex items-center px-6 py-3 bg-gray-50 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <h3 className="text-sm font-medium">Daily Stats</h3>
-        <button className="text-gray-500 hover:text-gray-700">
+        
+        {!isExpanded && !isLoading && activities.length > 0 && (
+          <StatsTicker 
+            stats={[
+              ...(awakeTime !== '0h 0m' ? [{ icon: <Sun className="h-3 w-3 text-amber-500" />, label: "Awake", value: awakeTime }] : []),
+              ...(sleepTime !== '0h 0m' ? [{ icon: <Moon className="h-3 w-3 text-gray-700" />, label: "Sleep", value: sleepTime }] : []),
+              ...(totalConsumed !== 'None' ? [{ icon: <Icon iconNode={bottleBaby} className="h-3 w-3 text-sky-600" />, label: "Bottle", value: totalConsumed }] : []),
+              ...(diaperChanges !== '0' ? [{ icon: <Icon iconNode={diaper} className="h-3 w-3 text-teal-600" />, label: "Diapers", value: diaperChanges }] : []),
+              ...(poopCount !== '0' ? [{ icon: <Icon iconNode={diaper} className="h-3 w-3 text-amber-700" />, label: "Poops", value: poopCount }] : []),
+              ...(solidsConsumed !== 'None' ? [{ icon: <Utensils className="h-3 w-3 text-green-600" />, label: "Solids", value: solidsConsumed }] : []),
+              ...(leftBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-blue-500" />, label: "Left", value: leftBreastTime }] : []),
+              ...(rightBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-red-500" />, label: "Right", value: rightBreastTime }] : []),
+              ...(noteCount !== '0' ? [{ icon: <StickyNote className="h-3 w-3 text-yellow-500" />, label: "Notes", value: noteCount }] : [])
+            ]}
+          />
+        )}
+        
+        <button className="text-gray-500 hover:text-gray-700 ml-auto">
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
       </div>
@@ -230,7 +314,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
               {totalConsumed !== 'None' && (
                 <StatItem 
                   icon={<Icon iconNode={bottleBaby} className="h-4 w-4 text-sky-600" />} 
-                  label="Consumed" 
+                  label="Bottle" 
                   value={totalConsumed} 
                 />
               )}
