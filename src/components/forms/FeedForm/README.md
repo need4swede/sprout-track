@@ -1,6 +1,29 @@
 # FeedForm Component
 
-A form component for creating and editing feeding records for a baby. This component follows the form-page pattern used throughout the application.
+A modular form component for creating and editing feeding records for a baby. This component follows the form-page pattern used throughout the application and has been refactored into subcomponents for better maintainability.
+
+## Component Structure
+
+- `index.tsx` - Main container component that:
+  - Manages shared state and form logic
+  - Handles API calls and form submission
+  - Fetches the last feed type to pre-populate the form
+  - Conditionally renders the appropriate subcomponent based on feed type
+
+- Subcomponents:
+  - `BreastFeedForm.tsx` - Handles breast feeding UI with:
+    - Side selection (Left/Right)
+    - Timer functionality for tracking feeding duration
+    - Play/pause controls for the timer
+  
+  - `BottleFeedForm.tsx` - Manages bottle feeding with:
+    - Amount input with increment/decrement controls
+    - Unit selection (oz/ml)
+  
+  - `SolidsFeedForm.tsx` - Handles solids feeding with:
+    - Amount input with increment/decrement controls
+    - Unit selection (tbsp/g)
+    - Food description input
 
 ## Features
 
@@ -8,6 +31,7 @@ A form component for creating and editing feeding records for a baby. This compo
 - Edit existing feeding records
 - Support for different feeding types (Breast, Bottle, Solids)
 - Automatic fetching of last feeding amount for convenience
+- Timer functionality for tracking breastfeeding duration
 - Form validation for required fields
 - Responsive design
 
@@ -59,21 +83,33 @@ The component dynamically shows different fields based on the selected feeding t
 - **Time**: Date and time of the feeding (required)
 - **Type**: Type of feeding (Breast, Bottle, Solids) (required)
 
-### Breast Feeding
-- **Side**: Which breast was used (Left, Right, Both) (required)
+### Breast Feeding (BreastFeedForm)
+- **Side**: Which breast was used (Left or Right) (required)
+- **Duration**: Timer for tracking feeding duration with:
+  - Start/pause controls for real-time tracking
+  - Editable hours, minutes, and seconds fields for manual adjustment
+  - Separate tracking for each breast's feeding time
 
-### Bottle Feeding
-- **Amount**: Amount of milk/formula in ounces (with increment/decrement buttons)
+### Bottle Feeding (BottleFeedForm)
+- **Amount**: Amount of milk/formula (with increment/decrement buttons)
+- **Unit**: Measurement unit (oz or ml)
 
-### Solids Feeding
-- **Amount**: Amount of food in ounces (with increment/decrement buttons)
+### Solids Feeding (SolidsFeedForm)
+- **Amount**: Amount of food (with increment/decrement buttons)
+- **Unit**: Measurement unit (tbsp or g)
 - **Food**: Description of the food given
 
 ## Implementation Details
 
 - Uses the FormPage component for consistent UI across the application
+- Implements a modular component architecture for better maintainability
+- Manages shared state in the main component while delegating UI rendering to subcomponents
 - Implements useEffect hooks to populate form data when editing
-- Automatically fetches the last feeding amount for the selected type
+- Automatically fetches the last feeding type and amount for convenience
+- Fetches default units from user settings
 - Provides validation before submission
 - Handles API calls for creating and updating feeding records
+- Implements timer functionality for tracking breastfeeding duration
+- Supports manual editing of duration times for flexibility
+- Validates time inputs to ensure they are within valid ranges
 - Resets form after successful submission

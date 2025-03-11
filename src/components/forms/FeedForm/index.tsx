@@ -6,18 +6,16 @@ import { FeedLogResponse } from '@/app/api/types';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/src/components/ui/select';
-import { 
   FormPage, 
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
-import { Plus, Minus, Play, Pause, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+
+// Import subcomponents
+import BreastFeedForm from './BreastFeedForm';
+import BottleFeedForm from './BottleFeedForm';
+import SolidsFeedForm from './SolidsFeedForm';
 
 interface FeedFormProps {
   isOpen: boolean;
@@ -44,6 +42,9 @@ export default function FeedForm({
     side: '' as BreastSide | '',
     food: '',
     feedDuration: 0, // Duration in seconds for breastfeeding timer
+    leftDuration: 0, // Duration in seconds for left breast
+    rightDuration: 0, // Duration in seconds for right breast
+    activeBreast: '' as 'LEFT' | 'RIGHT' | '', // Currently active breast for timer
   });
   const [loading, setLoading] = useState(false);
   const [defaultSettings, setDefaultSettings] = useState({
@@ -164,6 +165,9 @@ export default function FeedForm({
           side: activity.side || '',
           food: activity.food || '',
           feedDuration: feedDuration,
+          leftDuration: activity.side === 'LEFT' ? feedDuration : 0,
+          rightDuration: activity.side === 'RIGHT' ? feedDuration : 0,
+          activeBreast: ''
         });
       } else {
         // New entry mode - set the time and fetch the last feed type
@@ -248,47 +252,8 @@ export default function FeedForm({
     setLoading(true);
 
     try {
-      // Calculate start and end times for breastfeeding based on feedDuration
-      let startTime, endTime;
-      if (formData.type === 'BREAST' && formData.feedDuration > 0) {
-        const timeDate = new Date(formData.time);
-        endTime = new Date(timeDate);
-        startTime = new Date(timeDate.getTime() - formData.feedDuration * 1000);
-      }
-      
-      const payload = {
-        babyId,
-        time: formData.time, // Send the local time directly
-        type: formData.type,
-        ...(formData.type === 'BREAST' && { 
-          side: formData.side,
-          ...(startTime && { startTime: startTime.toISOString() }),
-          ...(endTime && { endTime: endTime.toISOString() }),
-          feedDuration: formData.feedDuration // Include feedDuration directly
-        }),
-        ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { 
-          amount: parseFloat(formData.amount),
-          unitAbbr: formData.unit
-        }),
-        ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
-      };
-
-      // Get auth token from localStorage
-      const authToken = localStorage.getItem('authToken');
-
-      const response = await fetch(`/api/feed-log${activity ? `?id=${activity.id}` : ''}`, {
-        method: activity ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authToken ? `Bearer ${authToken}` : '',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save feed log');
-      }
+      // Create a single entry for the selected breast side
+      await createSingleFeedEntry();
 
       onClose();
       onSuccess?.();
@@ -302,6 +267,9 @@ export default function FeedForm({
         side: '' as BreastSide | '',
         food: '',
         feedDuration: 0,
+        leftDuration: 0,
+        rightDuration: 0,
+        activeBreast: ''
       });
     } catch (error) {
       console.error('Error saving feed log:', error);
@@ -310,18 +278,93 @@ export default function FeedForm({
     }
   };
 
+  // Helper function to create a single feed entry
+  const createSingleFeedEntry = async () => {
+    // Calculate start and end times for breastfeeding based on feedDuration
+    let startTime, endTime;
+    if (formData.type === 'BREAST' && formData.feedDuration > 0) {
+      const timeDate = new Date(formData.time);
+      endTime = new Date(timeDate);
+      startTime = new Date(timeDate.getTime() - formData.feedDuration * 1000);
+    }
+    
+    const payload = {
+      babyId,
+      time: formData.time, // Send the local time directly
+      type: formData.type,
+      ...(formData.type === 'BREAST' && { 
+        side: formData.side,
+        ...(startTime && { startTime: startTime.toISOString() }),
+        ...(endTime && { endTime: endTime.toISOString() }),
+        feedDuration: formData.type === 'BREAST' && formData.side === 'LEFT' ? formData.leftDuration : 
+                      formData.type === 'BREAST' && formData.side === 'RIGHT' ? formData.rightDuration : 
+                      formData.feedDuration // Use the appropriate duration
+      }),
+      ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { 
+        amount: parseFloat(formData.amount),
+        unitAbbr: formData.unit
+      }),
+      ...(formData.type === 'SOLIDS' && formData.food && { food: formData.food })
+    };
+
+    // Get auth token from localStorage
+    const authToken = localStorage.getItem('authToken');
+
+    const response = await fetch(`/api/feed-log${activity ? `?id=${activity.id}` : ''}`, {
+      method: activity ? 'PUT' : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authToken ? `Bearer ${authToken}` : '',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to save feed log');
+    }
+
+    return response;
+  };
+
+  // We've simplified the implementation to only use createSingleFeedEntry
+
+  // This section is now handled in the createSingleFeedEntry and createBreastFeedingEntries functions
+
   // Timer functionality
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const startTimer = () => {
+  const startTimer = (breast: 'LEFT' | 'RIGHT') => {
     if (!isTimerRunning) {
       setIsTimerRunning(true);
-      timerRef.current = setInterval(() => {
+      
+      // Set the active breast if provided
+      if (breast) {
         setFormData(prev => ({
           ...prev,
-          feedDuration: prev.feedDuration + 1
+          activeBreast: breast
         }));
+      }
+      
+      timerRef.current = setInterval(() => {
+        setFormData(prev => {
+          // Update the appropriate duration based on active breast
+          if (prev.activeBreast === 'LEFT') {
+            return {
+              ...prev,
+              leftDuration: prev.leftDuration + 1
+            };
+          } else if (prev.activeBreast === 'RIGHT') {
+            return {
+              ...prev,
+              rightDuration: prev.rightDuration + 1
+            };
+          } else {
+            // This case shouldn't happen with the simplified UI
+            return prev;
+          }
+        });
       }, 1000);
     }
   };
@@ -332,6 +375,12 @@ export default function FeedForm({
       timerRef.current = null;
     }
     setIsTimerRunning(false);
+    
+    // Reset active breast when stopping timer
+    setFormData(prev => ({
+      ...prev,
+      activeBreast: ''
+    }));
   };
   
   // Format time as hh:mm:ss
@@ -363,9 +412,9 @@ export default function FeedForm({
       title={activity ? 'Edit Feeding' : 'Log Feeding'}
       description={activity ? 'Update what and when your baby ate' : 'Record what and when your baby ate'}
     >
-      <form onSubmit={handleSubmit}>
-        <FormPageContent>
-          <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="h-full flex flex-col">
+        <FormPageContent className="overflow-y-auto">
+          <div className="space-y-4 pb-20">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="form-label">Time</label>
@@ -454,243 +503,50 @@ export default function FeedForm({
             </div>
             
             {formData.type === 'BREAST' && (
-              <>
-                <div>
-                  <label className="form-label">Side</label>
-                  <Select
-                    value={formData.side || ''}
-                    onValueChange={(value: BreastSide) =>
-                      setFormData({ ...formData, side: value })
-                    }
-                    disabled={loading}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select side" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LEFT">Left</SelectItem>
-                      <SelectItem value="RIGHT">Right</SelectItem>
-                      <SelectItem value="BOTH">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="form-label">Duration</label>
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="text-3xl font-medium text-center w-full tracking-wider">
-                        {formatTime(formData.feedDuration)}
-                      </div>
-                    </div>
-                    
-                    {/* Editable time inputs */}
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="flex flex-col items-center">
-                        <label className="text-xs text-gray-500 mb-1">Hours</label>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          max="23"
-                          value={Math.floor(formData.feedDuration / 3600)}
-                          onChange={(e) => {
-                            const hours = parseInt(e.target.value) || 0;
-                            const minutes = Math.floor((formData.feedDuration % 3600) / 60);
-                            const seconds = formData.feedDuration % 60;
-                            const newDuration = (hours * 3600) + (minutes * 60) + seconds;
-                            setFormData(prev => ({ ...prev, feedDuration: newDuration }));
-                          }}
-                          className="w-16 text-center"
-                          disabled={loading || isTimerRunning}
-                        />
-                      </div>
-                      <div className="text-xl font-medium">:</div>
-                      <div className="flex flex-col items-center">
-                        <label className="text-xs text-gray-500 mb-1">Minutes</label>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          max="59"
-                          value={Math.floor((formData.feedDuration % 3600) / 60)}
-                          onChange={(e) => {
-                            const hours = Math.floor(formData.feedDuration / 3600);
-                            const minutes = parseInt(e.target.value) || 0;
-                            const seconds = formData.feedDuration % 60;
-                            const newDuration = (hours * 3600) + (minutes * 60) + seconds;
-                            setFormData(prev => ({ ...prev, feedDuration: newDuration }));
-                          }}
-                          className="w-16 text-center"
-                          disabled={loading || isTimerRunning}
-                        />
-                      </div>
-                      <div className="text-xl font-medium">:</div>
-                      <div className="flex flex-col items-center">
-                        <label className="text-xs text-gray-500 mb-1">Seconds</label>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          max="59"
-                          value={formData.feedDuration % 60}
-                          onChange={(e) => {
-                            const hours = Math.floor(formData.feedDuration / 3600);
-                            const minutes = Math.floor((formData.feedDuration % 3600) / 60);
-                            const seconds = parseInt(e.target.value) || 0;
-                            const newDuration = (hours * 3600) + (minutes * 60) + seconds;
-                            setFormData(prev => ({ ...prev, feedDuration: newDuration }));
-                          }}
-                          className="w-16 text-center"
-                          disabled={loading || isTimerRunning}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-center space-x-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={isTimerRunning ? stopTimer : startTimer}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                      >
-                        {isTimerRunning ? 
-                          <Pause className="h-5 w-5 text-white" /> : 
-                          <Play className="h-5 w-5 text-white" />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <BreastFeedForm
+                side={formData.side}
+                leftDuration={formData.leftDuration}
+                rightDuration={formData.rightDuration}
+                activeBreast={formData.activeBreast}
+                isTimerRunning={isTimerRunning}
+                loading={loading}
+                onSideChange={(side) => setFormData({ ...formData, side })}
+                onTimerStart={startTimer}
+                onTimerStop={stopTimer}
+                onDurationChange={(breast, seconds) => {
+                  if (breast === 'LEFT') {
+                    setFormData(prev => ({ ...prev, leftDuration: seconds }));
+                  } else if (breast === 'RIGHT') {
+                    setFormData(prev => ({ ...prev, rightDuration: seconds }));
+                  }
+                }}
+              />
             )}
             
             {formData.type === 'BOTTLE' && (
-              <div>
-                <label className="form-label mb-6">Amount ({formData.unit === 'ML' ? 'ml' : 'oz'})</label>
-                <div className="flex items-center justify-center mb-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={decrementAmount}
-                    disabled={loading}
-                    className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                  >
-                    <Minus className="h-5 w-5 text-white" />
-                  </Button>
-                  <Input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) => handleAmountChange(e.target.value)}
-                    className="w-24 mx-3 text-center"
-                    placeholder="Amount"
-                    min="0"
-                    step={formData.unit === 'ML' ? '5' : '0.5'}
-                    disabled={loading}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={incrementAmount}
-                    disabled={loading}
-                    className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                  >
-                    <Plus className="h-5 w-5 text-white" />
-                  </Button>
-                </div>
-                <div className="mt-2 flex space-x-2">
-                  <Button
-                    type="button"
-                    variant={formData.unit === 'OZ' ? 'default' : 'outline'}
-                    className="w-full"
-                    onClick={() => setFormData(prev => ({ ...prev, unit: 'OZ' }))}
-                    disabled={loading}
-                  >
-                    oz
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={formData.unit === 'ML' ? 'default' : 'outline'}
-                    className="w-full"
-                    onClick={() => setFormData(prev => ({ ...prev, unit: 'ML' }))}
-                    disabled={loading}
-                  >
-                    ml
-                  </Button>
-                </div>
-              </div>
+              <BottleFeedForm
+                amount={formData.amount}
+                unit={formData.unit}
+                loading={loading}
+                onAmountChange={handleAmountChange}
+                onUnitChange={(unit) => setFormData(prev => ({ ...prev, unit }))}
+                onIncrement={incrementAmount}
+                onDecrement={decrementAmount}
+              />
             )}
             
             {formData.type === 'SOLIDS' && (
-              <>
-                <div>
-                  <label className="form-label mb-6">Amount ({formData.unit})</label>
-                  <div className="flex items-center justify-center mb-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={decrementAmount}
-                      disabled={loading}
-                      className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                    >
-                      <Minus className="h-5 w-5 text-white" />
-                    </Button>
-                    <Input
-                      type="number"
-                      value={formData.amount}
-                      onChange={(e) => handleAmountChange(e.target.value)}
-                      className="w-24 mx-3 text-center"
-                      placeholder="Amount"
-                      min="0"
-                      step="0.5"
-                      disabled={loading}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={incrementAmount}
-                      disabled={loading}
-                      className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-14 w-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                    >
-                      <Plus className="h-5 w-5 text-white" />
-                    </Button>
-                  </div>
-                  <div className="mt-2 flex space-x-2">
-                    <Button
-                      type="button"
-                      variant={formData.unit === 'TBSP' ? 'default' : 'outline'}
-                      className="w-full"
-                      onClick={() => setFormData(prev => ({ ...prev, unit: 'TBSP' }))}
-                      disabled={loading}
-                    >
-                      tbsp
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={formData.unit === 'G' ? 'default' : 'outline'}
-                      className="w-full"
-                      onClick={() => setFormData(prev => ({ ...prev, unit: 'G' }))}
-                      disabled={loading}
-                    >
-                      g
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">Food</label>
-                  <Input
-                    value={formData.food}
-                    onChange={(e) =>
-                      setFormData({ ...formData, food: e.target.value })
-                    }
-                    className="w-full"
-                    placeholder="Enter food"
-                    disabled={loading}
-                  />
-                </div>
-              </>
+              <SolidsFeedForm
+                amount={formData.amount}
+                unit={formData.unit}
+                food={formData.food}
+                loading={loading}
+                onAmountChange={handleAmountChange}
+                onUnitChange={(unit) => setFormData(prev => ({ ...prev, unit }))}
+                onFoodChange={(food) => setFormData({ ...formData, food })}
+                onIncrement={incrementAmount}
+                onDecrement={decrementAmount}
+              />
             )}
           </div>
         </FormPageContent>
