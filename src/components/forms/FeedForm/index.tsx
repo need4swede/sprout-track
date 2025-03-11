@@ -17,7 +17,7 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
-import { Plus, Minus, Play, Pause } from 'lucide-react';
+import { Plus, Minus, Play, Pause, Check } from 'lucide-react';
 
 interface FeedFormProps {
   isOpen: boolean;
@@ -383,22 +383,73 @@ export default function FeedForm({
               </div>
               <div>
                 <label className="form-label">Type</label>
-                <Select
-                  value={formData.type || ''}
-                  onValueChange={(value: FeedType) =>
-                    setFormData({ ...formData, type: value })
-                  }
-                  disabled={loading}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BREAST">Breast</SelectItem>
-                    <SelectItem value="BOTTLE">Bottle</SelectItem>
-                    <SelectItem value="SOLIDS">Solids</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex justify-between items-center gap-3 mt-2">
+                  {/* Breast Feed Button */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: 'BREAST' })}
+                    disabled={loading}
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'BREAST' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                      : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    <img 
+                      src="/breastfeed-128.png" 
+                      alt="Breast Feed" 
+                      className="w-16 h-16 object-contain" 
+                    />
+                    <span className="text-xs font-medium mt-1">Breast</span>
+                    {formData.type === 'BREAST' && (
+                      <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Bottle Feed Button */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: 'BOTTLE' })}
+                    disabled={loading}
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'BOTTLE' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                      : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    <img 
+                      src="/bottlefeed-128.png" 
+                      alt="Bottle Feed" 
+                      className="w-16 h-16 object-contain" 
+                    />
+                    <span className="text-xs font-medium mt-1">Bottle</span>
+                    {formData.type === 'BOTTLE' && (
+                      <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                  
+                  {/* Solids Button */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: 'SOLIDS' })}
+                    disabled={loading}
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'SOLIDS' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                      : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    <img 
+                      src="/solids-128.png" 
+                      alt="Solids" 
+                      className="w-16 h-16 object-contain" 
+                    />
+                    <span className="text-xs font-medium mt-1">Solids</span>
+                    {formData.type === 'SOLIDS' && (
+                      <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
             
