@@ -7,23 +7,26 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const babyId = searchParams.get('babyId');
-    const type = searchParams.get('type') as FeedType;
+    const type = searchParams.get('type') as FeedType | undefined;
 
-    if (!babyId || !type) {
+    if (!babyId) {
       return NextResponse.json<ApiResponse<FeedLogResponse>>(
         {
           success: false,
-          error: 'Baby ID and type are required',
+          error: 'Baby ID is required',
         },
         { status: 400 }
       );
     }
 
+    // Build where clause based on provided parameters
+    const whereClause: any = {
+      babyId,
+      ...(type && { type }), // Only include type if it's provided
+    };
+
     const feedLog = await prisma.feedLog.findFirst({
-      where: {
-        babyId,
-        type,
-      },
+      where: whereClause,
       orderBy: {
         time: 'desc',
       },

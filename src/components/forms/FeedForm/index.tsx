@@ -71,6 +71,36 @@ export default function FeedForm({
     }
   };
 
+  // Fetch the last feed record to determine the last feed type
+  const fetchLastFeedType = async () => {
+    if (!babyId) return;
+    
+    try {
+      const response = await fetch(`/api/feed-log/last?babyId=${babyId}`);
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      if (data.success && data.data?.type) {
+        // Set the last feed type
+        setFormData(prev => ({
+          ...prev,
+          type: data.data.type,
+          // For breast feeding, also set the side
+          ...(data.data.type === 'BREAST' && { side: data.data.side || '' }),
+          // For solids, also set the food
+          ...(data.data.type === 'SOLIDS' && { food: data.data.food || '' })
+        }));
+        
+        // If it's bottle feeding, also fetch the last amount
+        if (data.data.type === 'BOTTLE') {
+          // We'll fetch the amount in the useEffect when type changes
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching last feed type:', error);
+    }
+  };
+
   const fetchDefaultSettings = async () => {
     try {
       const response = await fetch('/api/settings');
@@ -136,11 +166,14 @@ export default function FeedForm({
           feedDuration: feedDuration,
         });
       } else {
-        // New entry mode
+        // New entry mode - set the time and fetch the last feed type
         setFormData(prev => ({
           ...prev,
           time: formatDateForInput(initialTime)
         }));
+        
+        // Fetch the last feed type to pre-populate the form
+        fetchLastFeedType();
       }
     }
   }, [isOpen, initialTime, activity]);
