@@ -77,7 +77,7 @@ The following deployment scripts are available in the `Scripts` directory:
 
 For a full deployment process:
 ```bash
-./Scripts/deployment.sh
+./scripts/deployment.sh
 ```
 
 This will:
