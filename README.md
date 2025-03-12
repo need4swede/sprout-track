@@ -36,9 +36,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 - `/app` - Next.js app router pages and components
 - `/db` - SQLite database and Prisma schema
-- `/components` - Reusable UI components
-- `/lib` - Utility functions and shared logic
-- `/types` - TypeScript type definitions
+- `/src/components` - Reusable UI components
+- `/src/lib` - Utility functions and shared logic
 
 ## Development
 
