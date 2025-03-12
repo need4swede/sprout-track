@@ -43,9 +43,9 @@ export function ActivityTileGroup({
   if (!selectedBaby?.id) return null;
 
   return (
-    <div className="grid grid-cols-4 border-t-[1px] border-white">
+    <div className="flex overflow-x-auto border-t-[1px] border-white no-scrollbar snap-x snap-mandatory">
       {/* Sleep Activity Button */}
-      <div className="relative">
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
         <ActivityTile
           activity={{
             type: 'NAP', // Using a valid SleepType enum value
@@ -93,7 +93,7 @@ export function ActivityTileGroup({
       </div>
       
       {/* Feed Activity Button */}
-      <div className="relative">
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
         <ActivityTile
           activity={{
             type: 'BOTTLE',
@@ -130,7 +130,7 @@ export function ActivityTileGroup({
       </div>
       
       {/* Diaper Activity Button */}
-      <div className="relative">
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
         <ActivityTile
           activity={{
             type: 'WET',
@@ -165,7 +165,7 @@ export function ActivityTileGroup({
       </div>
       
       {/* Note Activity Button */}
-      <div className="relative">
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
         <ActivityTile
           activity={{
             id: 'note-button',
