@@ -137,3 +137,32 @@ export interface CaretakerCreate {
 export interface CaretakerUpdate extends Partial<CaretakerCreate> {
   id: string;
 }
+
+// Bath log types
+export interface BathLog {
+  id: string;
+  time: Date;
+  soapUsed: boolean;
+  shampooUsed: boolean;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  babyId: string;
+  caretakerId: string | null;
+}
+
+export type BathLogResponse = Omit<BathLog, 'time' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+export interface BathLogCreate {
+  babyId: string;
+  time: string;
+  soapUsed?: boolean;
+  shampooUsed?: boolean;
+  notes?: string;
+}
