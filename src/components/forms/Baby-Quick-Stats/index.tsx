@@ -193,6 +193,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
       return {
         avgWakeWindow: 0,
         avgNapTime: 0,
+        avgNightSleepTime: 0,
         avgNightWakings: 0,
         avgFeedings: 0,
         avgFeedAmount: 0,
@@ -214,8 +215,10 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     let totalNapMinutes = 0;
     let napCount = 0;
 
-    // Count night wakings
+    // Count night wakings and calculate night sleep time
     let nightWakings = 0;
+    let totalNightSleepMinutes = 0;
+    let nightSleepDaysCount = 0;
 
     // Count feedings
     let feedingCount = 0;
@@ -267,7 +270,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
 
     // Process each day's activities
     Object.values(activitiesByDay).forEach((dayActivities) => {
-      // Count night wakings (sleep activities between 7pm and 7am)
+      // Count night wakings and calculate night sleep time (sleep activities between 7pm and 7am)
       const nightSleepEvents = dayActivities.filter(a => {
         if (!('startTime' in a)) return false;
         const startTime = new Date(a.startTime);
@@ -291,6 +294,25 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
       // Night wakings are the count of night sleep events minus 1 (if positive)
       const nightWakingsForDay = Math.max(0, nightSleepEvents.length - 1);
       nightWakings += nightWakingsForDay;
+      
+      // Calculate total night sleep time
+      let nightSleepMinutesForDay = 0;
+      nightSleepEvents.forEach(a => {
+        if ('startTime' in a && 'endTime' in a && a.endTime) {
+          const startTime = new Date(a.startTime).getTime();
+          const endTime = new Date(a.endTime).getTime();
+          const sleepDurationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+          
+          if (sleepDurationMinutes > 0 && sleepDurationMinutes < 12 * 60) { // Less than 12 hours
+            nightSleepMinutesForDay += sleepDurationMinutes;
+          }
+        }
+      });
+      
+      if (nightSleepMinutesForDay > 0) {
+        totalNightSleepMinutes += nightSleepMinutesForDay;
+        nightSleepDaysCount++;
+      }
 
       // Count feedings
       const feedingsForDay = dayActivities.filter(a => 
@@ -344,6 +366,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     // Calculate averages with proper rounding
     const avgWakeWindow = wakeWindowCount > 0 ? Math.round(totalWakeMinutes / wakeWindowCount) : 0;
     const avgNapTime = napCount > 0 ? Math.round(totalNapMinutes / napCount) : 0;
+    const avgNightSleepTime = nightSleepDaysCount > 0 ? Math.round(totalNightSleepMinutes / nightSleepDaysCount) : 0;
     const avgNightWakings = daysInPeriod > 0 ? Math.round(nightWakings / daysInPeriod * 10) / 10 : 0;
     const avgFeedings = daysInPeriod > 0 ? Math.round(feedingCount / daysInPeriod * 10) / 10 : 0;
     const avgFeedAmount = feedAmountCount > 0 ? Math.round(totalFeedAmount / feedAmountCount * 10) / 10 : 0;
@@ -353,6 +376,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     return {
       avgWakeWindow,
       avgNapTime,
+      avgNightSleepTime,
       avgNightWakings,
       avgFeedings,
       avgFeedAmount,
@@ -451,7 +475,6 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Wake Window"
                     mainValue={formatMinutes(mainStats.avgWakeWindow)}
                     comparativeValue={formatMinutes(compareStats.avgWakeWindow)}
-                    icon={<Clock className="h-4 w-4" />}
                     trend={mainStats.avgWakeWindow >= compareStats.avgWakeWindow ? 'positive' : 'negative'}
                   />
                   
@@ -459,15 +482,20 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Nap Time"
                     mainValue={formatMinutes(mainStats.avgNapTime)}
                     comparativeValue={formatMinutes(compareStats.avgNapTime)}
-                    icon={<Sun className="h-4 w-4" />}
                     trend={mainStats.avgNapTime >= compareStats.avgNapTime ? 'positive' : 'negative'}
+                  />
+                  
+                  <CardVisual
+                    title="Avg Night Sleep"
+                    mainValue={formatMinutes(mainStats.avgNightSleepTime)}
+                    comparativeValue={formatMinutes(compareStats.avgNightSleepTime)}
+                    trend={mainStats.avgNightSleepTime >= compareStats.avgNightSleepTime ? 'positive' : 'negative'}
                   />
                   
                   <CardVisual
                     title="Avg Night Wakings"
                     mainValue={mainStats.avgNightWakings.toFixed(1)}
                     comparativeValue={compareStats.avgNightWakings.toFixed(1)}
-                    icon={<Moon className="h-4 w-4" />}
                     trend={mainStats.avgNightWakings <= compareStats.avgNightWakings ? 'positive' : 'negative'}
                   />
                   
@@ -475,7 +503,6 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Feedings"
                     mainValue={mainStats.avgFeedings.toFixed(1)}
                     comparativeValue={compareStats.avgFeedings.toFixed(1)}
-                    icon={<Utensils className="h-4 w-4" />}
                     trend="neutral"
                   />
                   
@@ -483,7 +510,6 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Feed Amount"
                     mainValue={mainStats.avgFeedAmount.toFixed(1) + ' oz'}
                     comparativeValue={compareStats.avgFeedAmount.toFixed(1) + ' oz'}
-                    icon={<Utensils className="h-4 w-4" />}
                     trend={mainStats.avgFeedAmount >= compareStats.avgFeedAmount ? 'positive' : 'negative'}
                   />
                   
@@ -491,7 +517,6 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Diaper Changes"
                     mainValue={mainStats.avgDiaperChanges.toFixed(1)}
                     comparativeValue={compareStats.avgDiaperChanges.toFixed(1)}
-                    icon={<Droplet className="h-4 w-4" />}
                     trend="neutral"
                   />
                   
@@ -499,7 +524,6 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                     title="Avg Poops"
                     mainValue={mainStats.avgPoops.toFixed(1)}
                     comparativeValue={compareStats.avgPoops.toFixed(1)}
-                    icon={<Droplet className="h-4 w-4" />}
                     trend="neutral"
                   />
                 </div>
