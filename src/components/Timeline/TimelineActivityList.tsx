@@ -1,5 +1,6 @@
 import { Button } from '@/src/components/ui/button';
 import { Baby as BabyIcon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { ActivityType, TimelineActivityListProps } from './types';
 import { getActivityIcon, getActivityStyle, getActivityDescription } from './utils';
 
@@ -13,11 +14,56 @@ const TimelineActivityList = ({
   onActivitySelect,
   onPageChange,
   onItemsPerPageChange,
+  onSwipeLeft,
+  onSwipeRight,
 }: TimelineActivityListProps) => {
+  // Swipe handling
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Required minimum distance traveled to be considered a swipe
+  const minSwipeDistance = 50;
+  
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+    
+    if (isSwipe) {
+      if (distance > 0) {
+        // Swiped left (next day)
+        onSwipeLeft?.();
+      } else {
+        // Swiped right (previous day)
+        onSwipeRight?.();
+      }
+    }
+    
+    // Reset values
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
   return (
     <>
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        className="flex-1 overflow-y-auto" 
+        ref={contentRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <div className="divide-y divide-gray-100 bg-white">
           {activities.map((activity) => {
             const style = getActivityStyle(activity);

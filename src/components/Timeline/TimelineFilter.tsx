@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Button } from '@/src/components/ui/button';
 import {
   Moon,
@@ -6,9 +7,27 @@ import {
   ChevronLeft,
   ChevronRight,
   Bath,
+  ChevronDown,
+  Check,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { FilterType, TimelineFilterProps } from './types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+} from '@/src/components/ui/dropdown-menu';
+import { Checkbox } from '@/src/components/ui/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/src/components/ui/popover';
+import { Calendar } from '@/src/components/ui/calendar';
 
 const TimelineFilter = ({
   selectedDate,
@@ -17,102 +36,101 @@ const TimelineFilter = ({
   onDateSelection,
   onFilterChange,
 }: TimelineFilterProps) => {
+  // State for popover open/close
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  
+  // Define filter types and their icons
+  const filterOptions = [
+    { type: 'sleep', icon: <Moon className="h-4 w-4" />, label: 'Sleep' },
+    { type: 'feed', icon: <Icon iconNode={bottleBaby} className="h-4 w-4" />, label: 'Feed' },
+    { type: 'diaper', icon: <Icon iconNode={diaper} className="h-4 w-4" />, label: 'Diaper' },
+    { type: 'bath', icon: <Bath className="h-4 w-4" />, label: 'Bath' },
+    { type: 'note', icon: <Edit className="h-4 w-4" />, label: 'Note' },
+  ] as const;
+
+
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-1">
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => onDateChange(-1)}
-          className="h-7 w-7 bg-gray-100 hover:bg-gray-200"
+          className="h-7 w-7 text-white hover:bg-transparent hover:text-white/90 p-0"
           aria-label="Previous day"
         >
-          <ChevronLeft className="h-3 w-3 text-teal-700" />
+          <ChevronLeft className="h-3 w-3" />
         </Button>
         
-        <input
-          type="date"
-          className="h-7 px-2 rounded-md border border-gray-200 text-xs bg-gray-100 hover:bg-gray-200 text-teal-700"
-          value={new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000).toISOString().split('T')[0]}
-          onChange={(e) => {
-            // Create date in local timezone
-            const localDate = new Date(e.target.value);
-            // Adjust for timezone offset to keep the date consistent
-            const newDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
-            newDate.setHours(0, 0, 0, 0);
-            onDateSelection(newDate);
-          }}
-        />
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-7 px-2 text-xs text-white hover:bg-transparent hover:text-white/90"
+            >
+              {selectedDate.toLocaleDateString('en-US', { 
+                month: '2-digit', 
+                day: '2-digit',
+                year: 'numeric'
+              })}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="p-0 w-auto" align="start">
+            <Calendar
+              selected={selectedDate}
+              onSelect={(date) => {
+                if (date) {
+                  date.setHours(0, 0, 0, 0);
+                  onDateSelection(date);
+                  setCalendarOpen(false); // Close the popover after selection
+                }
+              }}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
         
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => onDateChange(1)}
-          className="h-7 w-7 bg-gray-100 hover:bg-gray-200"
+          className="h-7 w-7 text-white hover:bg-transparent hover:text-white/90 p-0"
           aria-label="Next day"
         >
-          <ChevronRight className="h-3 w-3 text-teal-700" />
+          <ChevronRight className="h-3 w-3" />
         </Button>
       </div>
       
-      <div className="flex gap-1">
-        <FilterButton 
-          type="sleep" 
-          activeFilter={activeFilter} 
-          onFilterChange={onFilterChange}
-          icon={<Moon className="h-4 w-4" />}
-        />
-        <FilterButton 
-          type="feed" 
-          activeFilter={activeFilter} 
-          onFilterChange={onFilterChange}
-          icon={<Icon iconNode={bottleBaby} className="h-4 w-4" />}
-        />
-        <FilterButton 
-          type="diaper" 
-          activeFilter={activeFilter} 
-          onFilterChange={onFilterChange}
-          icon={<Icon iconNode={diaper} className="h-4 w-4" />}
-        />
-        <FilterButton 
-          type="bath" 
-          activeFilter={activeFilter} 
-          onFilterChange={onFilterChange}
-          icon={<Bath className="h-4 w-4" />}
-        />
-        <FilterButton 
-          type="note" 
-          activeFilter={activeFilter} 
-          onFilterChange={onFilterChange}
-          icon={<Edit className="h-4 w-4" />}
-        />
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-1 h-7 text-white hover:bg-transparent hover:text-white/90 p-0"
+          >
+            Filters <ChevronDown className="h-3 w-3 ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          {filterOptions.map((option) => (
+            <DropdownMenuCheckboxItem
+              key={option.type}
+              checked={activeFilter === option.type}
+              onCheckedChange={() => onFilterChange(activeFilter === option.type ? null : option.type as FilterType)}
+              className="flex items-center gap-2"
+            >
+              <span className="flex items-center justify-center w-6">{option.icon}</span>
+              <span>{option.label}</span>
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
 
-interface FilterButtonProps {
-  type: FilterType;
-  activeFilter: FilterType;
-  onFilterChange: (filter: FilterType) => void;
-  icon: React.ReactNode;
-}
 
-const FilterButton = ({ type, activeFilter, onFilterChange, icon }: FilterButtonProps) => {
-  return (
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => onFilterChange(activeFilter === type ? null : type)}
-      className={`h-8 w-8 ${
-        activeFilter === type
-          ? 'border-2 border-blue-500 bg-white'
-          : 'bg-gray-100 hover:bg-gray-200'
-      }`}
-    >
-      {icon}
-    </Button>
-  );
-};
 
 export default TimelineFilter;

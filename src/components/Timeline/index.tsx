@@ -162,7 +162,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
   const sortedActivities = useMemo(() => {
     // Only use dateFilteredActivities, never fall back to activities from props
-    const filtered = !activeFilter
+    const filtered = !activeFilter || activeFilter === null
       ? dateFilteredActivities
       : dateFilteredActivities.filter(activity => {
           switch (activeFilter) {
@@ -193,7 +193,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
 
   const totalPages = useMemo(() => {
     // Only use dateFilteredActivities, never fall back to activities from props
-    const filtered = !activeFilter 
+    const filtered = !activeFilter || activeFilter === null
       ? dateFilteredActivities 
       : dateFilteredActivities.filter(activity => {
           switch (activeFilter) {
@@ -270,6 +270,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
           setItemsPerPage(value);
           setCurrentPage(1);
         }}
+        onSwipeLeft={() => handleDateChange(1)} // Next day (swipe left)
+        onSwipeRight={() => handleDateChange(-1)} // Previous day (swipe right)
       />
 
       {/* Activity Details */}

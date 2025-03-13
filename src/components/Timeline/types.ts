@@ -35,6 +35,8 @@ export interface TimelineActivityListProps {
   onActivitySelect: (activity: ActivityType) => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: number) => void;
+  onSwipeLeft?: () => void; // Handler for swiping left (next day)
+  onSwipeRight?: () => void; // Handler for swiping right (previous day)
 }
 
 export interface TimelineActivityDetailsProps {
