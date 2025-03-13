@@ -400,25 +400,11 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`${selectedBaby?.firstName}'s Quick Stats`}
-      description="View and manage baby information"
     >
       <FormPageContent>
         <div className={quickStatsContainer()}>
           {selectedBaby ? (
             <>
-              <div className={babyInfoHeader(selectedBaby.gender)}>
-                <div>
-                  <h2 className={babyNameHeading()}>
-                    {selectedBaby.firstName} {selectedBaby.lastName}
-                  </h2>
-                  {calculateAge && (
-                    <p className={babyAgeText()}>
-                      {calculateAge(selectedBaby.birthDate)}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
               {/* Time period selectors */}
               <div className={timePeriodSelectorContainer()}>
                 <div>

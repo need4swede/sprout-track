@@ -13,7 +13,7 @@ import { cn } from "@/src/lib/utils";
  */
 export const quickStatsContainer = () => {
   return cn(
-    "p-6 flex flex-col space-y-6"
+    "flex flex-col"
   );
 };
 
@@ -82,7 +82,7 @@ export const closeButtonContainer = () => {
  */
 export const timePeriodSelectorContainer = () => {
   return cn(
-    "flex flex-col mt-6"
+    "flex flex-col"
   );
 };
 
