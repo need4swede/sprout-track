@@ -399,7 +399,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     <FormPage
       isOpen={isOpen}
       onClose={onClose}
-      title="Baby Quick Stats"
+      title={`${selectedBaby?.firstName}'s Quick Stats`}
       description="View and manage baby information"
     >
       <FormPageContent>
