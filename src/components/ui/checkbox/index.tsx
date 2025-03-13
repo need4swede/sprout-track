@@ -4,24 +4,33 @@ import * as React from 'react';
 import { cn } from '@/src/lib/utils';
 import { Check } from 'lucide-react';
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  /**
-   * The checked state of the checkbox
-   */
-  checked?: boolean;
-  /**
-   * Callback function called when the checked state changes
-   */
-  onCheckedChange?: (checked: boolean) => void;
-}
+import { checkboxVariants } from './checkbox.styles';
+import { CheckboxProps } from './checkbox.types';
 
 /**
  * Checkbox component
  * 
- * A custom checkbox component with a styled appearance
+ * A custom checkbox component with a styled appearance that follows the project's design system.
+ * It's designed to be cross-platform compatible with minimal changes required for React Native.
+ *
+ * Features:
+ * - Multiple visual variants (default, primary, secondary, etc.)
+ * - Multiple size options (default, sm, lg)
+ * - Support for all standard input HTML attributes
+ * - Accessible focus states with keyboard navigation support
+ *
+ * @example
+ * ```tsx
+ * <Checkbox 
+ *   variant="primary" 
+ *   size="lg" 
+ *   checked={isChecked} 
+ *   onCheckedChange={setIsChecked} 
+ * />
+ * ```
  */
-export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, checked, onCheckedChange, ...props }, ref) => {
+const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+  ({ className, variant, size, checked, onCheckedChange, ...props }, ref) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (onCheckedChange) {
         onCheckedChange(event.target.checked);
@@ -40,11 +49,11 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         />
         <div
           className={cn(
-            "h-5 w-5 rounded border border-gray-300 flex items-center justify-center",
-            "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-            checked ? "bg-orange-500 border-orange-500" : "bg-white",
+            checkboxVariants({ variant, size }),
+            checked ? "" : "bg-white",
             className
           )}
+          data-state={checked ? "checked" : "unchecked"}
           onClick={() => onCheckedChange?.(!checked)}
         >
           {checked && <Check className="h-3.5 w-3.5 text-white" />}
@@ -56,4 +65,6 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
 Checkbox.displayName = 'Checkbox';
 
+export { Checkbox, checkboxVariants };
+export type { CheckboxProps };
 export default Checkbox;
