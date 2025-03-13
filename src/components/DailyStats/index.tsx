@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils, Bath } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { ActivityType } from '../ui/activity-tile/activity-tile.types';
 import { Card } from '@/src/components/ui/card';
@@ -106,7 +106,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   };
 
   // Calculate time awake and asleep
-  const { awakeTime, sleepTime, totalConsumed, diaperChanges, poopCount, leftBreastTime, rightBreastTime, noteCount, solidsConsumed } = useMemo(() => {
+  const { awakeTime, sleepTime, totalConsumed, diaperChanges, poopCount, leftBreastTime, rightBreastTime, noteCount, solidsConsumed, bathCount } = useMemo(() => {
     // Set start and end of the selected day
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -133,6 +133,9 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
     
     // For counting notes
     let noteCount = 0;
+    
+    // For counting bath events
+    let bathCount = 0;
 
     // Process each activity
     activities.forEach(activity => {
@@ -218,6 +221,16 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
           noteCount++;
         }
       }
+      
+      // Bath activities
+      if ('soapUsed' in activity) {
+        const time = new Date(activity.time);
+        
+        // Only count baths that occurred on the selected day
+        if (time >= startOfDay && time <= endOfDay) {
+          bathCount++;
+        }
+      }
     });
 
     // Calculate awake time (elapsed time today minus sleep minutes)
@@ -256,7 +269,8 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
       leftBreastTime: formatMinutes(Math.floor(leftBreastSeconds / 60)),
       rightBreastTime: formatMinutes(Math.floor(rightBreastSeconds / 60)),
       noteCount: noteCount.toString(),
-      solidsConsumed: formattedSolidsConsumed || 'None'
+      solidsConsumed: formattedSolidsConsumed || 'None',
+      bathCount: bathCount.toString()
     };
   }, [activities, date]);
 
@@ -279,7 +293,8 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
               ...(solidsConsumed !== 'None' ? [{ icon: <Utensils className="h-3 w-3 text-green-600" />, label: "Solids", value: solidsConsumed }] : []),
               ...(leftBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-blue-500" />, label: "Left", value: leftBreastTime }] : []),
               ...(rightBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-red-500" />, label: "Right", value: rightBreastTime }] : []),
-              ...(noteCount !== '0' ? [{ icon: <StickyNote className="h-3 w-3 text-yellow-500" />, label: "Notes", value: noteCount }] : [])
+              ...(noteCount !== '0' ? [{ icon: <StickyNote className="h-3 w-3 text-yellow-500" />, label: "Notes", value: noteCount }] : []),
+              ...(bathCount !== '0' ? [{ icon: <Bath className="h-3 w-3 text-orange-500" />, label: "Baths", value: bathCount }] : [])
             ]}
           />
         )}
@@ -358,6 +373,13 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
                   icon={<StickyNote className="h-4 w-4 text-yellow-500" />} 
                   label="Notes" 
                   value={noteCount} 
+                />
+              )}
+              {bathCount !== '0' && (
+                <StatItem 
+                  icon={<Bath className="h-4 w-4 text-orange-500" />} 
+                  label="Baths" 
+                  value={bathCount} 
                 />
               )}
             </>
