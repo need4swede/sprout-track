@@ -27,6 +27,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Install dependencies
+echo "Installing dependencies..."
+npm install
+if [ $? -ne 0 ]; then
+    echo "Error: npm install failed!"
+    "$SCRIPT_DIR/service.sh" start
+    exit 1
+fi
+
 # Generate Prisma client
 echo "Generating Prisma client..."
 npm run prisma:generate
