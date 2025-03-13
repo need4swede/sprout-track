@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, MoodLogResponse, NoteResponse, BathLogResponse } from '@/app/api/types';
 
-export type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse;
+export type ActivityType = SleepLogResponse | FeedLogResponse | DiaperLogResponse | MoodLogResponse | NoteResponse | BathLogResponse;
 
-export type ActivityTileVariant = 'sleep' | 'feed' | 'diaper' | 'note' | 'default';
+export type ActivityTileVariant = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'default';
 
 export interface ActivityTileProps {
   /**

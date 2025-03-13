@@ -1,4 +1,5 @@
 import { ActivityType } from './activity-tile.types';
+import { BathLogResponse } from '@/app/api/types';
 
 /**
  * Formats time based on the provided date string and settings
@@ -68,11 +69,12 @@ export const getActivityTime = (activity: ActivityType): string => {
 /**
  * Determines the variant based on the activity type
  */
-export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'default' => {
+export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'default' => {
   if ('type' in activity) {
     if ('duration' in activity) return 'sleep';
     if ('amount' in activity) return 'feed';
     if ('condition' in activity) return 'diaper';
+    if ('soapUsed' in activity || 'shampooUsed' in activity) return 'bath';
   }
   if ('content' in activity) return 'note';
   return 'default';
@@ -195,6 +197,20 @@ export const getActivityDescription = (activity: ActivityType) => {
       details: `${time} - ${truncatedContent}`
     };
   }
+  // Type guard for BathLogResponse
+  const isBathLog = (activity: ActivityType): activity is BathLogResponse => {
+    return 'soapUsed' in activity || 'shampooUsed' in activity;
+  };
+  
+  if (isBathLog(activity)) {
+    const time = formatTime(activity.time, true);
+    const notes = activity.notes ? ` - ${activity.notes}` : '';
+    return {
+      type: 'Bath',
+      details: `${time}${notes}`
+    };
+  }
+  
   return {
     type: 'Activity',
     details: 'logged'

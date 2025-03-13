@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse } from '@/app/api/types';
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import { StatusBubble } from "@/src/components/ui/status-bubble";
@@ -15,6 +15,7 @@ import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
+import BathForm from '@/src/components/forms/bathForm';
 
 function HomeContent(): React.ReactElement {
   const { selectedBaby, sleepingBabies, setSleepingBabies } = useBaby();
@@ -22,6 +23,7 @@ function HomeContent(): React.ReactElement {
   const [showFeedModal, setShowFeedModal] = useState(false);
   const [showDiaperModal, setShowDiaperModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
+  const [showBathModal, setShowBathModal] = useState(false);
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [localTime, setLocalTime] = useState<string>('');
@@ -254,6 +256,7 @@ function HomeContent(): React.ReactElement {
           onFeedClick={() => setShowFeedModal(true)}
           onDiaperClick={() => setShowDiaperModal(true)}
           onNoteClick={() => setShowNoteModal(true)}
+          onBathClick={() => setShowBathModal(true)}
         />
       )}
 
@@ -377,6 +380,21 @@ function HomeContent(): React.ReactElement {
         isOpen={showNoteModal}
         onClose={() => {
           setShowNoteModal(false);
+        }}
+        babyId={selectedBaby?.id || ''}
+        initialTime={localTime}
+        onSuccess={() => {
+          if (selectedBaby?.id) {
+            refreshActivities(selectedBaby.id);
+          }
+        }}
+      />
+      
+      {/* Bath Form */}
+      <BathForm
+        isOpen={showBathModal}
+        onClose={() => {
+          setShowBathModal(false);
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityTile } from '@/src/components/ui/activity-tile';
 import { StatusBubble } from "@/src/components/ui/status-bubble";
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse } from '@/app/api/types';
 
 interface ActivityTileGroupProps {
   selectedBaby: {
@@ -19,6 +19,7 @@ interface ActivityTileGroupProps {
   onFeedClick: () => void;
   onDiaperClick: () => void;
   onNoteClick: () => void;
+  onBathClick: () => void;
 }
 
 /**
@@ -38,7 +39,8 @@ export function ActivityTileGroup({
   onSleepClick,
   onFeedClick,
   onDiaperClick,
-  onNoteClick
+  onNoteClick,
+  onBathClick
 }: ActivityTileGroupProps) {
   if (!selectedBaby?.id) return null;
 
@@ -184,6 +186,33 @@ export function ActivityTileGroup({
           onClick={() => {
             updateUnlockTimer();
             onNoteClick();
+          }}
+        />
+      </div>
+      
+      {/* Bath Activity Button */}
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
+        <ActivityTile
+          activity={{
+            id: 'bath-button',
+            babyId: selectedBaby.id,
+            time: new Date().toISOString(),
+            soapUsed: false,
+            shampooUsed: false,
+            waterTemperature: null,
+            duration: null,
+            notes: '',
+            caretakerId: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null
+          } as unknown as BathLogResponse}
+          title="Bath"
+          variant="bath"
+          isButton={true}
+          onClick={() => {
+            updateUnlockTimer();
+            onBathClick();
           }}
         />
       </div>
