@@ -172,6 +172,7 @@ export default function BathForm({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('soapUsed', checked as boolean)
                     }
+                    variant="success"
                   />
                   <Label htmlFor="soapUsed" className="cursor-pointer">Soap Used</Label>
                 </div>
@@ -182,6 +183,7 @@ export default function BathForm({
                     onCheckedChange={(checked) => 
                       handleCheckboxChange('shampooUsed', checked as boolean)
                     }
+                    variant="success"
                   />
                   <Label htmlFor="shampooUsed" className="cursor-pointer">Shampoo Used</Label>
                 </div>
@@ -206,7 +208,7 @@ export default function BathForm({
         </FormPageContent>
         
         <FormPageFooter>
-          <div className="flex justify-between w-full">
+          <div className="flex justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
@@ -218,7 +220,6 @@ export default function BathForm({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-orange-500 hover:bg-orange-600"
             >
               {loading ? 'Saving...' : activity ? 'Update' : 'Save'}
             </Button>
