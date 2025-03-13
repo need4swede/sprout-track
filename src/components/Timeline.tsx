@@ -9,6 +9,7 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  Bath,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import {
@@ -22,8 +23,9 @@ import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
+import BathForm from '@/src/components/forms/bathForm';
 import DailyStats from '@/src/components/DailyStats';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, MoodLogResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, MoodLogResponse, BathLogResponse } from '@/app/api/types';
 import { ActivityType as ImportedActivityType } from '@/src/components/ui/activity-tile/activity-tile.types';
 
 // Define the extended ActivityType that includes caretaker information
@@ -35,7 +37,7 @@ type TimelineActivityType = ImportedActivityType & {
 // Use TimelineActivityType for internal component logic
 type ActivityType = TimelineActivityType;
 
-type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | null;
+type FilterType = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | null;
 
 interface TimelineProps {
   activities: ImportedActivityType[];
@@ -56,6 +58,9 @@ const getActivityIcon = (activity: ActivityType) => {
   }
   if ('content' in activity) {
     return <Edit className="h-4 w-4 text-gray-700" />; // Note activity
+  }
+  if ('soapUsed' in activity) {
+    return <Bath className="h-4 w-4 text-white" />; // Bath activity
   }
   return null;
 };
@@ -418,6 +423,33 @@ const getActivityDescription = (activity: ActivityType, settings: Settings | nul
       details: `${time} - ${truncatedContent}`
     };
   }
+  if ('soapUsed' in activity) {
+    const time = formatTime(activity.time, settings, true);
+    let bathDetails = '';
+    
+    // Determine bath details based on soap and shampoo usage
+    if (!activity.soapUsed && !activity.shampooUsed) {
+      bathDetails = 'water only';
+    } else if (activity.soapUsed && activity.shampooUsed) {
+      bathDetails = 'with soap and shampoo';
+    } else if (activity.soapUsed) {
+      bathDetails = 'with soap';
+    } else if (activity.shampooUsed) {
+      bathDetails = 'with shampoo';
+    }
+    
+    // Add notes if available, truncate if needed
+    let notesText = '';
+    if (activity.notes) {
+      const truncatedNotes = activity.notes.length > 30 ? activity.notes.substring(0, 30) + '...' : activity.notes;
+      notesText = ` - ${truncatedNotes}`;
+    }
+    
+    return {
+      type: 'Bath',
+      details: `${time} - ${bathDetails}${notesText}`
+    };
+  }
   return {
     type: 'Activity',
     details: 'logged'
@@ -459,6 +491,12 @@ const getActivityStyle = (activity: ActivityType): { bg: string, textColor: stri
       textColor: 'text-gray-700',
     };
   }
+  if ('soapUsed' in activity) {
+    return {
+      bg: 'bg-gradient-to-r from-orange-400 to-orange-500',
+      textColor: 'text-white',
+    };
+  }
   return {
     bg: 'bg-gray-100',
     textColor: 'text-gray-700',
@@ -469,7 +507,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | null>(null);
+  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -655,6 +693,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               return 'condition' in activity;
             case 'note':
               return 'content' in activity;
+            case 'bath':
+              return 'soapUsed' in activity;
             default:
               return true;
           }
@@ -757,6 +797,18 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               }`}
             >
               <Icon iconNode={diaper} className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setActiveFilter(activeFilter === 'bath' ? null : 'bath')}
+              className={`h-8 w-8 ${
+                activeFilter === 'bath'
+                  ? 'border-2 border-blue-500 bg-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              <Bath className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -906,6 +958,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                     else if ('amount' in selectedActivity) setEditModalType('feed');
                     else if ('condition' in selectedActivity) setEditModalType('diaper');
                     else if ('content' in selectedActivity) setEditModalType('note');
+                    else if ('soapUsed' in selectedActivity) setEditModalType('bath');
                   }
                 }}
               >
@@ -982,6 +1035,21 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
             babyId={selectedActivity.babyId}
             initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'content' in selectedActivity && 'time' in selectedActivity ? selectedActivity : undefined}
+            onSuccess={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+          />
+          <BathForm
+            isOpen={editModalType === 'bath'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
+            activity={'soapUsed' in selectedActivity ? selectedActivity : undefined}
             onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);
