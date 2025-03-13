@@ -74,3 +74,48 @@ export const closeButtonContainer = () => {
     "flex justify-center mt-4"
   );
 };
+
+/**
+ * Container styles for the time period selector
+ * 
+ * @returns A string of TailwindCSS classes
+ */
+export const timePeriodSelectorContainer = () => {
+  return cn(
+    "flex flex-col mt-6"
+  );
+};
+
+/**
+ * Label styles for the time period selector
+ * 
+ * @returns A string of TailwindCSS classes
+ */
+export const timePeriodSelectorLabel = () => {
+  return cn(
+    "text-sm font-medium text-gray-700"
+  );
+};
+
+/**
+ * Button group styles for the time period selector
+ * 
+ * @returns A string of TailwindCSS classes
+ */
+export const timePeriodButtonGroup = () => {
+  return cn(
+    "flex space-x-1 overflow-x-auto"
+  );
+};
+
+/**
+ * Grid styles for the stats cards
+ * 
+ * @returns A string of TailwindCSS classes
+ */
+export const statsCardsGrid = () => {
+  return cn(
+    "grid grid-cols-2 gap-4 mt-6",
+    "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  );
+};
