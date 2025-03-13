@@ -7,19 +7,14 @@ import Image from 'next/image';
 import './globals.css';
 import SettingsForm from '@/src/components/forms/SettingsForm';
 import { Button } from '@/src/components/ui/button';
-import { ChevronDown, Moon } from 'lucide-react';
+import { Moon } from 'lucide-react';
 import { DebugSessionTimer } from '@/src/components/debugSessionTimer';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
 import { SideNav, SideNavTrigger } from '@/src/components/ui/side-nav';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
 import { Baby } from '@prisma/client';
+import BabySelector from '@/src/components/BabySelector';
+import BabyQuickStats from '@/src/components/forms/Baby-Quick-Stats';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -30,6 +25,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { selectedBaby, setSelectedBaby, sleepingBabies } = useBaby();
   const [mounted, setMounted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [quickStatsOpen, setQuickStatsOpen] = useState(false);
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
@@ -258,68 +254,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="flex items-center space-x-2">
                   {babies.length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-auto py-1 text-white transition-colors duration-200 flex items-center space-x-2 ${
-                            selectedBaby?.gender === 'MALE'
-                              ? 'bg-blue-500'
-                              : selectedBaby?.gender === 'FEMALE'
-                              ? 'bg-pink-500'
-                              : ''
-                          }`}
-                        >
-                          <div className="flex flex-col items-start">
-                            <div className="flex items-center space-x-1">
-                              <span className="text-sm font-medium">
-                                {selectedBaby ? selectedBaby.firstName : 'Select Baby'}
-                              </span>
-                              {selectedBaby && sleepingBabies.has(selectedBaby.id) && (
-                                <Moon className="h-3 w-3" />
-                              )}
-                            </div>
-                            {selectedBaby && (
-                              <span className="text-xs opacity-80">
-                                {calculateAge(selectedBaby.birthDate)}
-                              </span>
-                            )}
-                          </div>
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuRadioGroup
-                          value={selectedBaby?.id || ''}
-                          onValueChange={(id) => {
-                            const baby = babies.find((b: Baby) => b.id === id);
-                            if (baby) {
-                              setSelectedBaby(baby);
-                            }
-                          }}
-                        >
-                          {babies.map((baby) => (
-                            <DropdownMenuRadioItem
-                              key={baby.id}
-                              value={baby.id}
-                              className={`${
-                                baby.gender === 'MALE'
-                                  ? 'bg-blue-500/10 hover:bg-blue-500/20'
-                                  : baby.gender === 'FEMALE'
-                                  ? 'bg-pink-500/10 hover:bg-pink-500/20'
-                                  : ''
-                              }`}
-                            >
-                              <div className="flex flex-col">
-                                <span>{baby.firstName}</span>
-                                <span className="text-xs opacity-80">{calculateAge(baby.birthDate)}</span>
-                              </div>
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <BabySelector
+                      selectedBaby={selectedBaby}
+                      onBabySelect={(baby) => setSelectedBaby(baby)}
+                      babies={babies}
+                      sleepingBabies={sleepingBabies}
+                      calculateAge={calculateAge}
+                      onOpenQuickStats={() => setQuickStatsOpen(true)}
+                    />
                   )}
                 </div>
               </div>
@@ -360,6 +302,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
         }}
         onBabyStatusChange={fetchData}
         selectedBabyId={selectedBaby?.id || ''}
+      />
+      
+      {/* Baby Quick Stats Form */}
+      <BabyQuickStats
+        isOpen={quickStatsOpen}
+        onClose={() => setQuickStatsOpen(false)}
+        selectedBaby={selectedBaby}
+        calculateAge={calculateAge}
       />
       
       {/* Debug Session Timer - only visible in development mode */}
