@@ -110,7 +110,7 @@ export default function BathForm({
       };
       
       // Determine if we're creating a new record or updating an existing one
-      const url = activity ? `/api/bath-log/${activity.id}` : '/api/bath-log';
+      const url = activity ? `/api/bath-log?id=${activity.id}` : '/api/bath-log';
       const method = activity ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
