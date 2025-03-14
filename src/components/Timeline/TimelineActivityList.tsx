@@ -76,7 +76,7 @@ const TimelineActivityList = ({
       setTimeout(() => {
         setSwipeOffset(0); // Reset position immediately before showing deal animation
         setShowDealAnimation(true);
-      }, 300); // Wait for slide animation to complete
+      }, 500); // Wait for slide animation to complete
       
       // Delay the action to allow animation to be visible
       setTimeout(() => {
@@ -95,8 +95,8 @@ const TimelineActivityList = ({
           // Reset values
           setTouchStart(null);
           setTouchEnd(null);
-        }, 600); // Give enough time for card animations to complete
-      }, 250);
+        }, 1200); // Give enough time for card animations to complete
+      }, 400);
     } else {
       // If not a valid swipe, animate back to center
       setSwipeOffset(0);
@@ -119,13 +119,13 @@ const TimelineActivityList = ({
       const slideTimeout = setTimeout(() => {
         setSwipeOffset(0); // Reset position immediately before showing deal animation
         setShowDealAnimation(true);
-      }, 300); // Wait for slide animation to complete
+      }, 500); // Wait for slide animation to complete
       
       // Reset animation after it completes
       const resetTimeout = setTimeout(() => {
         setIsAnimating(false);
         setShowDealAnimation(false);
-      }, 900); // Give enough time for card animations to complete
+      }, 1500); // Give enough time for card animations to complete
       
       // Clean up timeouts if component unmounts or effect re-runs
       return () => {
@@ -177,9 +177,9 @@ const TimelineActivityList = ({
             }}
             transition={{ 
               type: showDealAnimation ? "tween" : "spring", 
-              stiffness: 300, 
-              damping: 30,
-              duration: showDealAnimation ? 0 : 0.3
+              stiffness: 200, 
+              damping: 25,
+              duration: showDealAnimation ? 0 : 0.5
             }}
           >
             {/* Previous Day - Left Panel */}
@@ -194,14 +194,14 @@ const TimelineActivityList = ({
                         key={`prev-${activity.id}`}
                         className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
                         onClick={() => onActivitySelect(activity)}
-                        initial={showDealAnimation ? { opacity: 0, y: -50, scale: 0.95 } : false}
+                        initial={{ opacity: 0, y: -50, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
-                          delay: showDealAnimation ? index * 0.05 : 0,
-                          duration: 0.3,
+                          delay: index * 0.05,
+                          duration: 0.5,
                           type: "spring",
-                          stiffness: 300,
-                          damping: 20
+                          stiffness: 200,
+                          damping: 25
                         }}
                       >
                         <div className="flex items-center px-6 py-3">
@@ -243,14 +243,14 @@ const TimelineActivityList = ({
                         key={activity.id}
                         className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
                         onClick={() => onActivitySelect(activity)}
-                        initial={isAnimatingDateChange && showDealAnimation ? { opacity: 0, y: -50, scale: 0.95 } : false}
+                        initial={{ opacity: 0, y: -50, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
-                          delay: (isAnimatingDateChange && showDealAnimation) ? index * 0.05 : 0,
-                          duration: 0.3,
+                          delay: index * 0.05,
+                          duration: 0.5,
                           type: "spring",
-                          stiffness: 300,
-                          damping: 20
+                          stiffness: 200,
+                          damping: 25
                         }}
                       >
                         <div className="flex items-center px-6 py-3">
@@ -298,14 +298,14 @@ const TimelineActivityList = ({
                         key={`next-${activity.id}`}
                         className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
                         onClick={() => onActivitySelect(activity)}
-                        initial={showDealAnimation ? { opacity: 0, y: -50, scale: 0.95 } : false}
+                        initial={{ opacity: 0, y: -50, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
-                          delay: showDealAnimation ? index * 0.05 : 0,
-                          duration: 0.3,
+                          delay: index * 0.05,
+                          duration: 0.5,
                           type: "spring",
-                          stiffness: 300,
-                          damping: 20
+                          stiffness: 200,
+                          damping: 25
                         }}
                       >
                         <div className="flex items-center px-6 py-3">
