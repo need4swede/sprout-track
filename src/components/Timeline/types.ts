@@ -27,8 +27,6 @@ export interface TimelineFilterProps {
 
 export interface TimelineActivityListProps {
   activities: ActivityType[];
-  prevDayActivities?: ActivityType[]; // Activities from the previous day
-  nextDayActivities?: ActivityType[]; // Activities from the next day
   settings: Settings | null;
   isLoading: boolean;
   itemsPerPage: number;
@@ -39,9 +37,6 @@ export interface TimelineActivityListProps {
   onItemsPerPageChange: (itemsPerPage: number) => void;
   onSwipeLeft?: () => void; // Handler for swiping left (next day)
   onSwipeRight?: () => void; // Handler for swiping right (previous day)
-  dateChangeDirection?: 1 | -1 | null; // Direction for chevron animation: 1 = next day, -1 = previous day
-  isAnimatingDateChange?: boolean; // Whether chevron animation is in progress
-  transitionToDate?: Date | null; // Date we're transitioning to during animation
 }
 
 export interface TimelineActivityDetailsProps {
