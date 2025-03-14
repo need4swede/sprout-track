@@ -51,16 +51,16 @@ const TimelineFilter = ({
 
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-1">
+    <div className="flex justify-between px-6 py-3 items-center text-sm font-medium">
+      <div className="flex items-center">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => onDateChange(-1)}
-          className="h-7 w-7 text-white hover:bg-transparent hover:text-white/90 p-0"
+          className="h-7 w-7 text-white hover:bg-transparent hover:text-white/90 p-0 -ml-2"
           aria-label="Previous day"
         >
-          <ChevronLeft className="h-3 w-3" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
         
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -68,7 +68,7 @@ const TimelineFilter = ({
             <Button 
               variant="ghost" 
               size="sm"
-              className="h-7 px-2 text-xs text-white hover:bg-transparent hover:text-white/90"
+              className="h-7 px-2 text-sm font-medium text-white hover:bg-transparent hover:text-white/90"
             >
               {selectedDate.toLocaleDateString('en-US', { 
                 month: '2-digit', 
@@ -99,7 +99,7 @@ const TimelineFilter = ({
           className="h-7 w-7 text-white hover:bg-transparent hover:text-white/90 p-0"
           aria-label="Next day"
         >
-          <ChevronRight className="h-3 w-3" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
       
@@ -108,9 +108,9 @@ const TimelineFilter = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-1 h-7 text-white hover:bg-transparent hover:text-white/90 p-0"
+            className="flex items-center gap-1 h-7 text-sm font-medium text-white hover:bg-transparent hover:text-white/90 p-0"
           >
-            Filters <ChevronDown className="h-3 w-3 ml-1" />
+            Filters <ChevronDown className="h-4 w-4 ml-1" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">

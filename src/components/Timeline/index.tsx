@@ -239,7 +239,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   return (
     <div className="flex flex-col h-[calc(100vh-162px)]">
       {/* Header */}
-      <CardHeader className="py-1 px-2 bg-gradient-to-r from-teal-600 to-teal-700 border-0">
+      <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 border-0 p-0">
         <TimelineFilter
           selectedDate={selectedDate}
           activeFilter={activeFilter}
