@@ -19,9 +19,9 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
-import BabyModal from '@/src/components/modals/BabyModal';
+import BabyForm from '@/src/components/forms/BabyForm';
+import CaretakerForm from '@/src/components/forms/CaretakerForm';
 import ChangePinModal from '@/src/components/modals/ChangePinModal';
-import CaretakerModal from '@/src/components/modals/CaretakerModal';
 
 interface SettingsFormProps {
   isOpen: boolean;
@@ -42,8 +42,8 @@ export default function SettingsForm({
   const [babies, setBabies] = useState<Baby[]>([]);
   const [caretakers, setCaretakers] = useState<Caretaker[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showBabyModal, setShowBabyModal] = useState(false);
-  const [showCaretakerModal, setShowCaretakerModal] = useState(false);
+  const [showBabyForm, setShowBabyForm] = useState(false);
+  const [showCaretakerForm, setShowCaretakerForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
   const [selectedCaretaker, setSelectedCaretaker] = useState<Caretaker | null>(null);
@@ -119,14 +119,12 @@ export default function SettingsForm({
     }
   };
 
-  const handleBabyModalClose = async () => {
-    setShowBabyModal(false);
-    await fetchData(); // Refresh local babies list
-    onBabyStatusChange?.(); // Refresh parent's babies list
+  const handleBabyFormClose = () => {
+    setShowBabyForm(false);
   };
 
-  const handleCaretakerModalClose = async () => {
-    setShowCaretakerModal(false);
+  const handleCaretakerFormClose = async () => {
+    setShowCaretakerForm(false);
     await fetchData(); // Refresh local caretakers list
   };
 
@@ -292,7 +290,7 @@ export default function SettingsForm({
                       const baby = babies.find(b => b.id === localSelectedBabyId);
                       setSelectedBaby(baby || null);
                       setIsEditing(true);
-                      setShowBabyModal(true);
+                      setShowBabyForm(true);
                     }}
                   >
                     <Edit className="h-4 w-3 mr-2" />
@@ -301,7 +299,7 @@ export default function SettingsForm({
                   <Button variant="outline" onClick={() => {
                     setIsEditing(false);
                     setSelectedBaby(null);
-                    setShowBabyModal(true);
+                    setShowBabyForm(true);
                   }}>
                     <Plus className="h-4 w-3 mr-2" />
                     Add
@@ -339,7 +337,7 @@ export default function SettingsForm({
                     disabled={!selectedCaretaker}
                     onClick={() => {
                       setIsEditing(true);
-                      setShowCaretakerModal(true);
+                      setShowCaretakerForm(true);
                     }}
                   >
                     <Edit className="h-4 w-3 mr-2" />
@@ -348,7 +346,7 @@ export default function SettingsForm({
                   <Button variant="outline" onClick={() => {
                     setIsEditing(false);
                     setSelectedCaretaker(null);
-                    setShowCaretakerModal(true);
+                    setShowCaretakerForm(true);
                   }}>
                     <Plus className="h-4 w-3 mr-2" />
                     Add
@@ -491,18 +489,23 @@ export default function SettingsForm({
         </FormPageFooter>
       </FormPage>
 
-      <BabyModal
-        open={showBabyModal}
-        onClose={handleBabyModalClose}
+      <BabyForm
+        isOpen={showBabyForm}
+        onClose={handleBabyFormClose}
         isEditing={isEditing}
         baby={selectedBaby}
+        onBabyChange={async () => {
+          await fetchData(); // Refresh local babies list
+          onBabyStatusChange?.(); // Refresh parent's babies list
+        }}
       />
 
-      <CaretakerModal
-        open={showCaretakerModal}
-        onClose={handleCaretakerModalClose}
+      <CaretakerForm
+        isOpen={showCaretakerForm}
+        onClose={handleCaretakerFormClose}
         isEditing={isEditing}
         caretaker={selectedCaretaker}
+        onCaretakerChange={fetchData}
       />
 
       <ChangePinModal
