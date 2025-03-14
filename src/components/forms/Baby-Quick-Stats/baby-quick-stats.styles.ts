@@ -71,7 +71,7 @@ export const placeholderText = () => {
  */
 export const closeButtonContainer = () => {
   return cn(
-    "flex justify-center mt-4"
+    "flex justify-center"
   );
 };
 
