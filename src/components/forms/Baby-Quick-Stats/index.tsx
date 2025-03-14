@@ -134,16 +134,16 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     
     switch (period) {
       case '2day':
-        start.setDate(start.getDate() - 2);
+        start.setDate(start.getDate() - 1);
         break;
       case '7day':
-        start.setDate(start.getDate() - 7);
+        start.setDate(start.getDate() - 6);
         break;
       case '14day':
-        start.setDate(start.getDate() - 14);
+        start.setDate(start.getDate() - 13);
         break;
       case '30day':
-        start.setDate(start.getDate() - 30);
+        start.setDate(start.getDate() - 29);
         break;
     }
     
@@ -217,8 +217,11 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
 
     // Count night wakings and calculate night sleep time
     let nightWakings = 0;
-    let totalNightSleepMinutes = 0;
     let nightSleepDaysCount = 0;
+    
+    // Track which nights we've already counted to avoid duplicates
+    // Store total sleep minutes for each night
+    const nightSleepByNight: Record<string, number> = {};
 
     // Count feedings
     let feedingCount = 0;
@@ -291,28 +294,51 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
         return isNightByStart;
       });
       
-      // Night wakings are the count of night sleep events minus 1 (if positive)
-      const nightWakingsForDay = Math.max(0, nightSleepEvents.length - 1);
-      nightWakings += nightWakingsForDay;
-      
-      // Calculate total night sleep time
-      let nightSleepMinutesForDay = 0;
+      // Process night sleep events to identify unique nights
       nightSleepEvents.forEach(a => {
-        if ('startTime' in a && 'endTime' in a && a.endTime) {
-          const startTime = new Date(a.startTime).getTime();
-          const endTime = new Date(a.endTime).getTime();
-          const sleepDurationMinutes = Math.round((endTime - startTime) / (1000 * 60));
-          
-          if (sleepDurationMinutes > 0 && sleepDurationMinutes < 12 * 60) { // Less than 12 hours
-            nightSleepMinutesForDay += sleepDurationMinutes;
-          }
+        if (!('startTime' in a) || !('endTime' in a) || !a.endTime) return;
+        
+        const startTime = new Date(a.startTime);
+        const startHour = startTime.getHours();
+        const sleepDate = new Date(startTime);
+        
+        // Determine which night this sleep belongs to
+        let nightKey;
+        if (startHour >= 19) {
+          // This is the start of tonight's sleep (after 7pm)
+          nightKey = sleepDate.toISOString().split('T')[0] + '-night';
+        } else if (startHour < 7) {
+          // This is the end of last night's sleep (before 7am)
+          // Move back one day to get the correct night
+          sleepDate.setDate(sleepDate.getDate() - 1);
+          nightKey = sleepDate.toISOString().split('T')[0] + '-night';
+        } else {
+          // This is a daytime nap, not night sleep
+          return;
         }
+        
+        // Calculate sleep duration
+        const startTimeMs = new Date(a.startTime).getTime();
+        const endTimeMs = new Date(a.endTime).getTime();
+        const sleepDurationMinutes = Math.round((endTimeMs - startTimeMs) / (1000 * 60));
+        
+        if (sleepDurationMinutes <= 0 || sleepDurationMinutes >= 12 * 60) {
+          // Invalid sleep duration
+          return;
+        }
+        
+        // Add this sleep duration to the night's total
+        if (!nightSleepByNight[nightKey]) {
+          nightSleepByNight[nightKey] = 0;
+          
+          // Count night wakings for this night (only once per night)
+          const wakingsForNight = Math.max(0, nightSleepEvents.length - 1);
+          nightWakings += wakingsForNight;
+        }
+        
+        // Add this sleep duration to the night's total
+        nightSleepByNight[nightKey] += sleepDurationMinutes;
       });
-      
-      if (nightSleepMinutesForDay > 0) {
-        totalNightSleepMinutes += nightSleepMinutesForDay;
-        nightSleepDaysCount++;
-      }
 
       // Count feedings
       const feedingsForDay = dayActivities.filter(a => 
@@ -366,8 +392,17 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
     // Calculate averages with proper rounding
     const avgWakeWindow = wakeWindowCount > 0 ? Math.round(totalWakeMinutes / wakeWindowCount) : 0;
     const avgNapTime = napCount > 0 ? Math.round(totalNapMinutes / napCount) : 0;
-    const avgNightSleepTime = nightSleepDaysCount > 0 ? Math.round(totalNightSleepMinutes / nightSleepDaysCount) : 0;
-    const avgNightWakings = daysInPeriod > 0 ? Math.round(nightWakings / daysInPeriod * 10) / 10 : 0;
+    
+    // Calculate total night sleep time and average
+    let totalNightSleepMinutes = 0;
+    Object.values(nightSleepByNight).forEach(minutes => {
+      totalNightSleepMinutes += minutes;
+    });
+    
+    // Use the number of nights processed for night sleep calculations
+    const nightsCount = Object.keys(nightSleepByNight).length;
+    const avgNightSleepTime = nightsCount > 0 ? Math.round(totalNightSleepMinutes / nightsCount) : 0;
+    const avgNightWakings = nightsCount > 0 ? Math.round(nightWakings / nightsCount * 10) / 10 : 0;
     const avgFeedings = daysInPeriod > 0 ? Math.round(feedingCount / daysInPeriod * 10) / 10 : 0;
     const avgFeedAmount = feedAmountCount > 0 ? Math.round(totalFeedAmount / feedAmountCount * 10) / 10 : 0;
     const avgDiaperChanges = daysInPeriod > 0 ? Math.round(diaperCount / daysInPeriod * 10) / 10 : 0;
