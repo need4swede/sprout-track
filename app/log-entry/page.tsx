@@ -10,7 +10,7 @@ import Timeline from '@/src/components/Timeline';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
 import { ActivityType } from '@/src/components/ui/activity-tile';
-import { ActivityTileGroup } from '@/src/components/features/ActivityTileGroup';
+import { ActivityTileGroup } from '@/src/components/ActivityTileGroup';
 import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
