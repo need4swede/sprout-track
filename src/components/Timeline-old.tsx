@@ -23,7 +23,7 @@ import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
-import BathForm from '@/src/components/forms/bathForm';
+import BathForm from '@/src/components/forms/BathForm';
 import DailyStats from '@/src/components/DailyStats';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, MoodLogResponse, BathLogResponse } from '@/app/api/types';
 import { ActivityType as ImportedActivityType } from '@/src/components/ui/activity-tile/activity-tile.types';

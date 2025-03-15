@@ -5,7 +5,7 @@ import SleepForm from '@/src/components/forms/SleepForm';
 import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
-import BathForm from '@/src/components/forms/bathForm';
+import BathForm from '@/src/components/forms/BathForm';
 import DailyStats from '@/src/components/DailyStats';
 import { ActivityType, FilterType, TimelineProps } from './types';
 import TimelineFilter from './TimelineFilter';
