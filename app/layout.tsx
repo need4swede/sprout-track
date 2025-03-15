@@ -14,7 +14,7 @@ import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
 import { Baby } from '@prisma/client';
 import BabySelector from '@/src/components/BabySelector';
-import BabyQuickStats from '@/src/components/forms/Baby-Quick-Stats';
+import BabyQuickStats from '@/src/components/forms/BabyQuickStats';
 
 const fontSans = FontSans({
   subsets: ['latin'],
