@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Check,
   Calendar as CalendarIcon,
+  LampWallDown,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { FilterType, TimelineFilterProps } from './types';
@@ -46,6 +47,7 @@ const TimelineFilter = ({
     { type: 'diaper', icon: <Icon iconNode={diaper} className="h-4 w-4" />, label: 'Diaper' },
     { type: 'bath', icon: <Bath className="h-4 w-4" />, label: 'Bath' },
     { type: 'note', icon: <Edit className="h-4 w-4" />, label: 'Note' },
+    { type: 'pump', icon: <LampWallDown className="h-4 w-4" />, label: 'Pump' },
   ] as const;
 
 

@@ -6,18 +6,20 @@ import FeedForm from '@/src/components/forms/FeedForm';
 import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
 import BathForm from '@/src/components/forms/BathForm';
+import PumpForm from '@/src/components/forms/PumpForm';
 import DailyStats from '@/src/components/DailyStats';
 import { ActivityType, FilterType, TimelineProps } from './types';
 import TimelineFilter from './TimelineFilter';
 import TimelineActivityList from './TimelineActivityList';
 import TimelineActivityDetails from './TimelineActivityDetails';
 import { getActivityEndpoint, getActivityTime } from './utils';
+import { PumpLogResponse } from '@/app/api/types';
 
 const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | null>(null);
+  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -167,6 +169,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               return 'content' in activity;
             case 'bath':
               return 'soapUsed' in activity;
+            case 'pump':
+              return 'leftAmount' in activity || 'rightAmount' in activity;
             default:
               return true;
           }
@@ -198,6 +202,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               return 'content' in activity;
             case 'bath':
               return 'soapUsed' in activity;
+            case 'pump':
+              return 'leftAmount' in activity || 'rightAmount' in activity;
             default:
               return true;
           }
@@ -223,7 +229,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     }
   };
 
-  const handleEdit = (activity: ActivityType, type: 'sleep' | 'feed' | 'diaper' | 'note' | 'bath') => {
+  const handleEdit = (activity: ActivityType, type: 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump') => {
     setEditModalType(type);
   };
 
@@ -349,6 +355,25 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
             babyId={selectedActivity.babyId}
             initialTime={'time' in selectedActivity && selectedActivity.time ? String(selectedActivity.time) : getActivityTime(selectedActivity)}
             activity={'soapUsed' in selectedActivity ? selectedActivity : undefined}
+            onSuccess={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+          />
+          <PumpForm
+            isOpen={editModalType === 'pump'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'startTime' in selectedActivity && selectedActivity.startTime ? String(selectedActivity.startTime) : getActivityTime(selectedActivity)}
+            activity={
+              ('leftAmount' in selectedActivity || 'rightAmount' in selectedActivity) ? 
+                (selectedActivity as unknown as PumpLogResponse) : 
+                undefined
+            }
             onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);

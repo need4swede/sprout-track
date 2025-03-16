@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
-import { ApiResponse, SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse } from '../types';
+import { ApiResponse, SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse } from '../types';
 import { withAuth } from '../utils/auth';
 
 // Extended activity types with caretaker information
-type ActivityTypeWithCaretaker = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse | BathLogResponse) & { 
+type ActivityTypeWithCaretaker = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse | BathLogResponse | PumpLogResponse) & { 
   caretakerId?: string | null;
   caretakerName?: string;
 };
@@ -104,7 +104,7 @@ async function handleGet(req: NextRequest) {
     console.log(`Effective end date: ${effectiveEndDate}`);
     
     // Get recent activities from each type with caretaker information
-    const [sleepLogs, feedLogs, diaperLogs, noteLogs, bathLogs] = await Promise.all([
+    const [sleepLogs, feedLogs, diaperLogs, noteLogs, bathLogs, pumpLogs] = await Promise.all([
       prisma.sleepLog.findMany({
         where: {
           babyId,
@@ -201,10 +201,26 @@ async function handleGet(req: NextRequest) {
         },
         orderBy: { time: 'desc' },
         ...(useLimit && limit ? { take: limit } : {})
+      }),
+      prisma.pumpLog.findMany({
+        where: {
+          babyId,
+          ...(effectiveStartDate && effectiveEndDate ? {
+            startTime: {
+              gte: new Date(effectiveStartDate),
+              lte: new Date(effectiveEndDate)
+            }
+          } : {})
+        },
+        include: {
+          caretaker: true
+        },
+        orderBy: { startTime: 'desc' },
+        ...(useLimit && limit ? { take: limit } : {})
       })
     ]);
     
-    console.log(`Results - sleepLogs: ${sleepLogs.length}, feedLogs: ${feedLogs.length}, diaperLogs: ${diaperLogs.length}, noteLogs: ${noteLogs.length}, bathLogs: ${bathLogs.length}`);
+    console.log(`Results - sleepLogs: ${sleepLogs.length}, feedLogs: ${feedLogs.length}, diaperLogs: ${diaperLogs.length}, noteLogs: ${noteLogs.length}, bathLogs: ${bathLogs.length}, pumpLogs: ${pumpLogs.length}`);
 
     // Format the responses with caretaker information
     const formattedSleepLogs: ActivityTypeWithCaretaker[] = sleepLogs
@@ -282,6 +298,22 @@ async function handleGet(req: NextRequest) {
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
       });
+      
+    const formattedPumpLogs: ActivityTypeWithCaretaker[] = pumpLogs
+      .map(log => {
+        // Create a new object without the caretaker property
+        const { caretaker, ...logWithoutCaretaker } = log;
+        return {
+          ...logWithoutCaretaker,
+          startTime: log.startTime.toLocaleString(),
+          endTime: log.endTime?.toLocaleString() || null,
+          createdAt: log.createdAt.toLocaleString(),
+          updatedAt: log.updatedAt.toLocaleString(),
+          deletedAt: log.deletedAt?.toLocaleString() || null,
+          caretakerId: log.caretakerId,
+          caretakerName: log.caretaker ? log.caretaker.name : undefined,
+        };
+      });
 
     // Combine and sort all activities
     const allActivities = [
@@ -289,7 +321,8 @@ async function handleGet(req: NextRequest) {
       ...formattedFeedLogs,
       ...formattedDiaperLogs,
       ...formattedNoteLogs,
-      ...formattedBathLogs
+      ...formattedBathLogs,
+      ...formattedPumpLogs
     ]
     .sort((a, b) => getActivityTime(b) - getActivityTime(a));
     

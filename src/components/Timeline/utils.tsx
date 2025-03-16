@@ -3,7 +3,8 @@ import {
   Moon, 
   Icon, 
   Edit,
-  Bath
+  Bath,
+  LampWallDown
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { 
@@ -30,6 +31,9 @@ export const getActivityIcon = (activity: ActivityType) => {
   }
   if ('soapUsed' in activity) {
     return <Bath className="h-4 w-4 text-white" />; // Bath activity
+  }
+  if ('leftAmount' in activity || 'rightAmount' in activity) {
+    return <LampWallDown className="h-4 w-4 text-white" />; // Pump activity
   }
   return null;
 };
@@ -279,6 +283,62 @@ export const getActivityDetails = (activity: ActivityType, settings: Settings | 
       details: [...bathDetails, ...caretakerDetail],
     };
   }
+  
+  // Pump activity
+  if ('leftAmount' in activity || 'rightAmount' in activity) {
+    const pumpDetails = [];
+    
+    // Type guard to ensure TypeScript knows this is a pump activity
+    const isPumpActivity = (act: any): act is { 
+      startTime?: string; 
+      endTime?: string | null; 
+      leftAmount?: number; 
+      rightAmount?: number; 
+      totalAmount?: number; 
+      unit?: string;
+      notes?: string;
+    } => {
+      return 'leftAmount' in act || 'rightAmount' in act;
+    };
+    
+    if (isPumpActivity(activity)) {
+      // Add start time
+      if (activity.startTime) {
+        pumpDetails.push({ label: 'Start Time', value: formatTime(activity.startTime, settings) });
+      }
+      
+      // Add end time if available
+      if (activity.endTime) {
+        pumpDetails.push({ label: 'End Time', value: formatTime(activity.endTime, settings) });
+      }
+      
+      // Add left amount if available
+      if (activity.leftAmount) {
+        pumpDetails.push({ label: 'Left Breast', value: `${activity.leftAmount} ${activity.unit || 'oz'}` });
+      }
+      
+      // Add right amount if available
+      if (activity.rightAmount) {
+        pumpDetails.push({ label: 'Right Breast', value: `${activity.rightAmount} ${activity.unit || 'oz'}` });
+      }
+      
+      // Add total amount if available
+      if (activity.totalAmount) {
+        pumpDetails.push({ label: 'Total Amount', value: `${activity.totalAmount} ${activity.unit || 'oz'}` });
+      }
+      
+      // Add notes if available
+      if (activity.notes) {
+        pumpDetails.push({ label: 'Notes', value: activity.notes });
+      }
+    }
+    
+    return {
+      title: 'Breast Pumping Record',
+      details: [...pumpDetails, ...caretakerDetail],
+    };
+  }
+  
   return { title: 'Activity', details: [...caretakerDetail] };
 };
 
@@ -435,6 +495,58 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
       details: `${time} - ${bathDetails}${notesText}`
     };
   }
+  
+  if ('leftAmount' in activity || 'rightAmount' in activity) {
+    // Type guard to ensure TypeScript knows this is a pump activity
+    const isPumpActivity = (act: any): act is { 
+      startTime?: string; 
+      endTime?: string | null; 
+      leftAmount?: number; 
+      rightAmount?: number; 
+      totalAmount?: number; 
+      unit?: string;
+      duration?: number;
+    } => {
+      return 'leftAmount' in act || 'rightAmount' in act;
+    };
+    
+    if (isPumpActivity(activity)) {
+      const startTime = activity.startTime ? formatTime(activity.startTime, settings, true) : 'unknown';
+      let details = startTime;
+      
+      // Add duration if available
+      if (activity.duration) {
+        details += ` ${formatDuration(activity.duration)}`;
+      } else if (activity.startTime && activity.endTime) {
+        // Calculate duration if not explicitly provided
+        const start = new Date(activity.startTime).getTime();
+        const end = new Date(activity.endTime).getTime();
+        const durationMinutes = Math.floor((end - start) / 60000);
+        if (!isNaN(durationMinutes) && durationMinutes > 0) {
+          details += ` ${formatDuration(durationMinutes)}`;
+        }
+      }
+      
+      // Add total amount if available
+      if (activity.totalAmount) {
+        details += ` - ${activity.totalAmount} ${activity.unit || 'oz'}`;
+      } else {
+        // Otherwise add left and right amounts if available
+        const amounts = [];
+        if (activity.leftAmount) amounts.push(`L: ${activity.leftAmount}`);
+        if (activity.rightAmount) amounts.push(`R: ${activity.rightAmount}`);
+        if (amounts.length > 0) {
+          details += ` - ${amounts.join(', ')} ${activity.unit || 'oz'}`;
+        }
+      }
+      
+      return {
+        type: 'Breast Pumping',
+        details
+      };
+    }
+  }
+  
   return {
     type: 'Activity',
     details: 'logged'
@@ -447,6 +559,7 @@ export const getActivityEndpoint = (activity: ActivityType): string => {
   if ('condition' in activity) return 'diaper-log';
   if ('content' in activity) return 'note';
   if ('soapUsed' in activity) return 'bath-log';
+  if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump-log';
   return '';
 };
 
@@ -480,6 +593,12 @@ export const getActivityStyle = (activity: ActivityType): ActivityStyle => {
   if ('soapUsed' in activity) {
     return {
       bg: 'bg-gradient-to-r from-orange-400 to-orange-500',
+      textColor: 'text-white',
+    };
+  }
+  if ('leftAmount' in activity || 'rightAmount' in activity) {
+    return {
+      bg: 'bg-gradient-to-r from-purple-200 to-purple-300',
       textColor: 'text-white',
     };
   }
