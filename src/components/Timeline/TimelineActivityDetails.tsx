@@ -22,12 +22,15 @@ const TimelineActivityDetails = ({
   
   const handleEdit = () => {
     if (activity) {
-      if ('duration' in activity) onEdit(activity, 'sleep');
+      // Check for pump activity first since it can also have duration
+      if ('leftAmount' in activity || 'rightAmount' in activity) {
+        onEdit(activity, 'pump');
+      }
+      else if ('duration' in activity) onEdit(activity, 'sleep');
       else if ('amount' in activity) onEdit(activity, 'feed');
       else if ('condition' in activity) onEdit(activity, 'diaper');
       else if ('content' in activity) onEdit(activity, 'note');
       else if ('soapUsed' in activity) onEdit(activity, 'bath');
-      else if ('leftAmount' in activity || 'rightAmount' in activity) onEdit(activity, 'pump');
     }
   };
 

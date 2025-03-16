@@ -527,17 +527,14 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
         }
       }
       
-      // Add total amount if available
-      if (activity.totalAmount) {
-        details += ` - ${activity.totalAmount} ${activity.unit || 'oz'}`;
-      } else {
-        // Otherwise add left and right amounts if available
-        const amounts = [];
-        if (activity.leftAmount) amounts.push(`L: ${activity.leftAmount}`);
-        if (activity.rightAmount) amounts.push(`R: ${activity.rightAmount}`);
-        if (amounts.length > 0) {
-          details += ` - ${amounts.join(', ')} ${activity.unit || 'oz'}`;
-        }
+      // Always show left, right, and total amounts when available
+      const amountDetails = [];
+      if (activity.leftAmount) amountDetails.push(`Left: ${activity.leftAmount} ${activity.unit || 'oz'}`);
+      if (activity.rightAmount) amountDetails.push(`Right: ${activity.rightAmount} ${activity.unit || 'oz'}`);
+      if (activity.totalAmount) amountDetails.push(`Total: ${activity.totalAmount} ${activity.unit || 'oz'}`);
+      
+      if (amountDetails.length > 0) {
+        details += ` - ${amountDetails.join(', ')}`;
       }
       
       return {
