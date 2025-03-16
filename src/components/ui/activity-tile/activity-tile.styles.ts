@@ -17,6 +17,7 @@ export const activityTileStyles = {
       diaper: "bg-gradient-to-r from-teal-600 to-teal-700 text-white border-l border-white",
       note: "bg-[#FFFF99] text-white border-l border-white",
       bath: "bg-gradient-to-r from-orange-400 to-orange-500 text-white border-l border-white",
+      pump: "bg-gradient-to-r from-purple-200 to-purple-300 text-white border-l border-white",
       default: "bg-gray-100 text-white"
     }
   },
@@ -29,6 +30,7 @@ export const activityTileStyles = {
       diaper: "bg-transparent",
       note: "bg-transparent",
       bath: "bg-transparent",
+      pump: "bg-transparent",
       default: "bg-transparent"
     }
   },
@@ -41,6 +43,7 @@ export const activityTileStyles = {
       diaper: "text-white",
       note: "text-white",
       bath: "text-white",
+      pump: "text-white",
       default: "text-white"
     },
     // Default icon paths for each variant
@@ -50,6 +53,7 @@ export const activityTileStyles = {
       diaper: "/diaper-256.png",
       note: "/notepad-256.png",
       bath: "/bath-128.png",
+      pump: "/pump-128.png",
       default: ""
     }
   },

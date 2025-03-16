@@ -1,5 +1,5 @@
 import { ActivityType } from './activity-tile.types';
-import { BathLogResponse } from '@/app/api/types';
+import { BathLogResponse, PumpLogResponse } from '@/app/api/types';
 
 /**
  * Formats time based on the provided date string and settings
@@ -69,13 +69,14 @@ export const getActivityTime = (activity: ActivityType): string => {
 /**
  * Determines the variant based on the activity type
  */
-export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'default' => {
+export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'default' => {
   if ('type' in activity) {
     if ('duration' in activity) return 'sleep';
     if ('amount' in activity) return 'feed';
     if ('condition' in activity) return 'diaper';
     if ('soapUsed' in activity || 'shampooUsed' in activity) return 'bath';
   }
+  if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump';
   if ('content' in activity) return 'note';
   return 'default';
 };
@@ -208,6 +209,42 @@ export const getActivityDescription = (activity: ActivityType) => {
     return {
       type: 'Bath',
       details: `${time}${notes}`
+    };
+  }
+  
+  // Type guard for PumpLogResponse
+  const isPumpLog = (activity: ActivityType): activity is PumpLogResponse => {
+    return 'leftAmount' in activity || 'rightAmount' in activity;
+  };
+  
+  if (isPumpLog(activity)) {
+    const startTime = activity.startTime ? formatTime(activity.startTime, true) : '';
+    
+    let details = startTime;
+    
+    // Add total amount if available
+    if (activity.totalAmount) {
+      const amountStr = `${activity.totalAmount} ${activity.unitAbbr || 'oz'}`;
+      details += details ? ` - ${amountStr}` : amountStr;
+    } 
+    // Otherwise add left and right amounts if available
+    else if (activity.leftAmount || activity.rightAmount) {
+      const amounts = [];
+      if (activity.leftAmount) amounts.push(`L: ${activity.leftAmount}`);
+      if (activity.rightAmount) amounts.push(`R: ${activity.rightAmount}`);
+      
+      if (amounts.length > 0) {
+        const amountStr = `${amounts.join(', ')} ${activity.unitAbbr || 'oz'}`;
+        details += details ? ` - ${amountStr}` : amountStr;
+      }
+    }
+    
+    // Add notes if available
+    const notes = activity.notes ? ` - ${activity.notes}` : '';
+    
+    return {
+      type: 'Pump',
+      details: `${details}${notes}`
     };
   }
   

@@ -1,4 +1,4 @@
-import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood } from '@prisma/client';
+import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood, PumpLog } from '@prisma/client';
 
 // Settings types
 export type Settings = PrismaSettings;
@@ -164,5 +164,26 @@ export interface BathLogCreate {
   time: string;
   soapUsed?: boolean;
   shampooUsed?: boolean;
+  notes?: string;
+}
+
+// Pump log types
+export type PumpLogResponse = Omit<PumpLog, 'startTime' | 'endTime' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  startTime: string;
+  endTime: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+export interface PumpLogCreate {
+  babyId: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number;
+  leftAmount?: number;
+  rightAmount?: number;
+  totalAmount?: number;
+  unitAbbr?: string;
   notes?: string;
 }

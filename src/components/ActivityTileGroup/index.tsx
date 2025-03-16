@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityTile } from '@/src/components/ui/activity-tile';
 import { StatusBubble } from "@/src/components/ui/status-bubble";
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse } from '@/app/api/types';
 
 interface ActivityTileGroupProps {
   selectedBaby: {
@@ -20,6 +20,7 @@ interface ActivityTileGroupProps {
   onDiaperClick: () => void;
   onNoteClick: () => void;
   onBathClick: () => void;
+  onPumpClick: () => void;
 }
 
 /**
@@ -40,7 +41,8 @@ export function ActivityTileGroup({
   onFeedClick,
   onDiaperClick,
   onNoteClick,
-  onBathClick
+  onBathClick,
+  onPumpClick
 }: ActivityTileGroupProps) {
   if (!selectedBaby?.id) return null;
 
@@ -213,6 +215,35 @@ export function ActivityTileGroup({
           onClick={() => {
             updateUnlockTimer();
             onBathClick();
+          }}
+        />
+      </div>
+      
+      {/* Pump Activity Button */}
+      <div className="relative min-w-[90px] w-[90px] h-20 flex-shrink-0 snap-center">
+        <ActivityTile
+          activity={{
+            id: 'pump-button',
+            babyId: selectedBaby.id,
+            startTime: new Date().toISOString(),
+            endTime: null,
+            duration: null,
+            leftAmount: null,
+            rightAmount: null,
+            totalAmount: null,
+            unitAbbr: null,
+            notes: '',
+            caretakerId: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null
+          } as unknown as PumpLogResponse}
+          title="Pump"
+          variant="pump"
+          isButton={true}
+          onClick={() => {
+            updateUnlockTimer();
+            onPumpClick();
           }}
         />
       </div>

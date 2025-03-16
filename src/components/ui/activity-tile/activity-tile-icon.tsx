@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Edit, Icon } from 'lucide-react';
+import { Moon, Edit, Icon, LampWallDown } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { cn } from "@/src/lib/utils";
 import { activityTileStyles as styles } from './activity-tile.styles';
@@ -41,6 +41,8 @@ export function ActivityTileIcon({
       }
     } else if ('content' in activity) {
       icon = <Edit className={cn(styles.icon.base, styles.icon.variants[variant])} />;
+    } else if ('leftAmount' in activity || 'rightAmount' in activity) {
+      icon = <LampWallDown className={cn(styles.icon.base, styles.icon.variants[variant])} />;
     }
   }
   
