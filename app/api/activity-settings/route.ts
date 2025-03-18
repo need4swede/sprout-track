@@ -16,32 +16,50 @@ async function getActivitySettings(req: NextRequest): Promise<NextResponse<ApiRe
     const url = new URL(req.url);
     const caretakerId = url.searchParams.get('caretakerId');
     
+    console.log(`GET /api/activity-settings - caretakerId: ${caretakerId || 'null'}`);
+    
+    // Default settings to use if none are found
+    const defaultSettings: ActivitySettings = {
+      order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+      visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+      caretakerId: caretakerId || null,
+    };
+    
     // Get settings from database
     const settings = await prisma.settings.findFirst({
       where: { id: { not: '' } }, // Get any settings record
       orderBy: { updatedAt: 'desc' },
     });
 
+    // If no settings record exists, return default settings
+    if (!settings) {
+      console.log('No settings record found, returning default settings');
+      return NextResponse.json({ success: true, data: defaultSettings });
+    }
+
     // Use type assertion to access activitySettings
     const settingsWithActivity = settings as unknown as (typeof settings & { activitySettings?: string });
     
-    if (!settingsWithActivity || !settingsWithActivity.activitySettings) {
-      // Return default settings if none found
-      const defaultSettings: ActivitySettings = {
-        order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-        visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-        caretakerId: caretakerId || null,
-      };
+    // If activitySettings field is empty, return default settings
+    if (!settingsWithActivity.activitySettings) {
+      console.log('No activitySettings found, returning default settings');
       return NextResponse.json({ success: true, data: defaultSettings });
     }
 
     // Parse stored settings
-    const allSettings = JSON.parse(settingsWithActivity.activitySettings!);
+    let allSettings: Record<string, { order: string[], visible: string[] }>;
+    try {
+      allSettings = JSON.parse(settingsWithActivity.activitySettings);
+    } catch (parseError) {
+      console.error('Error parsing activitySettings JSON:', parseError);
+      return NextResponse.json({ success: true, data: defaultSettings });
+    }
     
     // If caretakerId is provided, try to get caretaker-specific settings
     if (caretakerId) {
       // If caretaker-specific settings exist, return them
       if (allSettings[caretakerId]) {
+        console.log(`Found settings for caretakerId: ${caretakerId}`);
         return NextResponse.json({ 
           success: true, 
           data: {
@@ -54,6 +72,7 @@ async function getActivitySettings(req: NextRequest): Promise<NextResponse<ApiRe
       // If no caretaker-specific settings exist but global settings do, return global settings
       // This ensures caretakers get default settings until they customize them
       if (allSettings.global) {
+        console.log(`No settings for caretakerId: ${caretakerId}, using global settings`);
         return NextResponse.json({ 
           success: true, 
           data: {
@@ -62,25 +81,32 @@ async function getActivitySettings(req: NextRequest): Promise<NextResponse<ApiRe
           }
         });
       }
+      
+      console.log(`No settings for caretakerId: ${caretakerId} and no global settings, using defaults`);
     }
     
     // Return global settings or default if no settings exist
     return NextResponse.json({ 
       success: true, 
       data: {
-        ...(allSettings.global || {
-          order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-          visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']
-        }),
+        ...(allSettings.global || defaultSettings),
         caretakerId: null
       }
     });
   } catch (error) {
     console.error('Error retrieving activity settings:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to retrieve activity settings' },
-      { status: 500 }
-    );
+    // Return default settings even in case of error
+    const url = new URL(req.url);
+    const errorCaretakerId = url.searchParams.get('caretakerId');
+    
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+        visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+        caretakerId: errorCaretakerId || null,
+      }
+    });
   }
 }
 
@@ -96,8 +122,11 @@ async function saveActivitySettings(req: NextRequest): Promise<NextResponse<ApiR
     const body = await req.json();
     const { order, visible, caretakerId } = body as ActivitySettings;
 
+    console.log(`POST /api/activity-settings - caretakerId: ${caretakerId || 'null'}`);
+
     // Validate input
     if (!order || !Array.isArray(order) || !visible || !Array.isArray(visible)) {
+      console.error('Invalid activity settings format:', { order, visible });
       return NextResponse.json(
         { success: false, error: 'Invalid activity settings format' },
         { status: 400 }
@@ -105,37 +134,69 @@ async function saveActivitySettings(req: NextRequest): Promise<NextResponse<ApiR
     }
 
     // Get current settings
-    const currentSettings = await prisma.settings.findFirst({
+    let currentSettings = await prisma.settings.findFirst({
       where: { id: { not: '' } },
       orderBy: { updatedAt: 'desc' },
     });
+
+    // If no settings record exists, create one
+    if (!currentSettings) {
+      console.log('No settings record found, creating a new one');
+      currentSettings = await prisma.settings.create({
+        data: {
+          familyName: 'My Family',
+          timezone: 'America/Chicago',
+          securityPin: '111222',
+          defaultBottleUnit: 'OZ',
+          defaultSolidsUnit: 'TBSP',
+          defaultHeightUnit: 'IN',
+          defaultWeightUnit: 'LB',
+          defaultTempUnit: 'F',
+          activitySettings: JSON.stringify({
+            global: {
+              order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+              visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']
+            }
+          })
+        }
+      });
+    }
 
     // Use type assertion to access activitySettings
     const currentSettingsWithActivity = currentSettings as unknown as (typeof currentSettings & { activitySettings?: string });
     
     // Parse existing activity settings or create new object
-    let allSettings = {};
+    let allSettings: Record<string, { order: string[], visible: string[] }> = {};
     if (currentSettingsWithActivity?.activitySettings) {
       try {
         allSettings = JSON.parse(currentSettingsWithActivity.activitySettings);
       } catch (e) {
         console.error('Error parsing existing activity settings:', e);
+        // If parsing fails, start with a fresh object
+        allSettings = {};
       }
     }
 
     // Update settings for the specific caretaker or global settings
     const settingsKey = caretakerId || 'global';
-    allSettings = {
+    
+    // Create a new settings object that preserves all existing settings
+    const newSettings = {
       ...allSettings,
       [settingsKey]: {
         order,
         visible
       }
     };
+    
+    // Ensure we're not accidentally removing other caretakers' settings
+    allSettings = newSettings;
+
+    console.log(`Saving settings for ${settingsKey}:`, newSettings[settingsKey]);
 
     // Save to database using type assertion for the data object
     const updatedSettings = await prisma.settings.update({
-      where: { id: currentSettings?.id || '' },
+      where: { id: currentSettings.id },
       data: {
         // Use type assertion to allow activitySettings property
         ...(({ activitySettings: JSON.stringify(allSettings) }) as any)

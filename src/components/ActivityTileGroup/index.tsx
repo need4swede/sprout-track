@@ -80,22 +80,17 @@ export function ActivityTileGroup({
   
   // Get caretaker ID from localStorage and listen for changes
   useEffect(() => {
+    // Initialize caretaker ID from localStorage
     const storedCaretakerId = localStorage.getItem('caretakerId');
     setCaretakerId(storedCaretakerId);
-    
-    // Reset state when caretaker ID changes
-    const resetState = () => {
-      // Reset to default state
-      setSettingsLoaded(false);
-      setActivityOrder(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'] as ActivityType[]);
-      setVisibleActivities(new Set(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'] as ActivityType[]));
-    };
     
     // Listen for changes to caretakerId in localStorage
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'caretakerId' && e.newValue !== caretakerId) {
+        console.log(`Caretaker ID changed in localStorage: ${caretakerId} -> ${e.newValue}`);
         setCaretakerId(e.newValue);
-        resetState();
+        setSettingsLoaded(false);
+        setSettingsModified(false); // Reset modified flag when caretaker changes
       }
     };
     
@@ -103,8 +98,10 @@ export function ActivityTileGroup({
     const handleCaretakerChange = (e: CustomEvent) => {
       const newCaretakerId = e.detail?.caretakerId;
       if (newCaretakerId !== caretakerId) {
+        console.log(`Caretaker ID changed via event: ${caretakerId} -> ${newCaretakerId}`);
         setCaretakerId(newCaretakerId);
-        resetState();
+        setSettingsLoaded(false);
+        setSettingsModified(false); // Reset modified flag when caretaker changes
       }
     };
     
@@ -117,38 +114,136 @@ export function ActivityTileGroup({
     };
   }, [caretakerId]);
   
-  // Load activity settings from the server when caretakerId changes
+  // Load activity settings from the server when caretakerId changes or settings need to be reloaded
   useEffect(() => {
     const loadActivitySettings = async () => {
+      // Don't try to load settings if there's no caretakerId (user is logged out)
+      if (!caretakerId) {
+        console.log('No caretakerId, using default settings');
+        setDefaultSettings();
+        return;
+      }
+      
       try {
-        // Reset settings loaded state
-        setSettingsLoaded(false);
+        console.log(`Loading activity settings for caretakerId: ${caretakerId}`);
         
         // Fetch activity settings from the API with the current caretakerId
-        const response = await fetch(`/api/activity-settings${caretakerId ? `?caretakerId=${caretakerId}` : ''}`);
+        const response = await fetch(`/api/activity-settings?caretakerId=${caretakerId}`);
+        
+        // Handle 401 Unauthorized specifically (expected when logged out)
+        if (response.status === 401) {
+          console.log('Not authenticated, using default settings');
+          setDefaultSettings();
+          return;
+        }
         
         if (response.ok) {
           const data = await response.json();
           
           if (data.success && data.data) {
+            console.log(`Successfully loaded settings:`, data.data);
+            
+            // Store the original loaded settings for comparison
+            const originalOrder = [...data.data.order] as ActivityType[];
+            const originalVisible = new Set(data.data.visible as ActivityType[]);
+            
             // Update state with loaded settings
             setActivityOrder(data.data.order as ActivityType[]);
             setVisibleActivities(new Set(data.data.visible as ActivityType[]));
-            setSettingsLoaded(true);
+            
+            // Mark settings as loaded AFTER state has been updated
+            setTimeout(() => {
+              setSettingsLoaded(true);
+              
+              // Store the original settings in a ref for comparison
+              // This helps us determine if settings were modified by the user
+              originalOrderRef.current = originalOrder;
+              originalVisibleRef.current = Array.from(originalVisible) as ActivityType[];
+              
+              // Reset the modified flag since we just loaded settings
+              setSettingsModified(false);
+            }, 0);
+          } else {
+            console.error('Failed to load settings:', data.error || 'Unknown error');
+            // Set default settings if loading fails
+            setDefaultSettings();
           }
+        } else {
+          console.error('Failed to load settings, server returned:', response.status);
+          // Set default settings if loading fails
+          setDefaultSettings();
         }
       } catch (error) {
         console.error('Error loading activity settings:', error);
+        // Set default settings if loading fails
+        setDefaultSettings();
       }
     };
     
-    loadActivitySettings();
-  }, [caretakerId]);
+    // Load settings when caretakerId changes or settingsLoaded is false
+    if (!settingsLoaded) {
+      loadActivitySettings();
+    }
+  }, [caretakerId, settingsLoaded]);
+  
+  // Function to set default settings
+  const setDefaultSettings = () => {
+    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'];
+    setActivityOrder(defaultOrder);
+    setVisibleActivities(new Set(defaultOrder));
+    
+    // Mark settings as loaded but not modified
+    setTimeout(() => {
+      setSettingsLoaded(true);
+      setSettingsModified(false);
+      
+      // Store the default settings in the ref
+      originalOrderRef.current = [...defaultOrder];
+      originalVisibleRef.current = [...defaultOrder];
+    }, 0);
+  };
+  
+  // Refs to store the original settings for comparison
+  const originalOrderRef = React.useRef<ActivityType[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']);
+  const originalVisibleRef = React.useRef<string[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']);
+  
+  // Track if settings have been modified since loading
+  const [settingsModified, setSettingsModified] = useState(false);
+  
+  // Update settingsModified when order or visibility changes
+  useEffect(() => {
+    if (settingsLoaded) {
+      // Compare current settings with original settings to determine if they've been modified
+      const currentOrder = [...activityOrder];
+      const currentVisible = Array.from(visibleActivities);
+      
+      const orderChanged = currentOrder.length !== originalOrderRef.current.length || 
+        currentOrder.some((activity, index) => activity !== originalOrderRef.current[index]);
+      
+      const visibleChanged = currentVisible.length !== originalVisibleRef.current.length ||
+        !currentVisible.every(activity => originalVisibleRef.current.includes(activity));
+      
+      if (orderChanged || visibleChanged) {
+        console.log('Settings modified by user action');
+        setSettingsModified(true);
+      }
+    }
+  }, [activityOrder, visibleActivities, settingsLoaded]);
   
   // Save activity settings when they change
   useEffect(() => {
-    // Don't save until initial settings are loaded
-    if (!settingsLoaded) return;
+    // Don't save until initial settings are loaded AND modified
+    if (!settingsLoaded || !settingsModified) {
+      return;
+    }
+    
+    // Don't save if caretakerId is null (global settings should only be set explicitly)
+    if (caretakerId === null) {
+      console.log('Not saving settings: caretakerId is null');
+      return;
+    }
+    
+    console.log(`Saving activity settings for caretakerId: ${caretakerId}`);
     
     const saveActivitySettings = async () => {
       try {
@@ -159,14 +254,26 @@ export function ActivityTileGroup({
           caretakerId: caretakerId
         };
         
+        console.log(`Saving settings:`, settings);
+        
         // Save settings to the API
-        await fetch('/api/activity-settings', {
+        const response = await fetch('/api/activity-settings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(settings)
         });
+        
+        if (!response.ok) {
+          console.error('Failed to save activity settings:', await response.text());
+        } else {
+          console.log('Successfully saved activity settings');
+          
+          // Update the original settings refs after successful save
+          originalOrderRef.current = [...activityOrder];
+          originalVisibleRef.current = Array.from(visibleActivities);
+        }
       } catch (error) {
         console.error('Error saving activity settings:', error);
       }
@@ -176,7 +283,7 @@ export function ActivityTileGroup({
     const timeoutId = setTimeout(saveActivitySettings, 500);
     
     return () => clearTimeout(timeoutId);
-  }, [activityOrder, visibleActivities, settingsLoaded, caretakerId]);
+  }, [activityOrder, visibleActivities, settingsLoaded, settingsModified, caretakerId]);
   
   // Toggle activity visibility
   const toggleActivity = (activity: ActivityType) => {
