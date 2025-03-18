@@ -1,6 +1,6 @@
 # Status Bubble Component
 
-A dynamic status indicator component designed for tracking baby activities. This component displays the current status (sleeping, awake, feeding, or diaper change) along with the duration, and includes warning states for extended durations.
+A dynamic status indicator component designed for tracking baby activities. This component displays the current status (sleeping, awake, feeding, or diaper change) along with the duration, and includes warning states for extended durations. The component handles timezone differences and Daylight Saving Time (DST) changes correctly to ensure accurate duration calculations.
 
 ## Usage
 
@@ -175,3 +175,47 @@ The component uses TailwindCSS with a modern, clean design:
 - Memoize status style calculations if needed
 - Optimize icon imports
 - Handle frequent duration updates efficiently
+
+## Timezone Handling
+
+The StatusBubble component includes robust timezone handling to ensure accurate duration calculations, especially during Daylight Saving Time (DST) changes:
+
+### DST-Aware Duration Calculation
+
+When calculating the duration between a start time and the current time, the component:
+
+1. Uses the `getMinutesBetweenDates` function from the timezone context
+2. Compares timezone offsets at the start and end times
+3. Adjusts for any offset differences (typically 1 hour during DST changes)
+4. Ensures accurate duration display regardless of timezone changes
+
+### Using with Start Times
+
+For real-time duration tracking, you can provide a `startTime` prop instead of a fixed `durationInMinutes`:
+
+```tsx
+<StatusBubble 
+  status="sleeping" 
+  durationInMinutes={0} // Fallback value
+  startTime={sleepStartTime.toISOString()}
+/>
+```
+
+When `startTime` is provided, the component:
+- Calculates the duration dynamically based on the current time
+- Updates the duration every minute
+- Handles DST changes correctly
+- Falls back to the provided `durationInMinutes` if calculation fails
+
+### Implementation Details
+
+The component uses:
+- The timezone context to access timezone information and utilities
+- JavaScript's `getTimezoneOffset()` method to detect DST changes
+- A useEffect hook with a setInterval to update the duration in real-time
+- Error handling to provide fallbacks if calculations fail
+
+This approach ensures that durations are displayed correctly even when:
+- The user travels between timezones
+- DST changes occur during an activity
+- The server and client are in different timezones

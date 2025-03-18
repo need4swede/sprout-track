@@ -362,18 +362,16 @@ export function ActivityTileGroup({
                 <StatusBubble
                   status="sleeping"
                   className="overflow-visible z-40"
-                  durationInMinutes={Math.floor(
-                    (new Date().getTime() - sleepStartTime[selectedBaby.id]?.getTime() || 0) / 60000
-                  )}
+                  durationInMinutes={0} // Fallback value
+                  startTime={sleepStartTime[selectedBaby.id]?.toISOString()}
                 />
               ) : (
                 !sleepStartTime[selectedBaby.id] && lastSleepEndTime[selectedBaby.id] && (
                   <StatusBubble
                     status="awake"
                     className="overflow-visible z-40"
-                    durationInMinutes={Math.floor(
-                      (new Date().getTime() - lastSleepEndTime[selectedBaby.id].getTime()) / 60000
-                    )}
+                    durationInMinutes={0} // Fallback value
+                    startTime={lastSleepEndTime[selectedBaby.id].toISOString()}
                   />
                 )
               )
@@ -410,9 +408,8 @@ export function ActivityTileGroup({
               <StatusBubble
                 status="feed"
                 className="overflow-visible z-40"
-                durationInMinutes={Math.floor(
-                  (new Date().getTime() - lastFeedTime[selectedBaby.id].getTime()) / 60000
-                )}
+                durationInMinutes={0} // Fallback value
+                startTime={lastFeedTime[selectedBaby.id].toISOString()}
                 warningTime={selectedBaby.feedWarningTime as string}
               />
             )}
@@ -446,9 +443,8 @@ export function ActivityTileGroup({
               <StatusBubble
                 status="diaper"
                 className="overflow-visible z-40"
-                durationInMinutes={Math.floor(
-                  (new Date().getTime() - lastDiaperTime[selectedBaby.id].getTime()) / 60000
-                )}
+                durationInMinutes={0} // Fallback value
+                startTime={lastDiaperTime[selectedBaby.id].toISOString()}
                 warningTime={selectedBaby.diaperWarningTime as string}
               />
             )}

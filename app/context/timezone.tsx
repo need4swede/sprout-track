@@ -8,6 +8,7 @@ interface TimezoneContextType {
   serverTimezone: string;
   convertToUserTimezone: (dateString: string) => Date;
   formatInUserTimezone: (dateString: string, formatOptions?: Intl.DateTimeFormatOptions) => string;
+  getMinutesBetweenDates: (startDate: Date | string, endDate: Date | string) => number;
 }
 
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
@@ -68,12 +69,45 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Calculate the difference in minutes between two dates, accounting for DST changes
+  const getMinutesBetweenDates = (startDateInput: Date | string, endDateInput: Date | string): number => {
+    try {
+      // Convert inputs to Date objects if they're strings
+      const startDate = typeof startDateInput === 'string' ? new Date(startDateInput) : startDateInput;
+      const endDate = typeof endDateInput === 'string' ? new Date(endDateInput) : endDateInput;
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date input');
+      }
+      
+      // Get the timezone offset at the start time and end time
+      const startOffset = startDate.getTimezoneOffset();
+      const endOffset = endDate.getTimezoneOffset();
+      
+      // Calculate the offset difference in milliseconds
+      // If DST has changed, this will be non-zero (typically 3600000 ms or 1 hour)
+      const offsetDiff = (startOffset - endOffset) * 60 * 1000;
+      
+      // Calculate duration in minutes, accounting for DST changes
+      const diffMs = endDate.getTime() - startDate.getTime() - offsetDiff;
+      return Math.floor(diffMs / 60000);
+    } catch (error) {
+      console.error('Error calculating minutes between dates:', error);
+      // Fallback to simple calculation if the DST-aware calculation fails
+      const start = typeof startDateInput === 'string' ? new Date(startDateInput) : startDateInput;
+      const end = typeof endDateInput === 'string' ? new Date(endDateInput) : endDateInput;
+      const diffMs = end.getTime() - start.getTime();
+      return Math.floor(diffMs / 60000);
+    }
+  };
+
   return (
     <TimezoneContext.Provider value={{
       userTimezone,
       serverTimezone,
       convertToUserTimezone,
-      formatInUserTimezone
+      formatInUserTimezone,
+      getMinutesBetweenDates
     }}>
       {children}
     </TimezoneContext.Provider>

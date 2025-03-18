@@ -33,21 +33,25 @@ export function StatusBubble({
   className,
   startTime // Add startTime prop
 }: StatusBubbleProps & { startTime?: string }) {
-  const { userTimezone } = useTimezone();
+  const { userTimezone, getMinutesBetweenDates } = useTimezone();
   const [calculatedDuration, setCalculatedDuration] = useState(durationInMinutes);
   
   // If startTime is provided, calculate duration based on current time in user's timezone
   useEffect(() => {
     if (startTime) {
       const updateDuration = () => {
-        const start = new Date(startTime);
-        const now = new Date();
-        
-        // Calculate duration in minutes
-        const diffMs = now.getTime() - start.getTime();
-        const diffMinutes = Math.floor(diffMs / 60000);
-        
-        setCalculatedDuration(diffMinutes);
+        try {
+          // Use the getMinutesBetweenDates function from the timezone context
+          // This properly handles DST changes
+          const now = new Date();
+          const diffMinutes = getMinutesBetweenDates(startTime, now);
+          
+          setCalculatedDuration(diffMinutes);
+        } catch (error) {
+          console.error('Error calculating duration:', error);
+          // Fallback to the provided duration if calculation fails
+          setCalculatedDuration(durationInMinutes);
+        }
       };
       
       // Update immediately
@@ -57,7 +61,7 @@ export function StatusBubble({
       const interval = setInterval(updateDuration, 60000);
       return () => clearInterval(interval);
     }
-  }, [startTime, userTimezone]);
+  }, [startTime, userTimezone, durationInMinutes, getMinutesBetweenDates]);
   
   // Use calculated duration if available, otherwise use prop
   const displayDuration = startTime ? calculatedDuration : durationInMinutes;

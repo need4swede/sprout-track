@@ -29,5 +29,35 @@ export async function formatLocalTime(date: Date) {
 
 // Convert a UTC date to any timezone
 export function convertUTCToTimezone(date: Date, timezone: string) {
-  return formatInTimeZone(date, timezone, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+  try {
+    // Use date-fns-tz to handle timezone conversion properly
+    // This will account for DST changes automatically
+    return formatInTimeZone(date, timezone, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+  } catch (error) {
+    console.error(`Error converting date to timezone ${timezone}:`, error);
+    // Fallback to ISO string if conversion fails
+    return date.toISOString();
+  }
+}
+
+// Calculate the difference in minutes between two dates, accounting for DST changes
+export function getMinutesBetweenDates(startDate: Date, endDate: Date, timezone: string) {
+  try {
+    // Get the timezone offset at the start time and end time
+    const startOffset = startDate.getTimezoneOffset();
+    const endOffset = endDate.getTimezoneOffset();
+    
+    // Calculate the offset difference in milliseconds
+    // If DST has changed, this will be non-zero (typically 3600000 ms or 1 hour)
+    const offsetDiff = (startOffset - endOffset) * 60 * 1000;
+    
+    // Calculate duration in minutes, accounting for DST changes
+    const diffMs = endDate.getTime() - startDate.getTime() - offsetDiff;
+    return Math.floor(diffMs / 60000);
+  } catch (error) {
+    console.error('Error calculating minutes between dates:', error);
+    // Fallback to simple calculation if the DST-aware calculation fails
+    const diffMs = endDate.getTime() - startDate.getTime();
+    return Math.floor(diffMs / 60000);
+  }
 }

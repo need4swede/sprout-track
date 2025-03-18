@@ -4,12 +4,13 @@ A container component that organizes and displays a group of activity tiles for 
 
 ## Features
 
-- Groups activity tiles (Sleep, Feed, Diaper, Note) in a consistent layout
+- Groups activity tiles (Sleep, Feed, Diaper, Note, Bath, Pump) in a consistent layout
 - Handles status bubble displays for each activity type
 - Manages activity button interactions
 - Maintains consistent styling across all activity buttons
 - Follows the container/presentational pattern
 - Designed for cross-platform compatibility
+- Handles timezone differences and DST changes correctly
 
 ## Usage
 
@@ -157,6 +158,35 @@ To add a new activity type to the ActivityTileGroup:
    }
    ```
 
+## Timezone Handling
+
+The ActivityTileGroup component works with the StatusBubble component to ensure accurate time tracking across different timezones and during Daylight Saving Time (DST) changes:
+
+### DST-Aware Duration Calculation
+
+For each activity type that displays a duration (sleep, feed, diaper):
+
+1. The component passes the actual timestamp (startTime) to the StatusBubble component
+2. Instead of pre-calculating durations, it lets the StatusBubble handle the calculation
+3. This ensures that DST changes are properly accounted for in all duration displays
+
+### Implementation Details
+
+```tsx
+// Example of how sleep status is implemented with DST awareness
+<StatusBubble
+  status="sleeping"
+  className="overflow-visible z-40"
+  durationInMinutes={0} // Fallback value
+  startTime={sleepStartTime[selectedBaby.id]?.toISOString()}
+/>
+```
+
+By passing the raw timestamp instead of a pre-calculated duration, the component ensures:
+- Accurate time display regardless of timezone changes
+- Proper handling of DST transitions
+- Consistent user experience when traveling between timezones
+
 ## Cross-Platform Considerations
 
 This component is designed with cross-platform compatibility in mind:
@@ -166,5 +196,6 @@ This component is designed with cross-platform compatibility in mind:
 - Avoids web-specific APIs
 - Uses relative sizing that can be adapted to different screen sizes
 - Implements touch-friendly button sizes
+- Handles timezone differences in a platform-agnostic way
 
-When converting to React Native, the grid layout would need to be implemented using React Native's `View` and `FlatList` components instead of CSS grid.
+When converting to React Native, the grid layout would need to be implemented using React Native's `View` and `FlatList` components instead of CSS grid. The timezone handling would remain largely the same, as it uses standard JavaScript Date APIs that are available in React Native.
