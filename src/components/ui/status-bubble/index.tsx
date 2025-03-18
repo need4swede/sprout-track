@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Moon, Sun, Icon } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { cn } from "@/src/lib/utils";
 import { statusBubbleStyles as styles } from './status-bubble.styles';
 import { StatusBubbleProps, StatusStyle } from './status-bubble.types';
+import { useTimezone } from '@/app/context/timezone';
 
 /**
  * Formats minutes into HH:MM format
@@ -29,10 +30,40 @@ export function StatusBubble({
   status, 
   durationInMinutes, 
   warningTime, 
-  className 
-}: StatusBubbleProps) {
+  className,
+  startTime // Add startTime prop
+}: StatusBubbleProps & { startTime?: string }) {
+  const { userTimezone } = useTimezone();
+  const [calculatedDuration, setCalculatedDuration] = useState(durationInMinutes);
+  
+  // If startTime is provided, calculate duration based on current time in user's timezone
+  useEffect(() => {
+    if (startTime) {
+      const updateDuration = () => {
+        const start = new Date(startTime);
+        const now = new Date();
+        
+        // Calculate duration in minutes
+        const diffMs = now.getTime() - start.getTime();
+        const diffMinutes = Math.floor(diffMs / 60000);
+        
+        setCalculatedDuration(diffMinutes);
+      };
+      
+      // Update immediately
+      updateDuration();
+      
+      // Then update every minute
+      const interval = setInterval(updateDuration, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [startTime, userTimezone]);
+  
+  // Use calculated duration if available, otherwise use prop
+  const displayDuration = startTime ? calculatedDuration : durationInMinutes;
+  
   // Check if duration exceeds warning time
-  const isWarning = warningTime && durationInMinutes >= getWarningMinutes(warningTime);
+  const isWarning = warningTime && displayDuration >= getWarningMinutes(warningTime);
 
   // Get status-specific styles and icon
   const getStatusStyles = (): StatusStyle => {
@@ -76,7 +107,7 @@ export function StatusBubble({
       )}
     >
       {icon}
-      <span>{formatDuration(durationInMinutes)}</span>
+      <span>{formatDuration(displayDuration)}</span>
     </div>
   );
 }

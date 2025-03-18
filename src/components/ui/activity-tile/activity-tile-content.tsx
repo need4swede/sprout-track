@@ -11,9 +11,10 @@ export function ActivityTileContent({
   activity, 
   title, 
   description, 
-  className 
-}: ActivityTileContentProps) {
-  const activityDesc = getActivityDescription(activity);
+  className,
+  userTimezone 
+}: ActivityTileContentProps & { userTimezone?: string }) {
+  const activityDesc = getActivityDescription(activity, userTimezone);
   const displayTitle = title || activityDesc.type;
   const displayDescription = description || activityDesc.details;
   

@@ -9,6 +9,7 @@ import { Baby as BabyIcon } from 'lucide-react';
 import Timeline from '@/src/components/Timeline';
 import SettingsModal from '@/src/components/modals/SettingsModal';
 import { useBaby } from '../context/baby';
+import { useTimezone } from '../context/timezone';
 import { ActivityType } from '@/src/components/ui/activity-tile';
 import { ActivityTileGroup } from '@/src/components/ActivityTileGroup';
 import SleepForm from '@/src/components/forms/SleepForm';
@@ -20,6 +21,8 @@ import PumpForm from '@/src/components/forms/PumpForm';
 
 function HomeContent(): React.ReactElement {
   const { selectedBaby, sleepingBabies, setSleepingBabies } = useBaby();
+  const { userTimezone } = useTimezone();
+  
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [showFeedModal, setShowFeedModal] = useState(false);
   const [showDiaperModal, setShowDiaperModal] = useState(false);
@@ -37,7 +40,63 @@ function HomeContent(): React.ReactElement {
 
   // Track the currently selected date in the Timeline component
   const [selectedTimelineDate, setSelectedTimelineDate] = useState<Date | null>(null);
+  
+  const [sleepData, setSleepData] = useState<{
+    ongoingSleep?: SleepLogResponse;
+    lastEndedSleep?: SleepLogResponse & { endTime: string };
+  }>({});
 
+  // Define checkSleepStatus before it's used
+  const checkSleepStatus = useCallback(async (babyId: string) => {
+    // Prevent duplicate checks
+    const checkId = `${babyId}-${Date.now()}`;
+    if (lastSleepCheck.current === checkId) return;
+    lastSleepCheck.current = checkId;
+
+    try {
+      // Add a timestamp to prevent caching
+      const timestamp = new Date().getTime();
+      
+      const response = await fetch(`/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}&timezone=${encodeURIComponent(userTimezone)}`, {
+        cache: 'no-store',
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Expires': '0'
+        }
+      });
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      if (!data.success) return;
+      
+      // Filter for sleep logs only
+      const sleepLogs = data.data
+        .filter((activity: ActivityType): activity is SleepLogResponse => 
+          'duration' in activity && 'startTime' in activity
+        );
+      
+      // Find ongoing sleep
+      const ongoingSleep = sleepLogs.find((log: SleepLogResponse) => !log.endTime);
+      
+      // Find last ended sleep
+      const completedSleeps = sleepLogs
+        .filter((log: SleepLogResponse): log is SleepLogResponse & { endTime: string } => 
+          log.endTime !== null && typeof log.endTime === 'string'
+        )
+        .sort((a: SleepLogResponse & { endTime: string }, b: SleepLogResponse & { endTime: string }) => 
+          new Date(b.endTime).getTime() - new Date(a.endTime).getTime()
+        );
+      
+      setSleepData({
+        ongoingSleep,
+        lastEndedSleep: completedSleeps[0]
+      });
+    } catch (error) {
+      console.error('Error checking sleep status:', error);
+    }
+  }, [userTimezone]);
+  
   const refreshActivities = useCallback(async (babyId: string | undefined, dateFilter?: Date) => {
     if (!babyId) return;
     
@@ -46,15 +105,15 @@ function HomeContent(): React.ReactElement {
       const timestamp = new Date().getTime();
       
       // If a date filter is provided, use it in the API call
-      let url = `/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}`;
+      let url = `/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}&timezone=${encodeURIComponent(userTimezone)}`;
       if (dateFilter) {
         // Update the selected date
         setSelectedTimelineDate(dateFilter);
-        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(dateFilter.toISOString())}&_t=${timestamp}`;
+        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(dateFilter.toISOString())}&_t=${timestamp}&timezone=${encodeURIComponent(userTimezone)}`;
         console.log(`Refreshing activities with date filter: ${dateFilter.toISOString()}`);
       } else if (selectedTimelineDate) {
         // If we have a previously selected date, use it
-        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(selectedTimelineDate.toISOString())}&_t=${timestamp}`;
+        url = `/api/timeline?babyId=${babyId}&date=${encodeURIComponent(selectedTimelineDate.toISOString())}&_t=${timestamp}&timezone=${encodeURIComponent(userTimezone)}`;
         console.log(`Refreshing activities with previous date filter: ${selectedTimelineDate.toISOString()}`);
       } else {
         console.log(`Refreshing activities without date filter`);
@@ -103,7 +162,7 @@ function HomeContent(): React.ReactElement {
     } catch (error) {
       console.error('Error refreshing activities:', error);
     }
-  }, []);
+  }, [userTimezone, selectedTimelineDate]);
 
   // Update unlock timer on any activity
   const updateUnlockTimer = () => {
@@ -148,62 +207,7 @@ function HomeContent(): React.ReactElement {
     };
     
     initializeData();
-  }, [selectedBaby, refreshActivities]);
-
-  const [sleepData, setSleepData] = useState<{
-    ongoingSleep?: SleepLogResponse;
-    lastEndedSleep?: SleepLogResponse & { endTime: string };
-  }>({});
-
-  const checkSleepStatus = async (babyId: string) => {
-    // Prevent duplicate checks
-    const checkId = `${babyId}-${Date.now()}`;
-    if (lastSleepCheck.current === checkId) return;
-    lastSleepCheck.current = checkId;
-
-    try {
-      // Add a timestamp to prevent caching
-      const timestamp = new Date().getTime();
-      
-      const response = await fetch(`/api/timeline?babyId=${babyId}&limit=200&_t=${timestamp}`, {
-        cache: 'no-store',
-        headers: {
-          'Pragma': 'no-cache',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Expires': '0'
-        }
-      });
-      if (!response.ok) return;
-      
-      const data = await response.json();
-      if (!data.success) return;
-      
-      // Filter for sleep logs only
-      const sleepLogs = data.data
-        .filter((activity: ActivityType): activity is SleepLogResponse => 
-          'duration' in activity && 'startTime' in activity
-        );
-      
-      // Find ongoing sleep
-      const ongoingSleep = sleepLogs.find((log: SleepLogResponse) => !log.endTime);
-      
-      // Find last ended sleep
-      const completedSleeps = sleepLogs
-        .filter((log: SleepLogResponse): log is SleepLogResponse & { endTime: string } => 
-          log.endTime !== null && typeof log.endTime === 'string'
-        )
-        .sort((a: SleepLogResponse & { endTime: string }, b: SleepLogResponse & { endTime: string }) => 
-          new Date(b.endTime).getTime() - new Date(a.endTime).getTime()
-        );
-      
-      setSleepData({
-        ongoingSleep,
-        lastEndedSleep: completedSleeps[0]
-      });
-    } catch (error) {
-      console.error('Error checking sleep status:', error);
-    }
-  };
+  }, [selectedBaby, refreshActivities, checkSleepStatus]);
 
   // Handle sleep status changes
   useEffect(() => {

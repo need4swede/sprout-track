@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { BabyProvider, useBaby } from './context/baby';
+import { TimezoneProvider } from './context/timezone';
 import Security from '@/src/components/Security';
 import Image from 'next/image';
 import './globals.css';
@@ -342,11 +343,13 @@ export default function RootLayout({
 }) {
   return (
     <BabyProvider>
-      <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
-        <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
-          <AppContent>{children}</AppContent>
-        </body>
-      </html>
+      <TimezoneProvider>
+        <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
+          <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
+            <AppContent>{children}</AppContent>
+          </body>
+        </html>
+      </TimezoneProvider>
     </BabyProvider>
   );
 }

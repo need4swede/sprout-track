@@ -3,19 +3,27 @@ import { BathLogResponse, PumpLogResponse } from '@/app/api/types';
 
 /**
  * Formats time based on the provided date string and settings
+ * This function will be used client-side and should use the timezone context
  */
-export const formatTime = (date: string, includeDate: boolean = true) => {
+export const formatTime = (date: string, includeDate: boolean = true, userTimezone?: string) => {
   if (!date) return 'Invalid Date';
 
   try {
     const dateObj = new Date(date);
     if (isNaN(dateObj.getTime())) return 'Invalid Date';
 
-    const timeStr = dateObj.toLocaleTimeString('en-US', {
+    // Use the user's timezone if provided
+    const options: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    });
+    };
+    
+    if (userTimezone) {
+      options.timeZone = userTimezone;
+    }
+
+    const timeStr = dateObj.toLocaleTimeString('en-US', options);
 
     if (!includeDate) return timeStr;
 
@@ -23,8 +31,20 @@ export const formatTime = (date: string, includeDate: boolean = true) => {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const isToday = dateObj.toDateString() === today.toDateString();
-    const isYesterday = dateObj.toDateString() === yesterday.toDateString();
+    // For date comparison, we need to compare in the same timezone
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      timeZone: userTimezone
+    };
+    
+    const dateObjStr = dateObj.toLocaleDateString('en-US', dateOptions);
+    const todayStr = today.toLocaleDateString('en-US', dateOptions);
+    const yesterdayStr = yesterday.toLocaleDateString('en-US', dateOptions);
+
+    const isToday = dateObjStr === todayStr;
+    const isYesterday = dateObjStr === yesterdayStr;
 
     const dateStr = isToday 
       ? 'Today'
@@ -33,6 +53,7 @@ export const formatTime = (date: string, includeDate: boolean = true) => {
       : dateObj.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
+          timeZone: userTimezone
         }).replace(/(\d+)$/, '$1,');
     return `${dateStr} ${timeStr}`;
   } catch (error) {
@@ -84,11 +105,11 @@ export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | '
 /**
  * Generates a description for the activity
  */
-export const getActivityDescription = (activity: ActivityType) => {
+export const getActivityDescription = (activity: ActivityType, userTimezone?: string) => {
   if ('type' in activity) {
     if ('duration' in activity) {
-      const startTimeFormatted = activity.startTime ? formatTime(activity.startTime, true) : 'unknown';
-      const endTimeFormatted = activity.endTime ? formatTime(activity.endTime, true) : 'ongoing';
+      const startTimeFormatted = activity.startTime ? formatTime(activity.startTime, true, userTimezone) : 'unknown';
+      const endTimeFormatted = activity.endTime ? formatTime(activity.endTime, true, userTimezone) : 'ongoing';
       const duration = activity.duration ? ` ${formatDuration(activity.duration)}` : '';
       const location = activity.location === 'OTHER' ? 'Other' : activity.location?.split('_').map(word => 
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
@@ -133,7 +154,7 @@ export const getActivityDescription = (activity: ActivityType) => {
         }
       }
       
-      const time = formatTime(activity.time, true);
+      const time = formatTime(activity.time, true, userTimezone);
       return {
         type: formatFeedType(activity.type),
         details: `${details} - ${time}`
@@ -183,7 +204,7 @@ export const getActivityDescription = (activity: ActivityType) => {
         }
       }
       
-      const time = formatTime(activity.time, true);
+      const time = formatTime(activity.time, true, userTimezone);
       return {
         type: formatDiaperType(activity.type),
         details: `${details}${time}`
@@ -191,7 +212,7 @@ export const getActivityDescription = (activity: ActivityType) => {
     }
   }
   if ('content' in activity) {
-    const time = formatTime(activity.time, true);
+    const time = formatTime(activity.time, true, userTimezone);
     const truncatedContent = activity.content.length > 50 ? activity.content.substring(0, 50) + '...' : activity.content;
     return {
       type: activity.category || 'Note',
@@ -204,7 +225,7 @@ export const getActivityDescription = (activity: ActivityType) => {
   };
   
   if (isBathLog(activity)) {
-    const time = formatTime(activity.time, true);
+    const time = formatTime(activity.time, true, userTimezone);
     const notes = activity.notes ? ` - ${activity.notes}` : '';
     return {
       type: 'Bath',
@@ -218,7 +239,7 @@ export const getActivityDescription = (activity: ActivityType) => {
   };
   
   if (isPumpLog(activity)) {
-    const startTime = activity.startTime ? formatTime(activity.startTime, true) : '';
+    const startTime = activity.startTime ? formatTime(activity.startTime, true, userTimezone) : '';
     
     let details = startTime;
     
