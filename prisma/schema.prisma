@@ -276,6 +276,7 @@ model Settings {
   defaultHeightUnit String   @default("IN")    // Default unit for height measurement
   defaultWeightUnit String   @default("LB")    // Default unit for weight measurement
   defaultTempUnit   String   @default("F")     // Default unit for temperature
+  activitySettings  String?  // JSON string for activity order and visibility settings
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

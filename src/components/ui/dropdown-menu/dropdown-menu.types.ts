@@ -25,7 +25,12 @@ export interface DropdownMenuItemProps extends React.ComponentPropsWithoutRef<ty
   inset?: boolean
 }
 
-export interface DropdownMenuCheckboxItemProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem> {}
+export interface DropdownMenuCheckboxItemProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem> {
+  /**
+   * Whether the item is sortable (can be reordered)
+   */
+  sortable?: boolean;
+}
 
 export interface DropdownMenuRadioItemProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem> {}
 

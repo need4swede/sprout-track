@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { Check, ChevronRight, Circle } from "lucide-react"
+import { Check, ChevronRight, Circle, GripVertical } from "lucide-react"
 import { cn } from "@/src/lib/utils"
 import { dropdownMenuStyles as styles } from "./dropdown-menu.styles"
 import {
@@ -91,10 +91,10 @@ DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   DropdownMenuCheckboxItemProps
->(({ className, children, checked, ...props }, ref) => (
+>(({ className, children, checked, sortable, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
-    className={cn(styles.checkboxItem, className)}
+    className={cn(sortable ? styles.sortableCheckboxItem : styles.checkboxItem, className)}
     checked={checked}
     {...props}
   >
@@ -104,6 +104,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
+    {sortable && <GripVertical className={styles.dragHandle} />}
   </DropdownMenuPrimitive.CheckboxItem>
 ))
 DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName

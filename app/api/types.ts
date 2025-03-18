@@ -3,6 +3,13 @@ import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings 
 // Settings types
 export type Settings = PrismaSettings;
 
+// Activity settings types
+export interface ActivitySettings {
+  order: string[];
+  visible: string[];
+  caretakerId?: string | null; // Optional caretaker ID for per-caretaker settings
+}
+
 export interface ApiResponse<T = void> {
   success: boolean;
   data?: T;
