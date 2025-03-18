@@ -78,26 +78,52 @@ export function ActivityTileGroup({
   // State for tracking the current caretaker ID
   const [caretakerId, setCaretakerId] = useState<string | null>(null);
   
-  // Get caretaker ID from localStorage
+  // Get caretaker ID from localStorage and listen for changes
   useEffect(() => {
     const storedCaretakerId = localStorage.getItem('caretakerId');
     setCaretakerId(storedCaretakerId);
     
+    // Reset state when caretaker ID changes
+    const resetState = () => {
+      // Reset to default state
+      setSettingsLoaded(false);
+      setActivityOrder(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'] as ActivityType[]);
+      setVisibleActivities(new Set(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'] as ActivityType[]));
+    };
+    
     // Listen for changes to caretakerId in localStorage
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'caretakerId') {
+      if (e.key === 'caretakerId' && e.newValue !== caretakerId) {
         setCaretakerId(e.newValue);
+        resetState();
+      }
+    };
+    
+    // Listen for custom caretaker change event
+    const handleCaretakerChange = (e: CustomEvent) => {
+      const newCaretakerId = e.detail?.caretakerId;
+      if (newCaretakerId !== caretakerId) {
+        setCaretakerId(newCaretakerId);
+        resetState();
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    window.addEventListener('caretakerChanged', handleCaretakerChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('caretakerChanged', handleCaretakerChange as EventListener);
+    };
+  }, [caretakerId]);
   
   // Load activity settings from the server when caretakerId changes
   useEffect(() => {
     const loadActivitySettings = async () => {
       try {
+        // Reset settings loaded state
+        setSettingsLoaded(false);
+        
         // Fetch activity settings from the API with the current caretakerId
         const response = await fetch(`/api/activity-settings${caretakerId ? `?caretakerId=${caretakerId}` : ''}`);
         
@@ -116,8 +142,6 @@ export function ActivityTileGroup({
       }
     };
     
-    // Reset settingsLoaded when caretakerId changes
-    setSettingsLoaded(false);
     loadActivitySettings();
   }, [caretakerId]);
   
@@ -153,7 +177,7 @@ export function ActivityTileGroup({
     
     return () => clearTimeout(timeoutId);
   }, [activityOrder, visibleActivities, settingsLoaded, caretakerId]);
-
+  
   // Toggle activity visibility
   const toggleActivity = (activity: ActivityType) => {
     const newVisibleActivities = new Set(visibleActivities);
@@ -429,46 +453,79 @@ export function ActivityTileGroup({
             {activityOrder.map((activity, index) => (
               <div 
                 key={`order-${activity}`} 
-                className={`flex items-center px-2 py-2 hover:bg-gray-50 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50' : ''}`}
-                draggable
+                className={`flex items-center px-2 py-2 hover:bg-gray-50 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50' : ''}`}
+                draggable="true"
                 onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = 'move';
                   e.dataTransfer.setData('text/plain', activity);
                   setDraggedActivity(activity);
+                  
+                  // Capture a reference to the element before setTimeout
+                  const element = e.currentTarget;
+                  // Add a delay to make sure the drag effect is visible
+                  setTimeout(() => {
+                    if (element) {
+                      element.classList.add('opacity-50', 'bg-gray-100');
+                    }
+                  }, 0);
                 }}
-                onDragEnd={() => {
+                onDragEnd={(e) => {
                   setDraggedActivity(null);
+                  // Remove all highlights
+                  document.querySelectorAll('[draggable="true"]').forEach(el => {
+                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
+                  });
                 }}
                 onDragOver={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
+                  e.dataTransfer.dropEffect = 'move';
                   if (draggedActivity && draggedActivity !== activity) {
                     e.currentTarget.classList.add('bg-emerald-50');
                   }
                 }}
                 onDragLeave={(e) => {
+                  e.preventDefault();
                   e.currentTarget.classList.remove('bg-emerald-50');
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   e.currentTarget.classList.remove('bg-emerald-50');
                   
-                  if (draggedActivity && draggedActivity !== activity) {
+                  const droppedActivity = e.dataTransfer.getData('text/plain') as ActivityType;
+                  
+                  if (droppedActivity && droppedActivity !== activity) {
                     const newOrder = [...activityOrder];
-                    const draggedIndex = newOrder.indexOf(draggedActivity);
+                    const draggedIndex = newOrder.indexOf(droppedActivity);
                     const targetIndex = newOrder.indexOf(activity);
                     
                     // Remove the dragged item
                     newOrder.splice(draggedIndex, 1);
                     // Insert it at the new position
-                    newOrder.splice(targetIndex, 0, draggedActivity);
+                    newOrder.splice(targetIndex, 0, droppedActivity);
                     
                     setActivityOrder(newOrder);
                   }
                 }}
                 // Touch event handlers for mobile support
-                onTouchStart={() => {
-                  setDraggedActivity(activity);
+                onTouchStart={(e) => {
+                  // Store the initial touch position
+                  const touch = e.touches[0];
+                  e.currentTarget.setAttribute('data-touch-start-x', touch.clientX.toString());
+                  e.currentTarget.setAttribute('data-touch-start-y', touch.clientY.toString());
+                  
+                  // Set a timeout to trigger drag mode if touch is held
+                  const touchTimeout = setTimeout(() => {
+                    setDraggedActivity(activity);
+                    e.currentTarget.classList.add('opacity-50', 'bg-gray-100');
+                  }, 200);
+                  
+                  e.currentTarget.setAttribute('data-touch-timeout', touchTimeout.toString());
                 }}
                 onTouchMove={(e) => {
+                  if (!draggedActivity) return;
+                  
                   e.preventDefault(); // Prevent scrolling while dragging
                   
                   // Find the element under the touch point
@@ -478,12 +535,15 @@ export function ActivityTileGroup({
                   // Find the first draggable element in the elements under the touch
                   const touchedElement = elementsAtTouch.find(el => 
                     el.getAttribute('draggable') === 'true' && 
-                    el !== e.currentTarget
-                  );
+                    el.getAttribute('data-key') && 
+                    el.getAttribute('data-key') !== `order-${draggedActivity}`
+                  ) as HTMLElement | undefined;
                   
                   // Remove highlight from all items
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50');
+                    if (el !== e.currentTarget) {
+                      el.classList.remove('bg-emerald-50');
+                    }
                   });
                   
                   // Add highlight to the element under touch
@@ -492,6 +552,13 @@ export function ActivityTileGroup({
                   }
                 }}
                 onTouchEnd={(e) => {
+                  // Clear the touch timeout if it exists
+                  const timeoutId = e.currentTarget.getAttribute('data-touch-timeout');
+                  if (timeoutId) {
+                    clearTimeout(parseInt(timeoutId));
+                    e.currentTarget.removeAttribute('data-touch-timeout');
+                  }
+                  
                   if (!draggedActivity) return;
                   
                   // Find the element under the touch point
@@ -501,8 +568,9 @@ export function ActivityTileGroup({
                   // Find the first draggable element in the elements under the touch
                   const touchedElement = elementsAtTouch.find(el => 
                     el.getAttribute('draggable') === 'true' && 
-                    el !== e.currentTarget
-                  );
+                    el.getAttribute('data-key') && 
+                    el.getAttribute('data-key') !== `order-${draggedActivity}`
+                  ) as HTMLElement | undefined;
                   
                   if (touchedElement) {
                     // Get the activity from the data-key attribute
@@ -527,7 +595,22 @@ export function ActivityTileGroup({
                   
                   // Remove highlight from all items
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50');
+                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
+                  });
+                  
+                  setDraggedActivity(null);
+                }}
+                onTouchCancel={(e) => {
+                  // Clear the touch timeout if it exists
+                  const timeoutId = e.currentTarget.getAttribute('data-touch-timeout');
+                  if (timeoutId) {
+                    clearTimeout(parseInt(timeoutId));
+                    e.currentTarget.removeAttribute('data-touch-timeout');
+                  }
+                  
+                  // Remove all highlights
+                  document.querySelectorAll('[draggable="true"]').forEach(el => {
+                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
                   });
                   
                   setDraggedActivity(null);
@@ -538,8 +621,10 @@ export function ActivityTileGroup({
                   className="p-1 rounded-full hover:bg-gray-100 cursor-grab active:cursor-grabbing mr-2"
                   onMouseDown={(e) => {
                     // Prevent dropdown from closing when starting drag
-                    e.preventDefault();
+                    e.stopPropagation();
                   }}
+                  aria-label={`Drag to reorder ${activityDisplayNames[activity]}`}
+                  title="Drag to reorder"
                 >
                   <ArrowDownUp className="h-4 w-4 text-gray-500" />
                 </button>

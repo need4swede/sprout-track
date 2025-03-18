@@ -256,6 +256,13 @@ export default function Security({ onUnlock }: SecurityProps) {
         localStorage.removeItem('attempts');
         setAttempts(0);
         setAuthenticatedCaretakerId(data.data.id);
+        
+        // Dispatch a custom event to notify components about caretaker change
+        const caretakerChangedEvent = new CustomEvent('caretakerChanged', {
+          detail: { caretakerId: data.data.id }
+        });
+        window.dispatchEvent(caretakerChangedEvent);
+        
         onUnlock(data.data.id);
         setShowDialog(false);
       } else {

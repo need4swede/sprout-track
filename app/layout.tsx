@@ -183,6 +183,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
     setIsUnlocked(true);
     fetchData();
     
+    // Dispatch a custom event to notify components about caretaker change
+    if (caretakerId) {
+      const caretakerChangedEvent = new CustomEvent('caretakerChanged', {
+        detail: { caretakerId }
+      });
+      window.dispatchEvent(caretakerChangedEvent);
+    }
+    
     // The caretaker name and role will be extracted from the JWT token
     // in the checkUnlockStatus effect
   };
@@ -190,6 +198,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => {
     // Get the token to invalidate it server-side
     const token = localStorage.getItem('authToken');
+    const currentCaretakerId = localStorage.getItem('caretakerId');
     
     // Call the logout API to clear server-side cookies and invalidate the token
     try {
@@ -210,6 +219,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('authToken');
     localStorage.removeItem('attempts');
     localStorage.removeItem('lockoutTime');
+    
+    // Dispatch a custom event to notify components about caretaker change
+    if (currentCaretakerId) {
+      const caretakerChangedEvent = new CustomEvent('caretakerChanged', {
+        detail: { caretakerId: null }
+      });
+      window.dispatchEvent(caretakerChangedEvent);
+    }
     
     // Reset state
     setIsUnlocked(false);
