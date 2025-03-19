@@ -1,30 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTimezone } from '@/app/context/timezone';
 
 export function TimezoneDebug() {
   const { getTimezoneInfo } = useTimezone();
   const [showDebug, setShowDebug] = useState(false);
   const [info, setInfo] = useState(getTimezoneInfo());
-  const [isVisible, setIsVisible] = useState(true);
-  
-  // Initialize and check if we're in development mode
-  useEffect(() => {
-    // Only show in development mode
-    if (process.env.NODE_ENV !== 'development') {
-      setIsVisible(false);
-    }
-  }, []);
   
   const refreshInfo = () => {
     setInfo(getTimezoneInfo());
   };
-  
-  // Don't render anything if not visible or not in development mode
-  if (!isVisible || process.env.NODE_ENV !== 'development') {
-    return null;
-  }
   
   if (!showDebug) {
     return (
