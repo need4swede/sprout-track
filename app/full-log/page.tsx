@@ -2,10 +2,12 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useBaby } from '../context/baby';
+import { useTimezone } from '../context/timezone';
 import FullLogTimeline from '@/src/components/FullLogTimeline';
 
 function FullLogPage() {
   const { selectedBaby } = useBaby();
+  const { userTimezone } = useTimezone();
   const [activities, setActivities] = useState([]);
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -26,7 +28,7 @@ function FullLogPage() {
       adjustedEndDate.setHours(23, 59, 59, 999);
 
       const response = await fetch(
-        `/api/timeline?babyId=${selectedBaby.id}&startDate=${adjustedStartDate.toISOString()}&endDate=${adjustedEndDate.toISOString()}`
+        `/api/timeline?babyId=${selectedBaby.id}&startDate=${adjustedStartDate.toISOString()}&endDate=${adjustedEndDate.toISOString()}&timezone=${encodeURIComponent(userTimezone)}`
       );
       const data = await response.json();
       if (data.success) {
@@ -35,7 +37,7 @@ function FullLogPage() {
     } catch (error) {
       console.error('Error fetching activities:', error);
     }
-  }, [selectedBaby?.id, startDate, endDate]);
+  }, [selectedBaby?.id, startDate, endDate, userTimezone]);
 
   // Initial load
   React.useEffect(() => {
