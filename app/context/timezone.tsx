@@ -9,6 +9,13 @@ interface TimezoneContextType {
   convertToUserTimezone: (dateString: string) => Date;
   formatInUserTimezone: (dateString: string, formatOptions?: Intl.DateTimeFormatOptions) => string;
   getMinutesBetweenDates: (startDate: Date | string, endDate: Date | string) => number;
+  getTimezoneInfo: () => { 
+    userTimezone: string; 
+    serverTimezone: string; 
+    currentTime: string;
+    currentOffset: number;
+    isMobile: boolean;
+  };
 }
 
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
@@ -80,6 +87,17 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
         throw new Error('Invalid date input');
       }
       
+      // Check if we're on a mobile device
+      const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // For mobile browsers, use a simpler calculation that might be more reliable
+      if (isMobile) {
+        console.log('Using mobile-friendly time calculation');
+        const diffMs = endDate.getTime() - startDate.getTime();
+        return Math.floor(diffMs / 60000);
+      }
+      
+      // For desktop browsers, use the DST-aware calculation
       // Get the timezone offset at the start time and end time
       const startOffset = startDate.getTimezoneOffset();
       const endOffset = endDate.getTimezoneOffset();
@@ -101,13 +119,28 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Get timezone information for debugging
+  const getTimezoneInfo = () => {
+    const now = new Date();
+    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    return {
+      userTimezone,
+      serverTimezone,
+      currentTime: now.toISOString(),
+      currentOffset: now.getTimezoneOffset(),
+      isMobile
+    };
+  };
+
   return (
     <TimezoneContext.Provider value={{
       userTimezone,
       serverTimezone,
       convertToUserTimezone,
       formatInUserTimezone,
-      getMinutesBetweenDates
+      getMinutesBetweenDates,
+      getTimezoneInfo
     }}>
       {children}
     </TimezoneContext.Provider>

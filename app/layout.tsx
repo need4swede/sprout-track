@@ -10,6 +10,7 @@ import SettingsForm from '@/src/components/forms/SettingsForm';
 import { Button } from '@/src/components/ui/button';
 import { Moon } from 'lucide-react';
 import { DebugSessionTimer } from '@/src/components/debugSessionTimer';
+import { TimezoneDebug } from '@/src/components/debugTimezone';
 import { SideNav, SideNavTrigger } from '@/src/components/ui/side-nav';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
@@ -330,8 +331,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
         calculateAge={calculateAge}
       />
       
-      {/* Debug Session Timer - only visible in development mode */}
+      {/* Debug components - only visible in development mode */}
       <DebugSessionTimer />
+      <TimezoneDebug />
     </>
   );
 }
