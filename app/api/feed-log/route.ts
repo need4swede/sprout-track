@@ -3,21 +3,22 @@ import prisma from '../db';
 import { ApiResponse, FeedLogCreate, FeedLogResponse } from '../types';
 import { FeedType } from '@prisma/client';
 import { withAuthContext, AuthResult } from '../utils/auth';
+import { toUTC, formatForResponse } from '../utils/timezone';
 
 async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: FeedLogCreate = await req.json();
     
-    // Ensure time is saved as local time
-    const localTime = new Date(body.time);
+    // Convert all dates to UTC for storage
+    const timeUTC = toUTC(body.time);
     
     // Process startTime, endTime, and feedDuration if provided
     const data = {
       ...body,
-      time: localTime,
+      time: timeUTC,
       caretakerId: authContext.caretakerId,
-      ...(body.startTime && { startTime: new Date(body.startTime) }),
-      ...(body.endTime && { endTime: new Date(body.endTime) }),
+      ...(body.startTime && { startTime: toUTC(body.startTime) }),
+      ...(body.endTime && { endTime: toUTC(body.endTime) }),
       // Ensure feedDuration is properly included
       ...(body.feedDuration !== undefined && { feedDuration: body.feedDuration }),
     };
@@ -26,12 +27,13 @@ async function handlePost(req: NextRequest, authContext: AuthResult) {
       data,
     });
 
+    // Format dates as ISO strings for response
     const response: FeedLogResponse = {
       ...feedLog,
-      time: body.time,
-      createdAt: feedLog.createdAt.toLocaleString(),
-      updatedAt: feedLog.updatedAt.toLocaleString(),
-      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(feedLog.time) || '',
+      createdAt: formatForResponse(feedLog.createdAt) || '',
+      updatedAt: formatForResponse(feedLog.updatedAt) || '',
+      deletedAt: formatForResponse(feedLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -56,11 +58,11 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
     const id = searchParams.get('id');
     const body: Partial<FeedLogCreate> = await req.json();
 
-    // Process all date fields
+    // Process all date fields - convert to UTC
     const data = {
-      ...(body.time ? { time: new Date(body.time) } : {}),
-      ...(body.startTime ? { startTime: new Date(body.startTime) } : {}),
-      ...(body.endTime ? { endTime: new Date(body.endTime) } : {}),
+      ...(body.time ? { time: toUTC(body.time) } : {}),
+      ...(body.startTime ? { startTime: toUTC(body.startTime) } : {}),
+      ...(body.endTime ? { endTime: toUTC(body.endTime) } : {}),
       ...(body.feedDuration !== undefined ? { feedDuration: body.feedDuration } : {}),
       ...Object.entries(body)
         .filter(([key]) => !['time', 'startTime', 'endTime', 'feedDuration'].includes(key))
@@ -96,12 +98,13 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       data,
     });
 
+    // Format dates as ISO strings for response
     const response: FeedLogResponse = {
       ...feedLog,
-      time: body.time || existingFeedLog.time.toLocaleString(),
-      createdAt: feedLog.createdAt.toLocaleString(),
-      updatedAt: feedLog.updatedAt.toLocaleString(),
-      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(feedLog.time) || '',
+      createdAt: formatForResponse(feedLog.createdAt) || '',
+      updatedAt: formatForResponse(feedLog.updatedAt) || '',
+      deletedAt: formatForResponse(feedLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -134,8 +137,8 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       ...(typeParam && { type: typeParam as FeedType }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: toUTC(startDate),
+          lte: toUTC(endDate),
         },
       }),
     };
@@ -155,12 +158,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
         );
       }
 
+      // Format dates as ISO strings for response
       const response: FeedLogResponse = {
         ...feedLog,
-        time: feedLog.time.toLocaleString(),
-        createdAt: feedLog.createdAt.toLocaleString(),
-        updatedAt: feedLog.updatedAt.toLocaleString(),
-        deletedAt: feedLog.deletedAt?.toLocaleString() || null,
+        time: formatForResponse(feedLog.time) || '',
+        createdAt: formatForResponse(feedLog.createdAt) || '',
+        updatedAt: formatForResponse(feedLog.updatedAt) || '',
+        deletedAt: formatForResponse(feedLog.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<FeedLogResponse>>({
@@ -176,12 +180,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: FeedLogResponse[] = feedLogs.map(feedLog => ({
       ...feedLog,
-      time: feedLog.time.toLocaleString(),
-      createdAt: feedLog.createdAt.toLocaleString(),
-      updatedAt: feedLog.updatedAt.toLocaleString(),
-      deletedAt: feedLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(feedLog.time) || '',
+      createdAt: formatForResponse(feedLog.createdAt) || '',
+      updatedAt: formatForResponse(feedLog.updatedAt) || '',
+      deletedAt: formatForResponse(feedLog.deletedAt),
     }));
 
     return NextResponse.json<ApiResponse<FeedLogResponse[]>>({

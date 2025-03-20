@@ -7,15 +7,6 @@ import { StatusBubbleProps, StatusStyle } from './status-bubble.types';
 import { useTimezone } from '@/app/context/timezone';
 
 /**
- * Formats minutes into HH:MM format
- */
-const formatDuration = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins.toString().padStart(2, '0')}`;
-};
-
-/**
  * Converts warning time (hh:mm) to minutes
  */
 const getWarningMinutes = (time: string): number => {
@@ -33,7 +24,7 @@ export function StatusBubble({
   className,
   startTime // Add startTime prop
 }: StatusBubbleProps & { startTime?: string }) {
-  const { userTimezone, getMinutesBetweenDates } = useTimezone();
+  const { userTimezone, calculateDurationMinutes, formatDuration } = useTimezone();
   const [calculatedDuration, setCalculatedDuration] = useState(durationInMinutes);
   
   // If startTime is provided, calculate duration based on current time in user's timezone
@@ -41,10 +32,10 @@ export function StatusBubble({
     if (startTime) {
       const updateDuration = () => {
         try {
-          // Use the getMinutesBetweenDates function from the timezone context
+          // Use the calculateDurationMinutes function from the timezone context
           // This properly handles DST changes
           const now = new Date();
-          const diffMinutes = getMinutesBetweenDates(startTime, now);
+          const diffMinutes = calculateDurationMinutes(startTime, now.toISOString());
           
           setCalculatedDuration(diffMinutes);
         } catch (error) {
@@ -61,7 +52,7 @@ export function StatusBubble({
       const interval = setInterval(updateDuration, 60000);
       return () => clearInterval(interval);
     }
-  }, [startTime, userTimezone, durationInMinutes, getMinutesBetweenDates]);
+  }, [startTime, userTimezone, durationInMinutes, calculateDurationMinutes]);
   
   // Use calculated duration if available, otherwise use prop
   const displayDuration = startTime ? calculatedDuration : durationInMinutes;

@@ -17,6 +17,7 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
+import { useTimezone } from '@/app/context/timezone';
 
 interface DiaperFormProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export default function DiaperForm({
   activity,
   onSuccess,
 }: DiaperFormProps) {
+  const { formatDate } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     type: '' as DiaperType | '',
@@ -64,7 +66,7 @@ export default function DiaperForm({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: formatDateForInput(initialTime),
+          time: formatDateForInput(activity.time),
           type: activity.type,
           condition: activity.condition || '',
           color: activity.color || '',
@@ -100,7 +102,7 @@ export default function DiaperForm({
     try {
       const payload = {
         babyId,
-        time: formData.time,
+        time: formData.time, // Send the ISO string directly
         type: formData.type,
         condition: formData.condition || null,
         color: formData.color || null,

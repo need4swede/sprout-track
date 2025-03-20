@@ -17,6 +17,7 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
+import { useTimezone } from '@/app/context/timezone';
 
 interface SleepFormProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export default function SleepForm({
   activity,
   onSuccess,
 }: SleepFormProps) {
+  const { formatDate, calculateDurationMinutes } = useTimezone();
   const [formData, setFormData] = useState({
     startTime: initialTime,
     endTime: '',
@@ -69,7 +71,7 @@ export default function SleepForm({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          startTime: formatDateForInput(initialTime),
+          startTime: formatDateForInput(activity.startTime),
           endTime: activity.endTime ? formatDateForInput(activity.endTime) : '',
           type: activity.type,
           location: activity.location || '',
@@ -159,7 +161,11 @@ export default function SleepForm({
     try {
       const startTime = formData.startTime;
       const endTime = formData.endTime || null;
-      const duration = endTime ? Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000) : null;
+      
+      // Calculate duration using the timezone context if both start and end times are provided
+      const duration = endTime ? 
+        calculateDurationMinutes(startTime, endTime) : 
+        null;
 
       let response;
       

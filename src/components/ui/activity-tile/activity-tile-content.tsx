@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from "@/src/lib/utils";
 import { activityTileStyles as styles } from './activity-tile.styles';
 import { ActivityTileContentProps } from './activity-tile.types';
-import { getActivityDescription } from './activity-tile-utils';
+import { useActivityDescription } from './activity-tile-utils';
 
 /**
  * ActivityTileContent component displays the title and description of an activity
@@ -11,10 +11,12 @@ export function ActivityTileContent({
   activity, 
   title, 
   description, 
-  className,
-  userTimezone 
-}: ActivityTileContentProps & { userTimezone?: string }) {
-  const activityDesc = getActivityDescription(activity, userTimezone);
+  className
+}: ActivityTileContentProps) {
+  // Use the new hook to get the activity description
+  const { getActivityDescription } = useActivityDescription();
+  const activityDesc = getActivityDescription(activity);
+  
   const displayTitle = title || activityDesc.type;
   const displayDescription = description || activityDesc.details;
   

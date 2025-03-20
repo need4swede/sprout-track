@@ -2,30 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, BathLogCreate, BathLogResponse } from '../types';
 import { withAuthContext, AuthResult } from '../utils/auth';
+import { toUTC, formatForResponse } from '../utils/timezone';
 
 async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: BathLogCreate = await req.json();
     
-    // Ensure time is saved as local time
-    const localTime = new Date(body.time);
+    // Convert time to UTC for storage
+    const timeUTC = toUTC(body.time);
     
     const bathLog = await prisma.bathLog.create({
       data: {
         ...body,
-        time: localTime,
+        time: timeUTC,
         caretakerId: authContext.caretakerId,
         soapUsed: body.soapUsed ?? true, // Default to true if not provided
         shampooUsed: body.shampooUsed ?? true, // Default to true if not provided
       },
     });
 
+    // Format dates as ISO strings for response
     const response: BathLogResponse = {
       ...bathLog,
-      time: body.time,
-      createdAt: bathLog.createdAt.toLocaleString(),
-      updatedAt: bathLog.updatedAt.toLocaleString(),
-      deletedAt: bathLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(bathLog.time) || '',
+      createdAt: formatForResponse(bathLog.createdAt) || '',
+      updatedAt: formatForResponse(bathLog.updatedAt) || '',
+      deletedAt: formatForResponse(bathLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<BathLogResponse>>({
@@ -74,9 +76,9 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       );
     }
 
-    // Process date fields
+    // Process date fields - convert to UTC
     const data = {
-      ...(body.time ? { time: new Date(body.time) } : {}),
+      ...(body.time ? { time: toUTC(body.time) } : {}),
       ...Object.entries(body)
         .filter(([key]) => !['time'].includes(key))
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
@@ -87,12 +89,13 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       data,
     });
 
+    // Format dates as ISO strings for response
     const response: BathLogResponse = {
       ...bathLog,
-      time: body.time || existingBathLog.time.toLocaleString(),
-      createdAt: bathLog.createdAt.toLocaleString(),
-      updatedAt: bathLog.updatedAt.toLocaleString(),
-      deletedAt: bathLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(bathLog.time) || '',
+      createdAt: formatForResponse(bathLog.createdAt) || '',
+      updatedAt: formatForResponse(bathLog.updatedAt) || '',
+      deletedAt: formatForResponse(bathLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<BathLogResponse>>({
@@ -123,8 +126,8 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       ...(babyId && { babyId }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: toUTC(startDate),
+          lte: toUTC(endDate),
         },
       }),
     };
@@ -144,12 +147,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
         );
       }
 
+      // Format dates as ISO strings for response
       const response: BathLogResponse = {
         ...bathLog,
-        time: bathLog.time.toLocaleString(),
-        createdAt: bathLog.createdAt.toLocaleString(),
-        updatedAt: bathLog.updatedAt.toLocaleString(),
-        deletedAt: bathLog.deletedAt?.toLocaleString() || null,
+        time: formatForResponse(bathLog.time) || '',
+        createdAt: formatForResponse(bathLog.createdAt) || '',
+        updatedAt: formatForResponse(bathLog.updatedAt) || '',
+        deletedAt: formatForResponse(bathLog.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<BathLogResponse>>({
@@ -165,12 +169,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: BathLogResponse[] = bathLogs.map(bathLog => ({
       ...bathLog,
-      time: bathLog.time.toLocaleString(),
-      createdAt: bathLog.createdAt.toLocaleString(),
-      updatedAt: bathLog.updatedAt.toLocaleString(),
-      deletedAt: bathLog.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(bathLog.time) || '',
+      createdAt: formatForResponse(bathLog.createdAt) || '',
+      updatedAt: formatForResponse(bathLog.updatedAt) || '',
+      deletedAt: formatForResponse(bathLog.deletedAt),
     }));
 
     return NextResponse.json<ApiResponse<BathLogResponse[]>>({

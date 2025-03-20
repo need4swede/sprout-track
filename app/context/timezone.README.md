@@ -5,10 +5,10 @@ A React Context provider for handling timezone-related functionality in the Baby
 ## Features
 
 - Automatically detects the user's local timezone
-- Fetches the server's timezone from settings
-- Provides timezone conversion utilities to all components
+- Provides comprehensive date formatting utilities
 - Handles DST changes correctly in duration calculations
 - Formats dates in the user's timezone
+- Provides helper functions for common date operations
 
 ## Usage
 
@@ -43,38 +43,49 @@ import { useTimezone } from '@/app/context/timezone';
 function MyComponent() {
   const { 
     userTimezone, 
-    serverTimezone, 
-    convertToUserTimezone, 
-    formatInUserTimezone,
-    getMinutesBetweenDates
+    formatDate,
+    formatTime,
+    formatDateOnly,
+    formatDateTime,
+    calculateDurationMinutes,
+    formatDuration,
+    isToday,
+    isYesterday
   } = useTimezone();
   
   // Display the user's timezone
   console.log(`User timezone: ${userTimezone}`);
   
-  // Convert a date string to the user's timezone
-  const localDate = convertToUserTimezone('2025-03-10T14:30:00Z');
-  
   // Format a date in the user's timezone
-  const formattedDate = formatInUserTimezone('2025-03-10T14:30:00Z', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  const formattedDate = formatDateTime('2025-03-10T14:30:00Z');
   
-  // Calculate duration between dates, accounting for DST changes
-  const startDate = new Date('2025-03-10T01:30:00');
-  const endDate = new Date('2025-03-10T03:30:00');
-  const minutes = getMinutesBetweenDates(startDate, endDate);
+  // Format just the time portion
+  const formattedTime = formatTime('2025-03-10T14:30:00Z');
+  
+  // Format just the date portion
+  const formattedDateOnly = formatDateOnly('2025-03-10T14:30:00Z');
+  
+  // Calculate duration between dates
+  const startDate = '2025-03-10T01:30:00Z';
+  const endDate = '2025-03-10T03:30:00Z';
+  const minutes = calculateDurationMinutes(startDate, endDate);
+  
+  // Format a duration
+  const formattedDuration = formatDuration(90); // Returns "1:30"
+  
+  // Check if a date is today or yesterday
+  const isDateToday = isToday('2025-03-10T14:30:00Z');
+  const isDateYesterday = isYesterday('2025-03-10T14:30:00Z');
   
   return (
     <div>
       <p>Your timezone: {userTimezone}</p>
-      <p>Server timezone: {serverTimezone}</p>
-      <p>Formatted date: {formattedDate}</p>
-      <p>Duration: {minutes} minutes</p>
+      <p>Formatted date and time: {formattedDate}</p>
+      <p>Formatted time: {formattedTime}</p>
+      <p>Formatted date: {formattedDateOnly}</p>
+      <p>Duration: {minutes} minutes ({formattedDuration})</p>
+      <p>Is today: {isDateToday ? 'Yes' : 'No'}</p>
+      <p>Is yesterday: {isDateYesterday ? 'Yes' : 'No'}</p>
     </div>
   );
 }
@@ -87,36 +98,27 @@ function MyComponent() {
 | Property | Type | Description |
 |----------|------|-------------|
 | `userTimezone` | `string` | The user's detected timezone (e.g., 'America/Denver') |
-| `serverTimezone` | `string` | The server's configured timezone (e.g., 'America/Chicago') |
-| `convertToUserTimezone` | `(dateString: string) => Date` | Converts a date string to a Date object in the user's timezone |
-| `formatInUserTimezone` | `(dateString: string, formatOptions?: Intl.DateTimeFormatOptions) => string` | Formats a date string in the user's timezone with the specified format options |
-| `getMinutesBetweenDates` | `(startDate: Date \| string, endDate: Date \| string) => number` | Calculates the minutes between two dates, accounting for DST changes |
+| `formatDate` | `(isoString: string \| null \| undefined, formatOptions?: Intl.DateTimeFormatOptions) => string` | Format an ISO date string in the user's timezone with specified format options |
+| `formatTime` | `(isoString: string \| null \| undefined) => string` | Format a time-only representation of an ISO date string |
+| `formatDateOnly` | `(isoString: string \| null \| undefined) => string` | Format a date-only representation of an ISO date string |
+| `formatDateTime` | `(isoString: string \| null \| undefined) => string` | Format a date and time representation of an ISO date string |
+| `calculateDurationMinutes` | `(startIsoString: string \| null \| undefined, endIsoString: string \| null \| undefined) => number` | Calculate the duration between two ISO date strings in minutes |
+| `formatDuration` | `(minutes: number) => string` | Format a duration in minutes to a human-readable string (HH:MM) |
+| `isToday` | `(isoString: string \| null \| undefined) => boolean` | Check if a date is today in the user's timezone |
+| `isYesterday` | `(isoString: string \| null \| undefined) => boolean` | Check if a date is yesterday in the user's timezone |
 
-### `convertToUserTimezone(dateString: string)`
+### `formatDate(isoString, formatOptions?)`
 
-Converts a date string to a Date object in the user's timezone.
-
-**Parameters:**
-- `dateString`: A date string in any format that JavaScript's Date constructor can parse
-
-**Returns:** A Date object representing the date in the user's timezone.
-
-```typescript
-const localDate = convertToUserTimezone('2025-03-10T14:30:00Z');
-```
-
-### `formatInUserTimezone(dateString: string, formatOptions?: Intl.DateTimeFormatOptions)`
-
-Formats a date string in the user's timezone with the specified format options.
+Formats an ISO date string in the user's timezone with specified format options.
 
 **Parameters:**
-- `dateString`: A date string in any format that JavaScript's Date constructor can parse
+- `isoString`: An ISO date string, or null/undefined
 - `formatOptions`: Optional Intl.DateTimeFormatOptions object for customizing the format
 
 **Returns:** A formatted date string in the user's timezone.
 
 ```typescript
-const formattedDate = formatInUserTimezone('2025-03-10T14:30:00Z', {
+const formattedDate = formatDate('2025-03-10T14:30:00Z', {
   weekday: 'long',
   year: 'numeric',
   month: 'long',
@@ -127,44 +129,120 @@ const formattedDate = formatInUserTimezone('2025-03-10T14:30:00Z', {
 // "Monday, March 10, 2025, 8:30 AM"
 ```
 
-### `getMinutesBetweenDates(startDate: Date | string, endDate: Date | string)`
+### `formatTime(isoString)`
 
-Calculates the number of minutes between two dates, accounting for DST changes.
+Formats a time-only representation of an ISO date string in the user's timezone.
 
 **Parameters:**
-- `startDate`: The start date (as a Date object or date string)
-- `endDate`: The end date (as a Date object or date string)
+- `isoString`: An ISO date string, or null/undefined
 
-**Returns:** The number of minutes between the two dates, adjusted for DST changes.
+**Returns:** A formatted time string in the user's timezone.
 
 ```typescript
-// During a DST change (spring forward)
-const minutes = getMinutesBetweenDates(
-  '2025-03-10T01:30:00',
-  '2025-03-10T03:30:00'
+const formattedTime = formatTime('2025-03-10T14:30:00Z');
+// "8:30 AM"
+```
+
+### `formatDateOnly(isoString)`
+
+Formats a date-only representation of an ISO date string in the user's timezone.
+
+**Parameters:**
+- `isoString`: An ISO date string, or null/undefined
+
+**Returns:** A formatted date string in the user's timezone.
+
+```typescript
+const formattedDate = formatDateOnly('2025-03-10T14:30:00Z');
+// "Mar 10, 2025"
+```
+
+### `formatDateTime(isoString)`
+
+Formats a date and time representation of an ISO date string in the user's timezone.
+
+**Parameters:**
+- `isoString`: An ISO date string, or null/undefined
+
+**Returns:** A formatted date and time string in the user's timezone.
+
+```typescript
+const formattedDateTime = formatDateTime('2025-03-10T14:30:00Z');
+// "Mar 10, 2025, 8:30 AM"
+```
+
+### `calculateDurationMinutes(startIsoString, endIsoString)`
+
+Calculates the duration between two ISO date strings in minutes.
+
+**Parameters:**
+- `startIsoString`: The start date as an ISO string, or null/undefined
+- `endIsoString`: The end date as an ISO string, or null/undefined
+
+**Returns:** The number of minutes between the two dates.
+
+```typescript
+const minutes = calculateDurationMinutes(
+  '2025-03-10T01:30:00Z',
+  '2025-03-10T03:30:00Z'
 );
-// Returns 120 minutes (accounting for the 1-hour DST shift)
+// Returns 120 minutes
+```
+
+### `formatDuration(minutes)`
+
+Formats a duration in minutes to a human-readable string (HH:MM).
+
+**Parameters:**
+- `minutes`: The duration in minutes
+
+**Returns:** A formatted duration string in HH:MM format.
+
+```typescript
+const formattedDuration = formatDuration(90);
+// "1:30"
+```
+
+### `isToday(isoString)`
+
+Checks if a date is today in the user's timezone.
+
+**Parameters:**
+- `isoString`: An ISO date string, or null/undefined
+
+**Returns:** A boolean indicating whether the date is today.
+
+```typescript
+const isDateToday = isToday('2025-03-10T14:30:00Z');
+// true or false depending on the current date
+```
+
+### `isYesterday(isoString)`
+
+Checks if a date is yesterday in the user's timezone.
+
+**Parameters:**
+- `isoString`: An ISO date string, or null/undefined
+
+**Returns:** A boolean indicating whether the date is yesterday.
+
+```typescript
+const isDateYesterday = isYesterday('2025-03-10T14:30:00Z');
+// true or false depending on the current date
 ```
 
 ## DST Handling
 
 The timezone context is designed to handle Daylight Saving Time (DST) changes correctly. When calculating time differences that span a DST change, the context accounts for the timezone offset difference to ensure accurate duration calculations.
 
-The `getMinutesBetweenDates` function is particularly useful for this purpose, as it:
-
-1. Compares the timezone offsets at the start and end times
-2. Calculates the offset difference (typically 60 minutes during a DST change)
-3. Adjusts the duration calculation accordingly
-
-This ensures that durations are calculated correctly even when they span a DST change, which is crucial for accurate tracking of baby activities like sleep, feeding, and diaper changes.
+The `calculateDurationMinutes` function is particularly useful for this purpose, as it properly handles DST changes by using the JavaScript Date object's built-in timezone handling.
 
 ## Implementation Details
 
 The context uses:
 - Browser's `Intl.DateTimeFormat().resolvedOptions().timeZone` to detect the user's timezone
-- API call to `/api/settings` to fetch the server's timezone
-- JavaScript's Date object and `getTimezoneOffset()` method to handle DST changes
-- `toLocaleString()` for formatting dates in the user's timezone
+- JavaScript's Date object and `toLocaleString()` method for formatting dates in the user's timezone
+- Simple time difference calculation for duration calculations, which correctly handles DST changes
 
 ## Cross-Platform Considerations
 

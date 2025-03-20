@@ -1,17 +1,61 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { formatInTimeZone } from 'date-fns-tz';
 
+/**
+ * Interface for the timezone context
+ */
 interface TimezoneContextType {
+  /**
+   * The user's detected timezone (e.g., 'America/Denver')
+   */
   userTimezone: string;
-  serverTimezone: string;
-  convertToUserTimezone: (dateString: string) => Date;
-  formatInUserTimezone: (dateString: string, formatOptions?: Intl.DateTimeFormatOptions) => string;
-  getMinutesBetweenDates: (startDate: Date | string, endDate: Date | string) => number;
+  
+  /**
+   * Format an ISO date string in the user's timezone with specified format options
+   */
+  formatDate: (isoString: string | null | undefined, formatOptions?: Intl.DateTimeFormatOptions) => string;
+  
+  /**
+   * Format a time-only representation of an ISO date string in the user's timezone
+   */
+  formatTime: (isoString: string | null | undefined) => string;
+  
+  /**
+   * Format a date-only representation of an ISO date string in the user's timezone
+   */
+  formatDateOnly: (isoString: string | null | undefined) => string;
+  
+  /**
+   * Format a date and time representation of an ISO date string in the user's timezone
+   */
+  formatDateTime: (isoString: string | null | undefined) => string;
+  
+  /**
+   * Calculate the duration between two ISO date strings in minutes
+   */
+  calculateDurationMinutes: (startIsoString: string | null | undefined, endIsoString: string | null | undefined) => number;
+  
+  /**
+   * Format a duration in minutes to a human-readable string (HH:MM)
+   */
+  formatDuration: (minutes: number) => string;
+  
+  /**
+   * Check if a date is today in the user's timezone
+   */
+  isToday: (isoString: string | null | undefined) => boolean;
+  
+  /**
+   * Check if a date is yesterday in the user's timezone
+   */
+  isYesterday: (isoString: string | null | undefined) => boolean;
+  
+  /**
+   * Get timezone information for debugging
+   */
   getTimezoneInfo: () => { 
-    userTimezone: string; 
-    serverTimezone: string; 
+    userTimezone: string;
     currentTime: string;
     currentOffset: number;
     isMobile: boolean;
@@ -20,51 +64,40 @@ interface TimezoneContextType {
 
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
 
+/**
+ * Provider component for timezone context
+ */
 export function TimezoneProvider({ children }: { children: ReactNode }) {
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
-  const [serverTimezone, setServerTimezone] = useState<string>('America/Chicago');
 
   useEffect(() => {
     // Detect user's timezone from browser
-    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setUserTimezone(detectedTimezone);
-    
-    // Fetch server timezone from settings
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data.timezone) {
-          setServerTimezone(data.data.timezone);
-        }
-      })
-      .catch(err => console.error('Error fetching timezone settings:', err));
+    try {
+      const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setUserTimezone(detectedTimezone);
+    } catch (error) {
+      console.error('Error detecting timezone:', error);
+      // Fallback to UTC
+      setUserTimezone('UTC');
+    }
   }, []);
 
-  // Convert a date string to user's timezone
-  const convertToUserTimezone = (dateString: string): Date => {
-    if (!dateString) return new Date();
-    
-    try {
-      const date = new Date(dateString);
-      return date;
-    } catch (error) {
-      console.error('Error converting date to user timezone:', error);
-      return new Date();
-    }
-  };
-
-  // Format a date in user's timezone with specified format
-  const formatInUserTimezone = (
-    dateString: string, 
+  /**
+   * Format an ISO date string in the user's timezone with specified format options
+   */
+  const formatDate = (
+    isoString: string | null | undefined, 
     formatOptions: Intl.DateTimeFormatOptions = {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     }
   ): string => {
+    if (!isoString) return '';
+    
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid Date';
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return '';
       
       return date.toLocaleString('en-US', {
         ...formatOptions,
@@ -72,42 +105,137 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Error formatting date:', error);
-      return 'Invalid Date';
+      return '';
     }
   };
 
-  // Calculate the difference in minutes between two dates, accounting for DST changes
-  const getMinutesBetweenDates = (startDateInput: Date | string, endDateInput: Date | string): number => {
+  /**
+   * Format a time-only representation of an ISO date string in the user's timezone
+   */
+  const formatTime = (isoString: string | null | undefined): string => {
+    return formatDate(isoString, {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  /**
+   * Format a date-only representation of an ISO date string in the user's timezone
+   */
+  const formatDateOnly = (isoString: string | null | undefined): string => {
+    return formatDate(isoString, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  /**
+   * Format a date and time representation of an ISO date string in the user's timezone
+   */
+  const formatDateTime = (isoString: string | null | undefined): string => {
+    return formatDate(isoString, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  /**
+   * Calculate the duration between two ISO date strings in minutes
+   */
+  const calculateDurationMinutes = (
+    startIsoString: string | null | undefined, 
+    endIsoString: string | null | undefined
+  ): number => {
+    if (!startIsoString || !endIsoString) return 0;
+    
     try {
-      // Convert inputs to Date objects if they're strings
-      const startDate = typeof startDateInput === 'string' ? new Date(startDateInput) : startDateInput;
-      const endDate = typeof endDateInput === 'string' ? new Date(endDateInput) : endDateInput;
+      const startDate = new Date(startIsoString);
+      const endDate = new Date(endIsoString);
       
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        throw new Error('Invalid date input');
+        return 0;
       }
       
-      // Simple time difference calculation - this works consistently across all devices
+      // Calculate duration in minutes
       const diffMs = endDate.getTime() - startDate.getTime();
       return Math.floor(diffMs / 60000);
     } catch (error) {
-      console.error('Error calculating minutes between dates:', error);
-      // Fallback to simple calculation if the above fails
-      const start = typeof startDateInput === 'string' ? new Date(startDateInput) : startDateInput;
-      const end = typeof endDateInput === 'string' ? new Date(endDateInput) : endDateInput;
-      const diffMs = end.getTime() - start.getTime();
-      return Math.floor(diffMs / 60000);
+      console.error('Error calculating duration:', error);
+      return 0;
     }
   };
 
-  // Get timezone information for debugging
+  /**
+   * Format a duration in minutes to a human-readable string (HH:MM)
+   */
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}:${mins.toString().padStart(2, '0')}`;
+  };
+
+  /**
+   * Check if a date is today in the user's timezone
+   */
+  const isToday = (isoString: string | null | undefined): boolean => {
+    if (!isoString) return false;
+    
+    try {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return false;
+      
+      const today = new Date();
+      
+      // Compare year, month, and day in the user's timezone
+      return (
+        formatDate(isoString, { year: 'numeric', month: 'numeric', day: 'numeric' }) ===
+        formatDate(today.toISOString(), { year: 'numeric', month: 'numeric', day: 'numeric' })
+      );
+    } catch (error) {
+      console.error('Error checking if date is today:', error);
+      return false;
+    }
+  };
+
+  /**
+   * Check if a date is yesterday in the user's timezone
+   */
+  const isYesterday = (isoString: string | null | undefined): boolean => {
+    if (!isoString) return false;
+    
+    try {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return false;
+      
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      // Compare year, month, and day in the user's timezone
+      return (
+        formatDate(isoString, { year: 'numeric', month: 'numeric', day: 'numeric' }) ===
+        formatDate(yesterday.toISOString(), { year: 'numeric', month: 'numeric', day: 'numeric' })
+      );
+    } catch (error) {
+      console.error('Error checking if date is yesterday:', error);
+      return false;
+    }
+  };
+
+  /**
+   * Get timezone information for debugging
+   */
   const getTimezoneInfo = () => {
     const now = new Date();
     const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     return {
       userTimezone,
-      serverTimezone,
       currentTime: now.toISOString(),
       currentOffset: now.getTimezoneOffset(),
       isMobile
@@ -117,10 +245,14 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
   return (
     <TimezoneContext.Provider value={{
       userTimezone,
-      serverTimezone,
-      convertToUserTimezone,
-      formatInUserTimezone,
-      getMinutesBetweenDates,
+      formatDate,
+      formatTime,
+      formatDateOnly,
+      formatDateTime,
+      calculateDurationMinutes,
+      formatDuration,
+      isToday,
+      isYesterday,
       getTimezoneInfo
     }}>
       {children}
@@ -128,6 +260,9 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Hook to use the timezone context
+ */
 export function useTimezone() {
   const context = useContext(TimezoneContext);
   if (context === undefined) {

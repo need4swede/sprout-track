@@ -11,7 +11,8 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
-import { LampWallDown } from 'lucide-react';
+import { useTimezone } from '@/app/context/timezone';
+
 
 interface PumpFormProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function PumpForm({
   activity,
   onSuccess,
 }: PumpFormProps) {
+  const { formatDate } = useTimezone();
   const [formData, setFormData] = useState({
     startTime: initialTime,
     endTime: '',
@@ -138,8 +140,8 @@ export default function PumpForm({
       
       const payload = {
         babyId,
-        startTime: new Date(formData.startTime).toISOString(),
-        endTime: formData.endTime ? new Date(formData.endTime).toISOString() : undefined,
+        startTime: formData.startTime, // Send the ISO string directly
+        endTime: formData.endTime || undefined,
         duration,
         leftAmount: formData.leftAmount ? parseFloat(formData.leftAmount) : undefined,
         rightAmount: formData.rightAmount ? parseFloat(formData.rightAmount) : undefined,

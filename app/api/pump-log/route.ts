@@ -2,21 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, PumpLogCreate, PumpLogResponse } from '../types';
 import { withAuthContext, AuthResult } from '../utils/auth';
+import { toUTC, formatForResponse, calculateDurationMinutes } from '../utils/timezone';
 
 async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: PumpLogCreate = await req.json();
     
-    // Process start time
-    const startTime = new Date(body.startTime);
-    
-    // Process end time if provided
-    const endTime = body.endTime ? new Date(body.endTime) : undefined;
+    // Convert times to UTC for storage
+    const startTimeUTC = toUTC(body.startTime);
+    const endTimeUTC = body.endTime ? toUTC(body.endTime) : undefined;
     
     // Calculate duration if not provided but start and end times are available
     let duration = body.duration;
-    if (!duration && startTime && endTime) {
-      duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000); // Convert ms to minutes
+    if (!duration && startTimeUTC && endTimeUTC) {
+      duration = calculateDurationMinutes(startTimeUTC, endTimeUTC);
     }
     
     // Calculate total amount if not provided but left and right amounts are
@@ -28,8 +27,8 @@ async function handlePost(req: NextRequest, authContext: AuthResult) {
     const pumpLog = await prisma.pumpLog.create({
       data: {
         babyId: body.babyId,
-        startTime,
-        endTime,
+        startTime: startTimeUTC,
+        endTime: endTimeUTC,
         duration,
         leftAmount: body.leftAmount,
         rightAmount: body.rightAmount,
@@ -40,13 +39,14 @@ async function handlePost(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: PumpLogResponse = {
       ...pumpLog,
-      startTime: pumpLog.startTime.toLocaleString(),
-      endTime: pumpLog.endTime?.toLocaleString() || null,
-      createdAt: pumpLog.createdAt.toLocaleString(),
-      updatedAt: pumpLog.updatedAt.toLocaleString(),
-      deletedAt: pumpLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(pumpLog.startTime) || '',
+      endTime: formatForResponse(pumpLog.endTime) || null,
+      createdAt: formatForResponse(pumpLog.createdAt) || '',
+      updatedAt: formatForResponse(pumpLog.updatedAt) || '',
+      deletedAt: formatForResponse(pumpLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<PumpLogResponse>>({
@@ -99,11 +99,11 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
     const data: any = {};
     
     if (body.startTime) {
-      data.startTime = new Date(body.startTime);
+      data.startTime = toUTC(body.startTime);
     }
     
     if (body.endTime) {
-      data.endTime = new Date(body.endTime);
+      data.endTime = toUTC(body.endTime);
     }
     
     // Calculate duration if not provided but start and end times are available
@@ -111,10 +111,10 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       data.duration = body.duration;
     } else if ((body.startTime || existingPumpLog.startTime) && 
               (body.endTime || existingPumpLog.endTime)) {
-      const start = body.startTime ? new Date(body.startTime) : existingPumpLog.startTime;
-      const end = body.endTime ? new Date(body.endTime) : existingPumpLog.endTime;
+      const start = body.startTime ? toUTC(body.startTime) : existingPumpLog.startTime;
+      const end = body.endTime ? toUTC(body.endTime) : existingPumpLog.endTime;
       if (start && end) {
-        data.duration = Math.round((end.getTime() - start.getTime()) / 60000); // Convert ms to minutes
+        data.duration = calculateDurationMinutes(start, end);
       }
     }
     
@@ -139,13 +139,14 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       data,
     });
 
+    // Format dates as ISO strings for response
     const response: PumpLogResponse = {
       ...pumpLog,
-      startTime: pumpLog.startTime.toLocaleString(),
-      endTime: pumpLog.endTime?.toLocaleString() || null,
-      createdAt: pumpLog.createdAt.toLocaleString(),
-      updatedAt: pumpLog.updatedAt.toLocaleString(),
-      deletedAt: pumpLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(pumpLog.startTime) || '',
+      endTime: formatForResponse(pumpLog.endTime) || null,
+      createdAt: formatForResponse(pumpLog.createdAt) || '',
+      updatedAt: formatForResponse(pumpLog.updatedAt) || '',
+      deletedAt: formatForResponse(pumpLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<PumpLogResponse>>({
@@ -179,8 +180,8 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
     // Add date range filter if both start and end dates are provided
     if (startDate && endDate) {
       queryParams.startTime = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+        gte: toUTC(startDate),
+        lte: toUTC(endDate),
       };
     }
 
@@ -200,13 +201,14 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
         );
       }
 
+      // Format dates as ISO strings for response
       const response: PumpLogResponse = {
         ...pumpLog,
-        startTime: pumpLog.startTime.toLocaleString(),
-        endTime: pumpLog.endTime?.toLocaleString() || null,
-        createdAt: pumpLog.createdAt.toLocaleString(),
-        updatedAt: pumpLog.updatedAt.toLocaleString(),
-        deletedAt: pumpLog.deletedAt?.toLocaleString() || null,
+        startTime: formatForResponse(pumpLog.startTime) || '',
+        endTime: formatForResponse(pumpLog.endTime) || null,
+        createdAt: formatForResponse(pumpLog.createdAt) || '',
+        updatedAt: formatForResponse(pumpLog.updatedAt) || '',
+        deletedAt: formatForResponse(pumpLog.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<PumpLogResponse>>({
@@ -223,13 +225,14 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: PumpLogResponse[] = pumpLogs.map(pumpLog => ({
       ...pumpLog,
-      startTime: pumpLog.startTime.toLocaleString(),
-      endTime: pumpLog.endTime?.toLocaleString() || null,
-      createdAt: pumpLog.createdAt.toLocaleString(),
-      updatedAt: pumpLog.updatedAt.toLocaleString(),
-      deletedAt: pumpLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(pumpLog.startTime) || '',
+      endTime: formatForResponse(pumpLog.endTime) || null,
+      createdAt: formatForResponse(pumpLog.createdAt) || '',
+      updatedAt: formatForResponse(pumpLog.updatedAt) || '',
+      deletedAt: formatForResponse(pumpLog.deletedAt),
     }));
 
     return NextResponse.json<ApiResponse<PumpLogResponse[]>>({

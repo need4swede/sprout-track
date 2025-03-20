@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse } from '../types';
 import { withAuth } from '../utils/auth';
-import { convertUTCToTimezone } from '../utils/timezone';
+import { toUTC, formatForResponse } from '../utils/timezone';
 
 // Extended activity types with caretaker information
 type ActivityTypeWithCaretaker = (SleepLogResponse | FeedLogResponse | DiaperLogResponse | NoteResponse | BathLogResponse | PumpLogResponse) & { 
@@ -45,7 +45,7 @@ async function handleGet(req: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const date = searchParams.get('date');
-    // Get client timezone from query parameter
+    // Get client timezone from query parameter - no longer needed with ISO strings
     const clientTimezone = searchParams.get('timezone');
 
     console.log(`API Request - babyId: ${babyId}, date: ${date}, startDate: ${startDate}, endDate: ${endDate}, timezone: ${clientTimezone}`);
@@ -106,31 +106,35 @@ async function handleGet(req: NextRequest) {
     console.log(`Effective start date: ${effectiveStartDate}`);
     console.log(`Effective end date: ${effectiveEndDate}`);
     
+    // Convert date strings to UTC for database queries
+    const startDateUTC = effectiveStartDate ? toUTC(effectiveStartDate) : undefined;
+    const endDateUTC = effectiveEndDate ? toUTC(effectiveEndDate) : undefined;
+    
     // Get recent activities from each type with caretaker information
     const [sleepLogs, feedLogs, diaperLogs, noteLogs, bathLogs, pumpLogs] = await Promise.all([
       prisma.sleepLog.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             OR: [
               // Sleep logs that start within the date range
               {
                 startTime: {
-                  gte: new Date(effectiveStartDate),
-                  lte: new Date(effectiveEndDate)
+                  gte: startDateUTC,
+                  lte: endDateUTC
                 }
               },
               // Sleep logs that end within the date range
               {
                 endTime: {
-                  gte: new Date(effectiveStartDate),
-                  lte: new Date(effectiveEndDate)
+                  gte: startDateUTC,
+                  lte: endDateUTC
                 }
               },
               // Sleep logs that span the date range
               {
-                startTime: { lte: new Date(effectiveStartDate) },
-                endTime: { gte: new Date(effectiveEndDate) }
+                startTime: { lte: startDateUTC },
+                endTime: { gte: endDateUTC }
               }
             ]
           } : {})
@@ -144,10 +148,10 @@ async function handleGet(req: NextRequest) {
       prisma.feedLog.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             time: {
-              gte: new Date(effectiveStartDate),
-              lte: new Date(effectiveEndDate)
+              gte: startDateUTC,
+              lte: endDateUTC
             }
           } : {})
         },
@@ -160,10 +164,10 @@ async function handleGet(req: NextRequest) {
       prisma.diaperLog.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             time: {
-              gte: new Date(effectiveStartDate),
-              lte: new Date(effectiveEndDate)
+              gte: startDateUTC,
+              lte: endDateUTC
             }
           } : {})
         },
@@ -176,10 +180,10 @@ async function handleGet(req: NextRequest) {
       prisma.note.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             time: {
-              gte: new Date(effectiveStartDate),
-              lte: new Date(effectiveEndDate)
+              gte: startDateUTC,
+              lte: endDateUTC
             }
           } : {})
         },
@@ -192,10 +196,10 @@ async function handleGet(req: NextRequest) {
       prisma.bathLog.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             time: {
-              gte: new Date(effectiveStartDate),
-              lte: new Date(effectiveEndDate)
+              gte: startDateUTC,
+              lte: endDateUTC
             }
           } : {})
         },
@@ -208,10 +212,10 @@ async function handleGet(req: NextRequest) {
       prisma.pumpLog.findMany({
         where: {
           babyId,
-          ...(effectiveStartDate && effectiveEndDate ? {
+          ...(startDateUTC && endDateUTC ? {
             startTime: {
-              gte: new Date(effectiveStartDate),
-              lte: new Date(effectiveEndDate)
+              gte: startDateUTC,
+              lte: endDateUTC
             }
           } : {})
         },
@@ -231,32 +235,14 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let startTimeStr = log.startTime.toLocaleString();
-        let endTimeStr = log.endTime?.toLocaleString() || null;
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          startTimeStr = convertUTCToTimezone(log.startTime, clientTimezone);
-          if (log.endTime) {
-            endTimeStr = convertUTCToTimezone(log.endTime, clientTimezone);
-          }
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          startTime: startTimeStr,
-          endTime: endTimeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          startTime: formatForResponse(log.startTime) || '',
+          endTime: formatForResponse(log.endTime) || null,
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
@@ -267,27 +253,13 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let timeStr = log.time.toLocaleString();
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          timeStr = convertUTCToTimezone(log.time, clientTimezone);
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          time: timeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          time: formatForResponse(log.time) || '',
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
@@ -298,27 +270,13 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let timeStr = log.time.toLocaleString();
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          timeStr = convertUTCToTimezone(log.time, clientTimezone);
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          time: timeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          time: formatForResponse(log.time) || '',
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
@@ -329,27 +287,13 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let timeStr = log.time.toLocaleString();
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          timeStr = convertUTCToTimezone(log.time, clientTimezone);
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          time: timeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          time: formatForResponse(log.time) || '',
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
@@ -360,27 +304,13 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let timeStr = log.time.toLocaleString();
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          timeStr = convertUTCToTimezone(log.time, clientTimezone);
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          time: timeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          time: formatForResponse(log.time) || '',
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };
@@ -391,32 +321,14 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
-        // Format dates based on client timezone if provided
-        let startTimeStr = log.startTime.toLocaleString();
-        let endTimeStr = log.endTime?.toLocaleString() || null;
-        let createdAtStr = log.createdAt.toLocaleString();
-        let updatedAtStr = log.updatedAt.toLocaleString();
-        let deletedAtStr = log.deletedAt?.toLocaleString() || null;
-        
-        if (clientTimezone) {
-          startTimeStr = convertUTCToTimezone(log.startTime, clientTimezone);
-          if (log.endTime) {
-            endTimeStr = convertUTCToTimezone(log.endTime, clientTimezone);
-          }
-          createdAtStr = convertUTCToTimezone(log.createdAt, clientTimezone);
-          updatedAtStr = convertUTCToTimezone(log.updatedAt, clientTimezone);
-          if (log.deletedAt) {
-            deletedAtStr = convertUTCToTimezone(log.deletedAt, clientTimezone);
-          }
-        }
-        
+        // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
-          startTime: startTimeStr,
-          endTime: endTimeStr,
-          createdAt: createdAtStr,
-          updatedAt: updatedAtStr,
-          deletedAt: deletedAtStr,
+          startTime: formatForResponse(log.startTime) || '',
+          endTime: formatForResponse(log.endTime) || null,
+          createdAt: formatForResponse(log.createdAt) || '',
+          updatedAt: formatForResponse(log.updatedAt) || '',
+          deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
         };

@@ -11,6 +11,7 @@ import {
   FormPageFooter 
 } from '@/src/components/ui/form-page';
 import { Check } from 'lucide-react';
+import { useTimezone } from '@/app/context/timezone';
 
 // Import subcomponents
 import BreastFeedForm from './BreastFeedForm';
@@ -34,6 +35,7 @@ export default function FeedForm({
   activity,
   onSuccess,
 }: FeedFormProps) {
+  const { formatDate } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     type: '' as FeedType | '',
@@ -345,7 +347,7 @@ export default function FeedForm({
     
     const payload = {
       babyId,
-      time: formData.time, // Send the local time directly
+      time: formData.time, // Send the ISO string directly
       type: formData.type,
       ...(formData.type === 'BREAST' && side && { 
         side,

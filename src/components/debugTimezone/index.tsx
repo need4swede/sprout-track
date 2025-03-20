@@ -1,16 +1,62 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTimezone } from '@/app/context/timezone';
 
 export function TimezoneDebug() {
-  const { getTimezoneInfo } = useTimezone();
+  // Only render in development mode
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+  
+  const { userTimezone } = useTimezone();
   const [showDebug, setShowDebug] = useState(false);
-  const [info, setInfo] = useState(getTimezoneInfo());
+  const [info, setInfo] = useState({
+    userTimezone,
+    serverTimezone: 'Loading...',
+    currentTime: new Date().toISOString(),
+    currentOffset: new Date().getTimezoneOffset(),
+    isMobile: typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  });
+  
+  const fetchServerTimezone = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data.timezone) {
+          setInfo(prev => ({
+            ...prev,
+            serverTimezone: data.data.timezone
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching server timezone:', error);
+      setInfo(prev => ({
+        ...prev,
+        serverTimezone: 'Error fetching'
+      }));
+    }
+  };
   
   const refreshInfo = () => {
-    setInfo(getTimezoneInfo());
+    setInfo(prev => ({
+      ...prev,
+      userTimezone,
+      currentTime: new Date().toISOString(),
+      currentOffset: new Date().getTimezoneOffset(),
+      isMobile: typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    }));
+    fetchServerTimezone();
   };
+  
+  // Fetch server timezone when component mounts or when debug panel is opened
+  useEffect(() => {
+    if (showDebug) {
+      fetchServerTimezone();
+    }
+  }, [showDebug]);
   
   if (!showDebug) {
     return (

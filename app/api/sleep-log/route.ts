@@ -2,35 +2,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, SleepLogCreate, SleepLogResponse } from '../types';
 import { withAuthContext, AuthResult } from '../utils/auth';
+import { toUTC, formatForResponse, calculateDurationMinutes } from '../utils/timezone';
 
 async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: SleepLogCreate = await req.json();
     
-    // Ensure times are saved as local time
-    const startTime = new Date(body.startTime);
-    const endTime = body.endTime ? new Date(body.endTime) : null;
+    // Convert times to UTC for storage
+    const startTimeUTC = toUTC(body.startTime);
+    const endTimeUTC = body.endTime ? toUTC(body.endTime) : null;
     
     // Calculate duration if both start and end times are present
-    const duration = endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 60000) : undefined;
+    const duration = endTimeUTC ? calculateDurationMinutes(startTimeUTC, endTimeUTC) : undefined;
 
     const sleepLog = await prisma.sleepLog.create({
       data: {
         ...body,
-        startTime,
-        ...(endTime && { endTime }),
+        startTime: startTimeUTC,
+        ...(endTimeUTC && { endTime: endTimeUTC }),
         duration,
         caretakerId: authContext.caretakerId,
       },
     });
 
+    // Format dates as ISO strings for response
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: body.startTime,
-      endTime: body.endTime || null,
-      createdAt: sleepLog.createdAt.toLocaleString(),
-      updatedAt: sleepLog.updatedAt.toLocaleString(),
-      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(sleepLog.startTime) || '',
+      endTime: formatForResponse(sleepLog.endTime) || null,
+      createdAt: formatForResponse(sleepLog.createdAt) || '',
+      updatedAt: formatForResponse(sleepLog.updatedAt) || '',
+      deletedAt: formatForResponse(sleepLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -79,30 +81,33 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       );
     }
 
-    // Ensure times are saved as local time
-    const startTime = body.startTime ? new Date(body.startTime) : undefined;
-    const endTime = body.endTime ? new Date(body.endTime) : undefined;
+    // Convert times to UTC for storage
+    const startTimeUTC = body.startTime ? toUTC(body.startTime) : undefined;
+    const endTimeUTC = body.endTime ? toUTC(body.endTime) : undefined;
     
-    // Calculate duration if both start and end times are present
-    const duration = endTime ? Math.round((endTime.getTime() - (startTime || existingSleepLog.startTime).getTime()) / 60000) : undefined;
+    // Calculate duration if end time is provided
+    const duration = endTimeUTC 
+      ? calculateDurationMinutes(startTimeUTC || existingSleepLog.startTime, endTimeUTC) 
+      : undefined;
 
     const sleepLog = await prisma.sleepLog.update({
       where: { id },
       data: {
         ...body,
-        ...(startTime && { startTime }),
-        ...(endTime && { endTime }),
-        duration,
+        ...(startTimeUTC && { startTime: startTimeUTC }),
+        ...(endTimeUTC && { endTime: endTimeUTC }),
+        ...(duration !== undefined && { duration }),
       },
     });
 
+    // Format dates as ISO strings for response
     const response: SleepLogResponse = {
       ...sleepLog,
-      startTime: body.startTime || existingSleepLog.startTime.toLocaleString(),
-      endTime: body.endTime || existingSleepLog.endTime?.toLocaleString() || null,
-      createdAt: sleepLog.createdAt.toLocaleString(),
-      updatedAt: sleepLog.updatedAt.toLocaleString(),
-      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(sleepLog.startTime) || '',
+      endTime: formatForResponse(sleepLog.endTime) || null,
+      createdAt: formatForResponse(sleepLog.createdAt) || '',
+      updatedAt: formatForResponse(sleepLog.updatedAt) || '',
+      deletedAt: formatForResponse(sleepLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -133,8 +138,8 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       ...(babyId && { babyId }),
       ...(startDate && endDate && {
         startTime: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: toUTC(startDate),
+          lte: toUTC(endDate),
         },
       }),
     };
@@ -154,13 +159,14 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
         );
       }
 
+      // Format dates as ISO strings for response
       const response: SleepLogResponse = {
         ...sleepLog,
-        startTime: sleepLog.startTime.toLocaleString(),
-        endTime: sleepLog.endTime?.toLocaleString() || null,
-        createdAt: sleepLog.createdAt.toLocaleString(),
-        updatedAt: sleepLog.updatedAt.toLocaleString(),
-        deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
+        startTime: formatForResponse(sleepLog.startTime) || '',
+        endTime: formatForResponse(sleepLog.endTime) || null,
+        createdAt: formatForResponse(sleepLog.createdAt) || '',
+        updatedAt: formatForResponse(sleepLog.updatedAt) || '',
+        deletedAt: formatForResponse(sleepLog.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<SleepLogResponse>>({
@@ -176,13 +182,14 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: SleepLogResponse[] = sleepLogs.map(sleepLog => ({
       ...sleepLog,
-      startTime: sleepLog.startTime.toLocaleString(),
-      endTime: sleepLog.endTime?.toLocaleString() || null,
-      createdAt: sleepLog.createdAt.toLocaleString(),
-      updatedAt: sleepLog.updatedAt.toLocaleString(),
-      deletedAt: sleepLog.deletedAt?.toLocaleString() || null,
+      startTime: formatForResponse(sleepLog.startTime) || '',
+      endTime: formatForResponse(sleepLog.endTime) || null,
+      createdAt: formatForResponse(sleepLog.createdAt) || '',
+      updatedAt: formatForResponse(sleepLog.updatedAt) || '',
+      deletedAt: formatForResponse(sleepLog.deletedAt),
     }));
 
     return NextResponse.json<ApiResponse<SleepLogResponse[]>>({

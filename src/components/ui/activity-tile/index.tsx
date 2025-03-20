@@ -5,7 +5,6 @@ import { ActivityTileProps, ActivityType } from './activity-tile.types';
 import { getActivityVariant } from './activity-tile-utils';
 import { ActivityTileIcon } from './activity-tile-icon';
 import { ActivityTileContent } from './activity-tile-content';
-import { useTimezone } from '@/app/context/timezone';
 
 /**
  * ActivityTile component displays an activity in a consistent, styled manner
@@ -32,7 +31,6 @@ export function ActivityTile({
   isButton = false
 }: ActivityTileProps) {
   const variant = variantProp || getActivityVariant(activity);
-  const { userTimezone } = useTimezone();
   
   return (
     <div
@@ -51,7 +49,6 @@ export function ActivityTile({
             activity={activity}
             title={title}
             description={description}
-            userTimezone={userTimezone}
           />
         )}
       </div>

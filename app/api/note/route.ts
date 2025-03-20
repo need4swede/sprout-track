@@ -2,27 +2,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, NoteCreate, NoteResponse } from '../types';
 import { withAuthContext, AuthResult } from '../utils/auth';
+import { toUTC, formatForResponse } from '../utils/timezone';
 
 async function handlePost(req: NextRequest, authContext: AuthResult) {
   try {
     const body: NoteCreate = await req.json();
     
-    // Ensure time is saved as local time
-    const localTime = new Date(body.time);
+    // Convert time to UTC for storage
+    const timeUTC = toUTC(body.time);
     const note = await prisma.note.create({
       data: {
         ...body,
-        time: localTime,
+        time: timeUTC,
         caretakerId: authContext.caretakerId,
       },
     });
 
+    // Format dates as ISO strings for response
     const response: NoteResponse = {
       ...note,
-      time: body.time,
-      createdAt: note.createdAt.toLocaleString(),
-      updatedAt: note.updatedAt.toLocaleString(),
-      deletedAt: note.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(note.time) || '',
+      createdAt: formatForResponse(note.createdAt) || '',
+      updatedAt: formatForResponse(note.updatedAt) || '',
+      deletedAt: formatForResponse(note.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -71,9 +73,9 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       );
     }
 
-    // Ensure time is saved as local time if provided
+    // Convert time to UTC if provided
     const data = body.time
-      ? { ...body, time: new Date(body.time) }
+      ? { ...body, time: toUTC(body.time) }
       : body;
 
     const note = await prisma.note.update({
@@ -81,12 +83,13 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       data,
     });
 
+    // Format dates as ISO strings for response
     const response: NoteResponse = {
       ...note,
-      time: body.time || existingNote.time.toLocaleString(),
-      createdAt: note.createdAt.toLocaleString(),
-      updatedAt: note.updatedAt.toLocaleString(),
-      deletedAt: note.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(note.time) || '',
+      createdAt: formatForResponse(note.createdAt) || '',
+      updatedAt: formatForResponse(note.updatedAt) || '',
+      deletedAt: formatForResponse(note.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -142,8 +145,8 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       ...(babyId && { babyId }),
       ...(startDate && endDate && {
         time: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+          gte: toUTC(startDate),
+          lte: toUTC(endDate),
         },
       }),
     };
@@ -163,12 +166,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
         );
       }
 
+      // Format dates as ISO strings for response
       const response: NoteResponse = {
         ...note,
-        time: note.time.toLocaleString(),
-        createdAt: note.createdAt.toLocaleString(),
-        updatedAt: note.updatedAt.toLocaleString(),
-        deletedAt: note.deletedAt?.toLocaleString() || null,
+        time: formatForResponse(note.time) || '',
+        createdAt: formatForResponse(note.createdAt) || '',
+        updatedAt: formatForResponse(note.updatedAt) || '',
+        deletedAt: formatForResponse(note.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<NoteResponse>>({
@@ -184,12 +188,13 @@ async function handleGet(req: NextRequest, authContext: AuthResult) {
       },
     });
 
+    // Format dates as ISO strings for response
     const response: NoteResponse[] = notes.map(note => ({
       ...note,
-      time: note.time.toLocaleString(),
-      createdAt: note.createdAt.toLocaleString(),
-      updatedAt: note.updatedAt.toLocaleString(),
-      deletedAt: note.deletedAt?.toLocaleString() || null,
+      time: formatForResponse(note.time) || '',
+      createdAt: formatForResponse(note.createdAt) || '',
+      updatedAt: formatForResponse(note.updatedAt) || '',
+      deletedAt: formatForResponse(note.deletedAt),
     }));
 
     return NextResponse.json<ApiResponse<NoteResponse[]>>({

@@ -10,6 +10,7 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
+import { useTimezone } from '@/app/context/timezone';
 
 interface NoteFormProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export default function NoteForm({
   activity,
   onSuccess,
 }: NoteFormProps) {
+  const { formatDate } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     content: '',
@@ -110,7 +112,7 @@ export default function NoteForm({
       if (activity) {
         // Editing mode - populate with activity data
         setFormData({
-          time: formatDateForInput(initialTime),
+          time: formatDateForInput(activity.time),
           content: activity.content,
           category: activity.category || '',
         });
@@ -145,7 +147,7 @@ export default function NoteForm({
     try {
       const payload = {
         babyId,
-        time: formData.time,
+        time: formData.time, // Send the ISO string directly
         content: formData.content,
         category: formData.category || null,
       };

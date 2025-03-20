@@ -12,7 +12,7 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
-import { Bath } from 'lucide-react';
+import { useTimezone } from '@/app/context/timezone';
 
 interface BathFormProps {
   isOpen: boolean;
@@ -31,6 +31,7 @@ export default function BathForm({
   activity,
   onSuccess,
 }: BathFormProps) {
+  const { formatDate } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     soapUsed: false,
@@ -103,7 +104,7 @@ export default function BathForm({
     try {
       const payload = {
         babyId,
-        time: new Date(formData.time).toISOString(),
+        time: formData.time, // Send the ISO string directly
         soapUsed: formData.soapUsed,
         shampooUsed: formData.shampooUsed,
         notes: formData.notes || null,

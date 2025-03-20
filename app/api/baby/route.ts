@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, BabyCreate, BabyUpdate, BabyResponse } from '../types';
 import { Gender } from '@prisma/client';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
+import { toUTC, formatForResponse } from '../utils/timezone';
 import { withAuth, withAuthContext, AuthResult } from '../utils/auth';
 
 async function handlePost(req: NextRequest) {
@@ -12,17 +12,17 @@ async function handlePost(req: NextRequest) {
     const baby = await prisma.baby.create({
       data: {
         ...body,
-        birthDate: await convertToUTC(body.birthDate),
+        birthDate: toUTC(body.birthDate),
       },
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: BabyResponse = {
       ...baby,
-      birthDate: await formatLocalTime(baby.birthDate),
-      createdAt: await formatLocalTime(baby.createdAt),
-      updatedAt: await formatLocalTime(baby.updatedAt),
-      deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+      birthDate: formatForResponse(baby.birthDate) || '',
+      createdAt: formatForResponse(baby.createdAt) || '',
+      updatedAt: formatForResponse(baby.updatedAt) || '',
+      deletedAt: formatForResponse(baby.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<BabyResponse>>({
@@ -64,17 +64,17 @@ async function handlePut(req: NextRequest) {
       where: { id },
       data: {
         ...updateData,
-        birthDate: updateData.birthDate ? await convertToUTC(updateData.birthDate) : existingBaby.birthDate,
+        birthDate: updateData.birthDate ? toUTC(updateData.birthDate) : existingBaby.birthDate,
       },
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: BabyResponse = {
       ...baby,
-      birthDate: await formatLocalTime(baby.birthDate),
-      createdAt: await formatLocalTime(baby.createdAt),
-      updatedAt: await formatLocalTime(baby.updatedAt),
-      deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+      birthDate: formatForResponse(baby.birthDate) || '',
+      createdAt: formatForResponse(baby.createdAt) || '',
+      updatedAt: formatForResponse(baby.updatedAt) || '',
+      deletedAt: formatForResponse(baby.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<BabyResponse>>({
@@ -152,13 +152,13 @@ async function handleGet(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
+      // Format response with ISO strings
       const response: BabyResponse = {
         ...baby,
-        birthDate: await formatLocalTime(baby.birthDate),
-        createdAt: await formatLocalTime(baby.createdAt),
-        updatedAt: await formatLocalTime(baby.updatedAt),
-        deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
+        birthDate: formatForResponse(baby.birthDate) || '',
+        createdAt: formatForResponse(baby.createdAt) || '',
+        updatedAt: formatForResponse(baby.updatedAt) || '',
+        deletedAt: formatForResponse(baby.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<BabyResponse>>({
@@ -176,16 +176,14 @@ async function handleGet(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: BabyResponse[] = await Promise.all(
-      babies.map(async (baby) => ({
-        ...baby,
-        birthDate: await formatLocalTime(baby.birthDate),
-        createdAt: await formatLocalTime(baby.createdAt),
-        updatedAt: await formatLocalTime(baby.updatedAt),
-        deletedAt: baby.deletedAt ? await formatLocalTime(baby.deletedAt) : null,
-      }))
-    );
+    // Format response with ISO strings
+    const response: BabyResponse[] = babies.map(baby => ({
+      ...baby,
+      birthDate: formatForResponse(baby.birthDate) || '',
+      createdAt: formatForResponse(baby.createdAt) || '',
+      updatedAt: formatForResponse(baby.updatedAt) || '',
+      deletedAt: formatForResponse(baby.deletedAt),
+    }));
 
     return NextResponse.json<ApiResponse<BabyResponse[]>>({
       success: true,
