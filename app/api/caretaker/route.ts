@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, CaretakerCreate, CaretakerUpdate, CaretakerResponse } from '../types';
 import { withAdminAuth } from '../utils/auth';
-import { formatLocalTime } from '../utils/timezone';
+import { formatForResponse } from '../utils/timezone';
 
 async function postHandler(req: NextRequest) {
   try {
@@ -31,12 +31,12 @@ async function postHandler(req: NextRequest) {
       data: body,
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: CaretakerResponse = {
       ...caretaker,
-      createdAt: await formatLocalTime(caretaker.createdAt),
-      updatedAt: await formatLocalTime(caretaker.updatedAt),
-      deletedAt: caretaker.deletedAt ? await formatLocalTime(caretaker.deletedAt) : null,
+      createdAt: formatForResponse(caretaker.createdAt) || '',
+      updatedAt: formatForResponse(caretaker.updatedAt) || '',
+      deletedAt: formatForResponse(caretaker.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<CaretakerResponse>>({
@@ -101,12 +101,12 @@ async function putHandler(req: NextRequest) {
       data: updateData,
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: CaretakerResponse = {
       ...caretaker,
-      createdAt: await formatLocalTime(caretaker.createdAt),
-      updatedAt: await formatLocalTime(caretaker.updatedAt),
-      deletedAt: caretaker.deletedAt ? await formatLocalTime(caretaker.deletedAt) : null,
+      createdAt: formatForResponse(caretaker.createdAt) || '',
+      updatedAt: formatForResponse(caretaker.updatedAt) || '',
+      deletedAt: formatForResponse(caretaker.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<CaretakerResponse>>({
@@ -184,12 +184,12 @@ async function getHandler(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
+      // Format response with ISO strings
       const response: CaretakerResponse = {
         ...caretaker,
-        createdAt: await formatLocalTime(caretaker.createdAt),
-        updatedAt: await formatLocalTime(caretaker.updatedAt),
-        deletedAt: caretaker.deletedAt ? await formatLocalTime(caretaker.deletedAt) : null,
+        createdAt: formatForResponse(caretaker.createdAt) || '',
+        updatedAt: formatForResponse(caretaker.updatedAt) || '',
+        deletedAt: formatForResponse(caretaker.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<CaretakerResponse>>({
@@ -207,15 +207,13 @@ async function getHandler(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: CaretakerResponse[] = await Promise.all(
-      caretakers.map(async (caretaker) => ({
-        ...caretaker,
-        createdAt: await formatLocalTime(caretaker.createdAt),
-        updatedAt: await formatLocalTime(caretaker.updatedAt),
-        deletedAt: caretaker.deletedAt ? await formatLocalTime(caretaker.deletedAt) : null,
-      }))
-    );
+    // Format response with ISO strings
+    const response: CaretakerResponse[] = caretakers.map((caretaker) => ({
+      ...caretaker,
+      createdAt: formatForResponse(caretaker.createdAt) || '',
+      updatedAt: formatForResponse(caretaker.updatedAt) || '',
+      deletedAt: formatForResponse(caretaker.deletedAt),
+    }));
 
     return NextResponse.json<ApiResponse<CaretakerResponse[]>>({
       success: true,

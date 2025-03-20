@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse, MoodLogCreate, MoodLogResponse } from '../types';
 import { Mood } from '@prisma/client';
-import { convertToUTC, formatLocalTime } from '../utils/timezone';
+import { toUTC, formatForResponse } from '../utils/timezone';
 import { withAuth } from '../utils/auth'; 
 
 async function handlePost(req: NextRequest) {
@@ -12,17 +12,17 @@ async function handlePost(req: NextRequest) {
     const moodLog = await prisma.moodLog.create({
       data: {
         ...body,
-        time: await convertToUTC(body.time),
+        time: toUTC(body.time),
       },
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: MoodLogResponse = {
       ...moodLog,
-      time: await formatLocalTime(moodLog.time),
-      createdAt: await formatLocalTime(moodLog.createdAt),
-      updatedAt: await formatLocalTime(moodLog.updatedAt),
-      deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+      time: formatForResponse(moodLog.time) || '',
+      createdAt: formatForResponse(moodLog.createdAt) || '',
+      updatedAt: formatForResponse(moodLog.updatedAt) || '',
+      deletedAt: formatForResponse(moodLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<MoodLogResponse>>({
@@ -75,17 +75,17 @@ async function handlePut(req: NextRequest) {
       where: { id },
       data: {
         ...body,
-        time: body.time ? await convertToUTC(body.time) : existingMoodLog.time,
+        time: body.time ? toUTC(body.time) : existingMoodLog.time,
       },
     });
 
-    // Format response with local timezone
+    // Format response with ISO strings
     const response: MoodLogResponse = {
       ...moodLog,
-      time: await formatLocalTime(moodLog.time),
-      createdAt: await formatLocalTime(moodLog.createdAt),
-      updatedAt: await formatLocalTime(moodLog.updatedAt),
-      deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+      time: formatForResponse(moodLog.time) || '',
+      createdAt: formatForResponse(moodLog.createdAt) || '',
+      updatedAt: formatForResponse(moodLog.updatedAt) || '',
+      deletedAt: formatForResponse(moodLog.deletedAt),
     };
 
     return NextResponse.json<ApiResponse<MoodLogResponse>>({
@@ -154,8 +154,8 @@ async function handleGet(req: NextRequest) {
       ...(moodParam && { mood: moodParam as Mood }),
       ...(startDate && endDate && {
         time: {
-          gte: await convertToUTC(startDate),
-          lte: await convertToUTC(endDate),
+          gte: startDate ? toUTC(startDate) : undefined,
+          lte: endDate ? toUTC(endDate) : undefined,
         },
       }),
     };
@@ -175,13 +175,13 @@ async function handleGet(req: NextRequest) {
         );
       }
 
-      // Format response with local timezone
+      // Format response with ISO strings
       const response: MoodLogResponse = {
         ...moodLog,
-        time: await formatLocalTime(moodLog.time),
-        createdAt: await formatLocalTime(moodLog.createdAt),
-        updatedAt: await formatLocalTime(moodLog.updatedAt),
-        deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
+        time: formatForResponse(moodLog.time) || '',
+        createdAt: formatForResponse(moodLog.createdAt) || '',
+        updatedAt: formatForResponse(moodLog.updatedAt) || '',
+        deletedAt: formatForResponse(moodLog.deletedAt),
       };
 
       return NextResponse.json<ApiResponse<MoodLogResponse>>({
@@ -197,16 +197,14 @@ async function handleGet(req: NextRequest) {
       },
     });
 
-    // Format response with local timezone
-    const response: MoodLogResponse[] = await Promise.all(
-      moodLogs.map(async (moodLog) => ({
-        ...moodLog,
-        time: await formatLocalTime(moodLog.time),
-        createdAt: await formatLocalTime(moodLog.createdAt),
-        updatedAt: await formatLocalTime(moodLog.updatedAt),
-        deletedAt: moodLog.deletedAt ? await formatLocalTime(moodLog.deletedAt) : null,
-      }))
-    );
+    // Format response with ISO strings
+    const response: MoodLogResponse[] = moodLogs.map((moodLog) => ({
+      ...moodLog,
+      time: formatForResponse(moodLog.time) || '',
+      createdAt: formatForResponse(moodLog.createdAt) || '',
+      updatedAt: formatForResponse(moodLog.updatedAt) || '',
+      deletedAt: formatForResponse(moodLog.deletedAt),
+    }));
 
     return NextResponse.json<ApiResponse<MoodLogResponse[]>>({
       success: true,
