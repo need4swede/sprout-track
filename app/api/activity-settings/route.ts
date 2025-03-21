@@ -145,7 +145,6 @@ async function saveActivitySettings(req: NextRequest): Promise<NextResponse<ApiR
       currentSettings = await prisma.settings.create({
         data: {
           familyName: 'My Family',
-          timezone: 'America/Chicago',
           securityPin: '111222',
           defaultBottleUnit: 'OZ',
           defaultSolidsUnit: 'TBSP',
