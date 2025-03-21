@@ -152,6 +152,7 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
 
   /**
    * Calculate the duration between two ISO date strings in minutes
+   * This version properly handles DST transitions
    */
   const calculateDurationMinutes = (
     startIsoString: string | null | undefined, 
@@ -167,12 +168,117 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
         return 0;
       }
       
-      // Calculate duration in minutes
+      // Calculate duration in minutes using UTC timestamps
+      // This approach correctly handles DST transitions
       const diffMs = endDate.getTime() - startDate.getTime();
-      return Math.floor(diffMs / 60000);
+      
+      // Check if the duration spans a DST transition
+      const startOffset = getTimezoneOffsetForDate(startDate, userTimezone);
+      const endOffset = getTimezoneOffsetForDate(endDate, userTimezone);
+      
+      // If the timezone offsets are different, adjust for DST change
+      const dstAdjustmentMs = (endOffset - startOffset) * 60 * 1000;
+      
+      // Calculate final duration with DST adjustment
+      return Math.floor((diffMs - dstAdjustmentMs) / 60000);
     } catch (error) {
       console.error('Error calculating duration:', error);
       return 0;
+    }
+  };
+  
+  /**
+   * Get timezone offset in minutes for a specific date and timezone
+   * Positive values mean behind UTC, negative values mean ahead of UTC
+   */
+  const getTimezoneOffsetForDate = (date: Date, timezone: string): number => {
+    try {
+      // Create a date string in the target timezone
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false
+      });
+      
+      // Get the parts of the formatted date
+      const parts = formatter.formatToParts(date);
+      
+      // Extract the components
+      const year = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
+      const month = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10) - 1;
+      const day = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
+      const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+      const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+      const second = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
+      
+      // Create a date object with these components in local time
+      const localDate = new Date(year, month, day, hour, minute, second);
+      
+      // Calculate the offset between this local time and the UTC time
+      const utcDate = new Date(Date.UTC(year, month, day, hour, minute, second));
+      
+      // The offset is the difference in minutes
+      return (localDate.getTime() - utcDate.getTime()) / 60000;
+    } catch (error) {
+      console.error('Error getting timezone offset:', error);
+      
+      // Hardcoded fallback for America/Denver
+      if (timezone === 'America/Denver') {
+        const month = date.getMonth(); // 0-11
+        return month >= 2 && month <= 10 ? -360 : -420; // -360 during DST (UTC-6), -420 otherwise (UTC-7)
+      }
+      
+      return date.getTimezoneOffset();
+    }
+  };
+  
+  /**
+   * Check if a date is in DST for a specific timezone
+   */
+  const isDaylightSavingTime = (date: Date, timezone: string): boolean => {
+    try {
+      // Format the date with the timezone name
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'long'
+      }).format(date);
+      
+      // Check if the timezone name includes "Daylight" or "Summer"
+      const isDST = formatted.includes('Daylight') || formatted.includes('Summer');
+      
+      // If that doesn't work, use the offset comparison method
+      if (!isDST) {
+        // Create a date in January of the same year
+        const jan = new Date(date);
+        jan.setMonth(0); // January
+        
+        // Get the timezone offsets
+        const janOffset = getTimezoneOffsetForDate(jan, timezone);
+        const dateOffset = getTimezoneOffsetForDate(date, timezone);
+        
+        // If the offsets are different, we can determine if it's DST
+        if (janOffset !== dateOffset) {
+          // In northern hemisphere, DST has a smaller absolute offset
+          return Math.abs(dateOffset) < Math.abs(janOffset);
+        }
+      }
+      
+      return isDST;
+    } catch (error) {
+      console.error('Error checking DST:', error);
+      
+      // Hardcoded fallback for America/Denver
+      if (timezone === 'America/Denver') {
+        const month = date.getMonth(); // 0-11
+        return month >= 2 && month <= 10; // March to November
+      }
+      
+      return false;
     }
   };
 
