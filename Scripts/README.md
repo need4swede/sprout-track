@@ -2,7 +2,22 @@
 
 This directory contains utility scripts for the Baby Tracker application.
 
-## ensure-utc-dates.ts
+## ensure-utc-dates-improved.js
+
+This is an improved version of the UTC date conversion script with better DST handling and more reliable UTC detection.
+
+### Purpose
+
+This script addresses potential issues with Daylight Saving Time (DST) transitions when converting dates to UTC. It uses a more reliable method to detect if a date is already in UTC format.
+
+### Running the Script
+
+```bash
+# Run the improved version (recommended)
+node scripts/ensure-utc-dates-improved.js
+```
+
+## ensure-utc-dates.ts (Original Version)
 
 This script checks and updates all date/time fields in the database to ensure they are stored in UTC format.
 

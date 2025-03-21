@@ -16,6 +16,8 @@ export function TimezoneDebug() {
     serverTimezone: 'Loading...',
     currentTime: new Date().toISOString(),
     currentOffset: new Date().getTimezoneOffset(),
+    isDST: false,
+    formattedCurrentTime: '',
     isMobile: typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   });
   
@@ -41,12 +43,62 @@ export function TimezoneDebug() {
     }
   };
   
+  // Check if the current date is in DST
+  const isDaylightSavingTime = (timezone: string): boolean => {
+    const january = new Date(new Date().getFullYear(), 0, 1);
+    const july = new Date(new Date().getFullYear(), 6, 1);
+    
+    const januaryOffset = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'short'
+    }).format(january).split(' ')[1];
+    
+    const julyOffset = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'short'
+    }).format(july).split(' ')[1];
+    
+    // If the offsets are different, then the timezone has DST
+    // Check if current offset matches the July offset (summer)
+    if (januaryOffset !== julyOffset) {
+      const now = new Date();
+      const currentOffset = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'short'
+      }).format(now).split(' ')[1];
+      
+      return currentOffset === julyOffset;
+    }
+    
+    return false;
+  };
+  
+  const formatDateInTimezone = (date: Date, timezone: string): string => {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      timeZone: timezone,
+      timeZoneName: 'short'
+    }).format(date);
+  };
+  
   const refreshInfo = () => {
+    const now = new Date();
+    const isDST = isDaylightSavingTime(userTimezone);
+    const formattedTime = formatDateInTimezone(now, userTimezone);
+    
     setInfo(prev => ({
       ...prev,
       userTimezone,
-      currentTime: new Date().toISOString(),
-      currentOffset: new Date().getTimezoneOffset(),
+      currentTime: now.toISOString(),
+      currentOffset: now.getTimezoneOffset(),
+      isDST,
+      formattedCurrentTime: formattedTime,
       isMobile: typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     }));
     fetchServerTimezone();
@@ -90,15 +142,21 @@ export function TimezoneDebug() {
           <span className="font-semibold">Server Timezone:</span> {info.serverTimezone}
         </div>
         <div>
-          <span className="font-semibold">Current Time:</span> {info.currentTime}
+          <span className="font-semibold">Current Time (ISO):</span> {info.currentTime}
         </div>
         <div>
-          <span className="font-semibold">Timezone Offset:</span> {info.currentOffset} minutes
+          <span className="font-semibold">Current Time (Formatted):</span> {info.formattedCurrentTime}
+        </div>
+        <div>
+          <span className="font-semibold">Timezone Offset:</span> {info.currentOffset} minutes (UTC{info.currentOffset > 0 ? '-' : '+'}{Math.abs(info.currentOffset / 60)})
+        </div>
+        <div>
+          <span className="font-semibold">Is DST Active:</span> {info.isDST ? 'Yes' : 'No'}
         </div>
         <div>
           <span className="font-semibold">Is Mobile:</span> {info.isMobile ? 'Yes' : 'No'}
         </div>
-        <div>
+        <div className="text-xs overflow-hidden text-ellipsis">
           <span className="font-semibold">Browser Info:</span> {navigator.userAgent}
         </div>
         

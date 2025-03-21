@@ -96,13 +96,18 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
     if (!isoString) return '';
     
     try {
+      // Ensure we're working with a proper ISO string
+      // This helps with dates that might not be properly stored in UTC
       const date = new Date(isoString);
       if (isNaN(date.getTime())) return '';
       
-      return date.toLocaleString('en-US', {
+      // Use the Intl.DateTimeFormat API which properly handles DST
+      const formatter = new Intl.DateTimeFormat('en-US', {
         ...formatOptions,
         timeZone: userTimezone
       });
+      
+      return formatter.format(date);
     } catch (error) {
       console.error('Error formatting date:', error);
       return '';
@@ -192,11 +197,16 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       
       const today = new Date();
       
-      // Compare year, month, and day in the user's timezone
-      return (
-        formatDate(isoString, { year: 'numeric', month: 'numeric', day: 'numeric' }) ===
-        formatDate(today.toISOString(), { year: 'numeric', month: 'numeric', day: 'numeric' })
-      );
+      // Create a formatter that only includes date components (not time)
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        timeZone: userTimezone
+      });
+      
+      // Compare the formatted dates
+      return formatter.format(date) === formatter.format(today);
     } catch (error) {
       console.error('Error checking if date is today:', error);
       return false;
@@ -216,11 +226,16 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       
-      // Compare year, month, and day in the user's timezone
-      return (
-        formatDate(isoString, { year: 'numeric', month: 'numeric', day: 'numeric' }) ===
-        formatDate(yesterday.toISOString(), { year: 'numeric', month: 'numeric', day: 'numeric' })
-      );
+      // Create a formatter that only includes date components (not time)
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        timeZone: userTimezone
+      });
+      
+      // Compare the formatted dates
+      return formatter.format(date) === formatter.format(yesterday);
     } catch (error) {
       console.error('Error checking if date is yesterday:', error);
       return false;
