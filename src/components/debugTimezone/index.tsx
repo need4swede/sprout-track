@@ -21,13 +21,14 @@ export function TimezoneDebug() {
   
   const fetchServerTimezone = async () => {
     try {
-      const response = await fetch('/api/settings');
+      // Use the new system-timezone endpoint that directly gets the system timezone
+      const response = await fetch('/api/system-timezone');
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data.timezone) {
+        if (data.success && data.data.systemTimezone) {
           setInfo(prev => ({
             ...prev,
-            serverTimezone: data.data.timezone
+            serverTimezone: data.data.systemTimezone
           }));
         }
       }

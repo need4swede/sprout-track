@@ -6,19 +6,66 @@
 import prisma from '../db';
 
 /**
- * Get the server's timezone settings from the database
+ * Get the actual system timezone directly from the OS
+ * @returns The detected system timezone string (e.g., 'America/Denver')
+ */
+export function getSystemTimezone(): string {
+  try {
+    // Try to get timezone from process.env.TZ
+    if (process.env.TZ) {
+      return process.env.TZ;
+    }
+    
+    // Use child_process to execute the system command to get timezone
+    // This is more reliable on server environments
+    const { execSync } = require('child_process');
+    
+    // Different commands based on platform
+    if (process.platform === 'darwin') { // macOS
+      const tzOutput = execSync('systemsetup -gettimezone').toString().trim();
+      // Extract timezone from "Time Zone: America/Denver" format
+      const match = tzOutput.match(/Time Zone: (.+)$/);
+      if (match && match[1]) {
+        return match[1];
+      }
+    } else if (process.platform === 'linux') {
+      return execSync('cat /etc/timezone').toString().trim();
+    }
+    
+    // Fallback to Intl API for Windows or other platforms
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (error) {
+    console.error('Error detecting system timezone:', error);
+    // Fallback to a safe default if detection fails
+    return 'UTC';
+  }
+}
+
+/**
+ * Get the server's timezone settings
+ * Always returns the actual system timezone regardless of what's in the database
  * @returns The server's timezone settings object containing the timezone
  */
 export async function getSettings() {
+  // Get the actual system timezone
+  const systemTimezone = getSystemTimezone();
+  console.log(`Using system timezone: ${systemTimezone}`);
+  
+  // Get or create settings record
   let settings = await prisma.settings.findFirst();
   if (!settings) {
     settings = await prisma.settings.create({
       data: {
-        timezone: 'America/Chicago', // Default timezone
+        timezone: systemTimezone, // Use detected timezone
       },
     });
   }
-  return settings;
+  
+  // Always return the actual system timezone, not what's in the database
+  return {
+    ...settings,
+    timezone: systemTimezone
+  };
 }
 
 /**

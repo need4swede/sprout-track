@@ -13,7 +13,6 @@ async function handleGet() {
       settings = await prisma.settings.create({
         data: {
           familyName: 'My Family', // Default family name
-          timezone: 'America/Chicago', // Default timezone
           defaultBottleUnit: 'OZ',
           defaultSolidsUnit: 'TBSP',
           defaultHeightUnit: 'IN',
@@ -46,7 +45,6 @@ async function handlePost(req: NextRequest) {
     const settings = await prisma.settings.create({
       data: {
         familyName: body.familyName,
-        timezone: body.timezone,
         securityPin: body.securityPin,
         defaultBottleUnit: body.defaultBottleUnit,
         defaultSolidsUnit: body.defaultSolidsUnit,
@@ -93,7 +91,6 @@ async function handlePut(req: NextRequest) {
       where: { id: existingSettings.id },
       data: {
         familyName: body.familyName,
-        timezone: body.timezone,
         securityPin: body.securityPin,
         defaultBottleUnit: body.defaultBottleUnit,
         defaultSolidsUnit: body.defaultSolidsUnit,
