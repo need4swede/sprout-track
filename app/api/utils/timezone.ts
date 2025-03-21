@@ -54,17 +54,23 @@ export async function getSettings() {
   // Get or create settings record
   let settings = await prisma.settings.findFirst();
   if (!settings) {
+    // Create settings without timezone field since it's been removed from the schema
     settings = await prisma.settings.create({
       data: {
-        timezone: systemTimezone, // Use detected timezone
+        familyName: 'My Family', // Default family name
+        defaultBottleUnit: 'OZ',
+        defaultSolidsUnit: 'TBSP',
+        defaultHeightUnit: 'IN',
+        defaultWeightUnit: 'LB',
+        defaultTempUnit: 'F',
       },
     });
   }
   
-  // Always return the actual system timezone, not what's in the database
+  // Return the settings object with the system timezone as a separate property
   return {
-    ...settings,
-    timezone: systemTimezone
+    settings,
+    systemTimezone
   };
 }
 
