@@ -4,21 +4,20 @@ import React, { useState, useEffect } from 'react';
 import { useTimezone } from '@/app/context/timezone';
 
 export function TimezoneDebug() {
-  // Only render in development mode
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
-  
+  // Get timezone context first to avoid hook order issues
   const { 
     userTimezone, 
     getTimezoneInfo, 
     formatDateTime, 
     isDaylightSavingTime, 
-    isLoading, 
+    isLoading: tzLoading, 
     isDST,
     refreshTimezone 
   } = useTimezone();
   
+  // All state hooks must be defined before any conditional returns
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [info, setInfo] = useState({
     userTimezone,
@@ -28,9 +27,33 @@ export function TimezoneDebug() {
     isDST: false,
     formattedCurrentTime: '',
     isMobile: typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-    isLoading: true,
+    isLoading: tzLoading,
     initTime: new Date().toISOString()
   });
+  
+  // Fetch settings to check if debug timezone tool is enabled
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Only enable if explicitly enabled in settings
+          setIsEnabled(!!data.data.enableDebugTimezone);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      // Default to disabled if there's an error
+      setIsEnabled(false);
+    }
+    setIsInitialized(true);
+  };
+  
+  // Fetch settings on mount
+  useEffect(() => {
+    fetchSettings();
+  }, []);
   
   const fetchServerTimezone = async () => {
     try {
@@ -56,10 +79,10 @@ export function TimezoneDebug() {
   
   // Update info when timezone context changes
   useEffect(() => {
-    if (!isLoading) {
+    if (!tzLoading) {
       refreshInfo();
     }
-  }, [isLoading, userTimezone, isDST]);
+  }, [tzLoading, userTimezone, isDST]);
   
   const refreshInfo = () => {
     const now = new Date();
@@ -116,6 +139,11 @@ export function TimezoneDebug() {
     }
   }, [showDebug]);
   
+  // Don't render if not initialized or not enabled
+  if (!isInitialized || !isEnabled) {
+    return null;
+  }
+  
   if (!showDebug) {
     return (
       <button 
@@ -132,7 +160,7 @@ export function TimezoneDebug() {
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-bold">Timezone Debug</h3>
         <div className="flex items-center">
-          {isLoading && (
+          {tzLoading && (
             <span className="text-yellow-500 mr-2">Loading...</span>
           )}
           <button 

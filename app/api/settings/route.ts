@@ -42,16 +42,21 @@ async function handlePost(req: NextRequest) {
   try {
     const body = await req.json();
     
+    // Cast to any to avoid TypeScript errors with the new fields
+    const data: any = {
+      familyName: body.familyName,
+      securityPin: body.securityPin,
+      defaultBottleUnit: body.defaultBottleUnit,
+      defaultSolidsUnit: body.defaultSolidsUnit,
+      defaultHeightUnit: body.defaultHeightUnit,
+      defaultWeightUnit: body.defaultWeightUnit,
+      defaultTempUnit: body.defaultTempUnit,
+      enableDebugTimer: body.enableDebugTimer || false,
+      enableDebugTimezone: body.enableDebugTimezone || false,
+    };
+    
     const settings = await prisma.settings.create({
-      data: {
-        familyName: body.familyName,
-        securityPin: body.securityPin,
-        defaultBottleUnit: body.defaultBottleUnit,
-        defaultSolidsUnit: body.defaultSolidsUnit,
-        defaultHeightUnit: body.defaultHeightUnit,
-        defaultWeightUnit: body.defaultWeightUnit,
-        defaultTempUnit: body.defaultTempUnit,
-      },
+      data,
     });
 
     return NextResponse.json<ApiResponse<Settings>>({
@@ -87,17 +92,33 @@ async function handlePut(req: NextRequest) {
       );
     }
 
+    // Cast to any to avoid TypeScript errors with the new fields
+    const data: any = {
+      familyName: body.familyName,
+      securityPin: body.securityPin,
+      defaultBottleUnit: body.defaultBottleUnit,
+      defaultSolidsUnit: body.defaultSolidsUnit,
+      defaultHeightUnit: body.defaultHeightUnit,
+      defaultWeightUnit: body.defaultWeightUnit,
+      defaultTempUnit: body.defaultTempUnit,
+    };
+    
+    // Add debug settings if they exist in the body
+    if (body.enableDebugTimer !== undefined) {
+      data.enableDebugTimer = body.enableDebugTimer;
+    } else if ((existingSettings as any).enableDebugTimer !== undefined) {
+      data.enableDebugTimer = (existingSettings as any).enableDebugTimer;
+    }
+    
+    if (body.enableDebugTimezone !== undefined) {
+      data.enableDebugTimezone = body.enableDebugTimezone;
+    } else if ((existingSettings as any).enableDebugTimezone !== undefined) {
+      data.enableDebugTimezone = (existingSettings as any).enableDebugTimezone;
+    }
+    
     const settings = await prisma.settings.update({
       where: { id: existingSettings.id },
-      data: {
-        familyName: body.familyName,
-        securityPin: body.securityPin,
-        defaultBottleUnit: body.defaultBottleUnit,
-        defaultSolidsUnit: body.defaultSolidsUnit,
-        defaultHeightUnit: body.defaultHeightUnit,
-        defaultWeightUnit: body.defaultWeightUnit,
-        defaultTempUnit: body.defaultTempUnit,
-      },
+      data,
     });
 
     return NextResponse.json<ApiResponse<Settings>>({

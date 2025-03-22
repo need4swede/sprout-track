@@ -356,6 +356,43 @@ export default function SettingsForm({
             </div>
 
             <div className="border-t border-slate-200 pt-6">
+              <h3 className="form-label mb-4">Debug Settings</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="form-label">Enable Debug Session Timer</Label>
+                    <p className="text-sm text-gray-500">Shows JWT token expiration and user idle time</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="enableDebugTimer"
+                      checked={(settings as any)?.enableDebugTimer || false}
+                      onChange={(e) => handleSettingsChange({ enableDebugTimer: e.target.checked } as any)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="form-label">Enable Debug Timezone Tool</Label>
+                    <p className="text-sm text-gray-500">Shows timezone information and DST status</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="enableDebugTimezone"
+                      checked={(settings as any)?.enableDebugTimezone || false}
+                      onChange={(e) => handleSettingsChange({ enableDebugTimezone: e.target.checked } as any)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Default Units</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

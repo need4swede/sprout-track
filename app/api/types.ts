@@ -1,7 +1,10 @@
 import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood, PumpLog } from '@prisma/client';
 
 // Settings types
-export type Settings = PrismaSettings;
+export interface Settings extends PrismaSettings {
+  enableDebugTimer?: boolean;
+  enableDebugTimezone?: boolean;
+}
 
 // Activity settings types
 export interface ActivitySettings {

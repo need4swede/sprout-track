@@ -26,8 +26,10 @@ import {
  * ```
  */
 const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
-  // State for visibility
+  // State for visibility and settings
   const [isVisible, setIsVisible] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // State for token expiration and idle time
   const [tokenExpiration, setTokenExpiration] = useState<Date | null>(null);
@@ -160,12 +162,35 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-
+  
+  // Fetch settings to check if debug timer is enabled
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Only enable if explicitly enabled in settings
+          setIsEnabled(!!data.data.enableDebugTimer);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      // Default to disabled if there's an error
+      setIsEnabled(false);
+    }
+    setIsInitialized(true);
+  };
+  
+  // Effect for fetching settings
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+  
   // Initialize and set up event listeners
   useEffect(() => {
-    // Only run in development mode
-    if (process.env.NODE_ENV !== 'development') {
-      setIsVisible(false);
+    // If not initialized yet or not enabled, don't set up listeners
+    if (!isInitialized || !isEnabled) {
       return;
     }
 
@@ -220,10 +245,10 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
         clearInterval(idleTimerRef.current);
       }
     };
-  }, []);
+  }, [isInitialized, isEnabled]);
 
-  // Don't render anything if not visible or not in development mode
-  if (!isVisible || process.env.NODE_ENV !== 'development') {
+  // Don't render anything if not visible, not initialized, or not enabled
+  if (!isVisible || !isInitialized || !isEnabled) {
     return null;
   }
 

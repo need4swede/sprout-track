@@ -276,6 +276,8 @@ model Settings {
   defaultWeightUnit String   @default("LB")    // Default unit for weight measurement
   defaultTempUnit   String   @default("F")     // Default unit for temperature
   activitySettings  String?  // JSON string for activity order and visibility settings
+  enableDebugTimer  Boolean  @default(false)   // Enable debug session timer
+  enableDebugTimezone Boolean @default(false)  // Enable debug timezone tool
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
