@@ -2,8 +2,7 @@ import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings 
 
 // Settings types
 export interface Settings extends PrismaSettings {
-  enableDebugTimer?: boolean;
-  enableDebugTimezone?: boolean;
+  // No need to redefine properties that are already in PrismaSettings
 }
 
 // Activity settings types
