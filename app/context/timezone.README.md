@@ -97,7 +97,9 @@ function MyComponent() {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `isLoading` | `boolean` | Whether the timezone context is still initializing |
 | `userTimezone` | `string` | The user's detected timezone (e.g., 'America/Denver') |
+| `isDST` | `boolean` | Whether DST is currently active in the user's timezone |
 | `formatDate` | `(isoString: string \| null \| undefined, formatOptions?: Intl.DateTimeFormatOptions) => string` | Format an ISO date string in the user's timezone with specified format options |
 | `formatTime` | `(isoString: string \| null \| undefined) => string` | Format a time-only representation of an ISO date string |
 | `formatDateOnly` | `(isoString: string \| null \| undefined) => string` | Format a date-only representation of an ISO date string |
@@ -106,6 +108,11 @@ function MyComponent() {
 | `formatDuration` | `(minutes: number) => string` | Format a duration in minutes to a human-readable string (HH:MM) |
 | `isToday` | `(isoString: string \| null \| undefined) => boolean` | Check if a date is today in the user's timezone |
 | `isYesterday` | `(isoString: string \| null \| undefined) => boolean` | Check if a date is yesterday in the user's timezone |
+| `isDaylightSavingTime` | `(date: Date, timezone: string) => boolean` | Check if a date is in DST for a specific timezone |
+| `toLocalDate` | `(isoString: string \| null \| undefined) => Date \| null` | Convert a UTC ISO string to a Date object in the user's local timezone |
+| `toUTCString` | `(date: Date \| null \| undefined) => string \| null` | Convert a local Date object to a UTC ISO string for storage in the database |
+| `getCurrentUTCString` | `() => string` | Get the current date and time as a UTC ISO string |
+| `refreshTimezone` | `() => void` | Force refresh the timezone information |
 
 ### `formatDate(isoString, formatOptions?)`
 
@@ -231,18 +238,177 @@ const isDateYesterday = isYesterday('2025-03-10T14:30:00Z');
 // true or false depending on the current date
 ```
 
+### `isDaylightSavingTime(date, timezone)`
+
+Checks if a date is in Daylight Saving Time (DST) for a specific timezone.
+
+**Parameters:**
+- `date`: A Date object to check
+- `timezone`: The timezone to check against (e.g., 'America/Denver')
+
+**Returns:** A boolean indicating whether the date is in DST.
+
+```typescript
+const now = new Date();
+const isDST = isDaylightSavingTime(now, 'America/Denver');
+// true or false depending on whether DST is active
+```
+
+### `toLocalDate(isoString)`
+
+Converts a UTC ISO string to a Date object in the user's local timezone. This is useful for working with dates from the database (which are stored in UTC). This function properly accounts for DST.
+
+**Parameters:**
+- `isoString`: An ISO date string, or null/undefined
+
+**Returns:** A Date object in the user's local timezone, or null if the input is invalid.
+
+```typescript
+const localDate = toLocalDate('2025-03-10T14:30:00Z');
+// Returns a Date object representing the time in the user's timezone
+```
+
+### `toUTCString(date)`
+
+Converts a local Date object to a UTC ISO string for storage in the database.
+
+**Parameters:**
+- `date`: A Date object, or null/undefined
+
+**Returns:** A UTC ISO string, or null if the input is invalid.
+
+```typescript
+const utcString = toUTCString(new Date());
+// "2025-03-10T14:30:00.000Z"
+```
+
+### `isLoading`
+
+A boolean indicating whether the timezone context is still initializing.
+
+This is useful for components that need to wait for the timezone information to be available before rendering.
+
+```typescript
+const { isLoading, userTimezone } = useTimezone();
+
+if (isLoading) {
+  return <div>Loading timezone information...</div>;
+}
+
+return <div>Your timezone is {userTimezone}</div>;
+```
+
+### `isDST`
+
+A boolean indicating whether DST is currently active in the user's timezone.
+
+```typescript
+const { isDST } = useTimezone();
+
+return <div>DST is currently {isDST ? 'active' : 'inactive'} in your timezone</div>;
+```
+
+### `refreshTimezone()`
+
+Forces a refresh of the timezone information. This is useful if you suspect the timezone information might have changed (e.g., if the user has changed their system timezone).
+
+```typescript
+const { refreshTimezone } = useTimezone();
+
+// Force refresh the timezone information
+refreshTimezone();
+```
+
+### `getCurrentUTCString()`
+
+Gets the current date and time as a UTC ISO string.
+
+**Returns:** A UTC ISO string representing the current time.
+
+```typescript
+const now = getCurrentUTCString();
+// "2025-03-10T14:30:00.000Z"
+```
+
 ## DST Handling
 
-The timezone context is designed to handle Daylight Saving Time (DST) changes correctly. When calculating time differences that span a DST change, the context accounts for the timezone offset difference to ensure accurate duration calculations.
+The timezone context is designed to handle Daylight Saving Time (DST) changes correctly. It provides several features for proper DST handling:
 
-The `calculateDurationMinutes` function is particularly useful for this purpose, as it properly handles DST changes by using the JavaScript Date object's built-in timezone handling.
+1. **DST Detection**: The `isDaylightSavingTime` function checks if a date is in DST for a specific timezone by examining the timezone name (looking for "Daylight" or "Summer").
+
+2. **Automatic DST Handling in Formatting**: When formatting dates with `formatDate` and its variants, the context uses the `Intl.DateTimeFormat` API with the user's timezone, which automatically adjusts for DST.
+
+3. **DST-Aware Duration Calculation**: The `calculateDurationMinutes` function calculates the duration between two dates by comparing their epoch timestamps, which ensures accurate duration calculations regardless of DST changes.
+
+4. **DST-Aware Local Date Conversion**: The `toLocalDate` function converts UTC ISO strings to local Date objects, properly accounting for DST by using the `Intl.DateTimeFormat` API to extract date components in the user's timezone.
 
 ## Implementation Details
 
 The context uses:
 - Browser's `Intl.DateTimeFormat().resolvedOptions().timeZone` to detect the user's timezone
-- JavaScript's Date object and `toLocaleString()` method for formatting dates in the user's timezone
-- Simple time difference calculation for duration calculations, which correctly handles DST changes
+- JavaScript's `Intl.DateTimeFormat` API for formatting dates in the user's timezone and detecting DST
+- Epoch timestamps for duration calculations, which automatically handle DST changes
+- ISO strings for date serialization, ensuring consistent date handling across timezones
+- Explicit DST detection for improved accuracy in date handling
+
+## Working with UTC and Local Time
+
+The Baby Tracker application follows these principles for timezone handling:
+
+1. **Database Storage**: All dates are stored in UTC format in the database
+2. **API Communication**: All dates are transmitted as ISO strings between client and server
+3. **Display**: Dates are displayed in the user's local timezone
+
+## Handling Loading State
+
+The timezone context now includes an `isLoading` state that indicates whether the timezone information is still being initialized. This is useful for components that need to wait for the timezone information to be available before rendering.
+
+```typescript
+function MyComponent() {
+  const { isLoading, formatDateTime } = useTimezone();
+  
+  // Show a loading indicator while timezone information is being initialized
+  if (isLoading) {
+    return <div>Loading timezone information...</div>;
+  }
+  
+  // Once timezone information is available, render the component
+  return (
+    <div>
+      <p>Current time: {formatDateTime(new Date().toISOString())}</p>
+    </div>
+  );
+}
+```
+
+This ensures that components don't attempt to format dates or perform timezone-dependent operations until the timezone information is available, which helps prevent incorrect time displays during initialization.
+
+To follow this pattern in your components:
+
+1. When **reading** dates from the API:
+   ```typescript
+   // The API returns dates as ISO strings
+   const feedTime = data.time; // "2025-03-10T14:30:00Z"
+   
+   // Format for display using the timezone context
+   const displayTime = formatTime(feedTime); // "8:30 AM"
+   ```
+
+2. When **sending** dates to the API:
+   ```typescript
+   // Get the current time as a UTC ISO string
+   const currentTime = getCurrentUTCString();
+   
+   // Or convert a local Date to a UTC ISO string
+   const selectedDate = new Date(); // Local date from a date picker
+   const utcString = toUTCString(selectedDate);
+   
+   // Send to the API
+   await fetch('/api/feed-log', {
+     method: 'POST',
+     body: JSON.stringify({ time: utcString }),
+   });
+   ```
 
 ## Cross-Platform Considerations
 

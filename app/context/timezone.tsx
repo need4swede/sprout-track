@@ -1,15 +1,25 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 /**
  * Interface for the timezone context
  */
 interface TimezoneContextType {
   /**
+   * Whether the timezone context is still initializing
+   */
+  isLoading: boolean;
+  
+  /**
    * The user's detected timezone (e.g., 'America/Denver')
    */
   userTimezone: string;
+  
+  /**
+   * Whether DST is currently active in the user's timezone
+   */
+  isDST: boolean;
   
   /**
    * Format an ISO date string in the user's timezone with specified format options
@@ -52,14 +62,41 @@ interface TimezoneContextType {
   isYesterday: (isoString: string | null | undefined) => boolean;
   
   /**
+   * Check if a date is in DST for a specific timezone
+   */
+  isDaylightSavingTime: (date: Date, timezone: string) => boolean;
+  
+  /**
    * Get timezone information for debugging
    */
   getTimezoneInfo: () => { 
     userTimezone: string;
     currentTime: string;
     currentOffset: number;
+    isDST: boolean;
     isMobile: boolean;
+    isLoading: boolean;
   };
+  
+  /**
+   * Convert a UTC ISO string to a Date object in the user's local timezone
+   */
+  toLocalDate: (isoString: string | null | undefined) => Date | null;
+  
+  /**
+   * Convert a local Date object to a UTC ISO string for storage in the database
+   */
+  toUTCString: (date: Date | null | undefined) => string | null;
+  
+  /**
+   * Get the current date and time as a UTC ISO string
+   */
+  getCurrentUTCString: () => string;
+  
+  /**
+   * Force refresh the timezone information
+   */
+  refreshTimezone: () => void;
 }
 
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
@@ -68,19 +105,77 @@ const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined
  * Provider component for timezone context
  */
 export function TimezoneProvider({ children }: { children: ReactNode }) {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
+  const [isDST, setIsDST] = useState<boolean>(false);
 
-  useEffect(() => {
-    // Detect user's timezone from browser
+  /**
+   * Detect and set the user's timezone and DST status
+   */
+  const detectTimezone = useCallback(() => {
+    setIsLoading(true);
+    console.log('Detecting timezone...');
+    
     try {
+      // Detect timezone synchronously if possible
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Check if DST is active
+      const now = new Date();
+      const isDSTActive = isDaylightSavingTime(now, detectedTimezone);
+      
+      console.log(`Detected timezone: ${detectedTimezone}, DST active: ${isDSTActive}`);
+      console.log(`Current time: ${now.toISOString()}, Offset: ${now.getTimezoneOffset()}`);
+      
+      // Update state
       setUserTimezone(detectedTimezone);
+      setIsDST(isDSTActive);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error detecting timezone:', error);
       // Fallback to UTC
       setUserTimezone('UTC');
+      setIsDST(false);
+      setIsLoading(false);
     }
   }, []);
+
+  // Initialize timezone detection on mount
+  useEffect(() => {
+    detectTimezone();
+  }, [detectTimezone]);
+  
+  // Refresh timezone when window gains focus (in case user changed system timezone)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleFocus = () => {
+        console.log('Window focused, refreshing timezone');
+        detectTimezone();
+      };
+      
+      window.addEventListener('focus', handleFocus);
+      return () => window.removeEventListener('focus', handleFocus);
+    }
+  }, [detectTimezone]);
+  
+  /**
+   * Check if a date is in DST for a specific timezone
+   */
+  const isDaylightSavingTime = (date: Date, timezone: string): boolean => {
+    try {
+      // Format the date with the timezone name
+      const formatted = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'long'
+      }).format(date);
+      
+      // Check if the timezone name includes "Daylight" or "Summer"
+      return formatted.includes('Daylight') || formatted.includes('Summer');
+    } catch (error) {
+      console.error('Error checking DST:', error);
+      return false;
+    }
+  };
 
   /**
    * Format an ISO date string in the user's timezone with specified format options
@@ -101,13 +196,23 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       const date = new Date(isoString);
       if (isNaN(date.getTime())) return '';
       
+      // Check if the date should be in DST
+      const dateIsDST = isDaylightSavingTime(date, userTimezone);
+      
       // Use the Intl.DateTimeFormat API which properly handles DST
       const formatter = new Intl.DateTimeFormat('en-US', {
         ...formatOptions,
         timeZone: userTimezone
       });
       
-      return formatter.format(date);
+      const formattedDate = formatter.format(date);
+      
+      // Log for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(`Formatting date: ${isoString}, DST: ${dateIsDST}, Result: ${formattedDate}`);
+      }
+      
+      return formattedDate;
     } catch (error) {
       console.error('Error formatting date:', error);
       return '';
@@ -152,7 +257,7 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
 
   /**
    * Calculate the duration between two ISO date strings in minutes
-   * This version properly handles DST transitions
+   * Uses epoch time difference which automatically handles DST transitions
    */
   const calculateDurationMinutes = (
     startIsoString: string | null | undefined, 
@@ -168,117 +273,13 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
         return 0;
       }
       
-      // Calculate duration in minutes using UTC timestamps
-      // This approach correctly handles DST transitions
+      // Calculate duration in minutes using epoch timestamps
+      // This approach correctly handles DST transitions automatically
       const diffMs = endDate.getTime() - startDate.getTime();
-      
-      // Check if the duration spans a DST transition
-      const startOffset = getTimezoneOffsetForDate(startDate, userTimezone);
-      const endOffset = getTimezoneOffsetForDate(endDate, userTimezone);
-      
-      // If the timezone offsets are different, adjust for DST change
-      const dstAdjustmentMs = (endOffset - startOffset) * 60 * 1000;
-      
-      // Calculate final duration with DST adjustment
-      return Math.floor((diffMs - dstAdjustmentMs) / 60000);
+      return Math.floor(diffMs / 60000);
     } catch (error) {
       console.error('Error calculating duration:', error);
       return 0;
-    }
-  };
-  
-  /**
-   * Get timezone offset in minutes for a specific date and timezone
-   * Positive values mean behind UTC, negative values mean ahead of UTC
-   */
-  const getTimezoneOffsetForDate = (date: Date, timezone: string): number => {
-    try {
-      // Create a date string in the target timezone
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: timezone,
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: false
-      });
-      
-      // Get the parts of the formatted date
-      const parts = formatter.formatToParts(date);
-      
-      // Extract the components
-      const year = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
-      const month = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10) - 1;
-      const day = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
-      const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
-      const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
-      const second = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
-      
-      // Create a date object with these components in local time
-      const localDate = new Date(year, month, day, hour, minute, second);
-      
-      // Calculate the offset between this local time and the UTC time
-      const utcDate = new Date(Date.UTC(year, month, day, hour, minute, second));
-      
-      // The offset is the difference in minutes
-      return (localDate.getTime() - utcDate.getTime()) / 60000;
-    } catch (error) {
-      console.error('Error getting timezone offset:', error);
-      
-      // Hardcoded fallback for America/Denver
-      if (timezone === 'America/Denver') {
-        const month = date.getMonth(); // 0-11
-        return month >= 2 && month <= 10 ? -360 : -420; // -360 during DST (UTC-6), -420 otherwise (UTC-7)
-      }
-      
-      return date.getTimezoneOffset();
-    }
-  };
-  
-  /**
-   * Check if a date is in DST for a specific timezone
-   */
-  const isDaylightSavingTime = (date: Date, timezone: string): boolean => {
-    try {
-      // Format the date with the timezone name
-      const formatted = new Intl.DateTimeFormat('en-US', {
-        timeZone: timezone,
-        timeZoneName: 'long'
-      }).format(date);
-      
-      // Check if the timezone name includes "Daylight" or "Summer"
-      const isDST = formatted.includes('Daylight') || formatted.includes('Summer');
-      
-      // If that doesn't work, use the offset comparison method
-      if (!isDST) {
-        // Create a date in January of the same year
-        const jan = new Date(date);
-        jan.setMonth(0); // January
-        
-        // Get the timezone offsets
-        const janOffset = getTimezoneOffsetForDate(jan, timezone);
-        const dateOffset = getTimezoneOffsetForDate(date, timezone);
-        
-        // If the offsets are different, we can determine if it's DST
-        if (janOffset !== dateOffset) {
-          // In northern hemisphere, DST has a smaller absolute offset
-          return Math.abs(dateOffset) < Math.abs(janOffset);
-        }
-      }
-      
-      return isDST;
-    } catch (error) {
-      console.error('Error checking DST:', error);
-      
-      // Hardcoded fallback for America/Denver
-      if (timezone === 'America/Denver') {
-        const month = date.getMonth(); // 0-11
-        return month >= 2 && month <= 10; // March to November
-      }
-      
-      return false;
     }
   };
 
@@ -354,18 +355,104 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
   const getTimezoneInfo = () => {
     const now = new Date();
     const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const currentDST = isDaylightSavingTime(now, userTimezone);
     
     return {
       userTimezone,
       currentTime: now.toISOString(),
       currentOffset: now.getTimezoneOffset(),
-      isMobile
+      isDST: currentDST,
+      isMobile,
+      isLoading
     };
+  };
+  
+  /**
+   * Force refresh the timezone information
+   */
+  const refreshTimezone = () => {
+    console.log('Manually refreshing timezone');
+    detectTimezone();
+  };
+  
+  /**
+   * Convert a UTC ISO string to a Date object in the user's local timezone
+   * Useful for working with dates from the database (which are stored in UTC)
+   */
+  const toLocalDate = (isoString: string | null | undefined): Date | null => {
+    if (!isoString) return null;
+    
+    try {
+      // Create a date from the ISO string (which is in UTC)
+      const utcDate = new Date(isoString);
+      if (isNaN(utcDate.getTime())) return null;
+      
+      // Create a formatter for the user's timezone
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: userTimezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false
+      });
+      
+      // Get the parts of the formatted date
+      const parts = formatter.formatToParts(utcDate);
+      
+      // Extract the components
+      const year = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
+      const month = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10) - 1;
+      const day = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
+      const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+      const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+      const second = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
+      
+      // Create a date object with these components in local time
+      const localDate = new Date(year, month, day, hour, minute, second);
+      
+      // Log for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(`Converting UTC date: ${isoString} to local: ${localDate.toISOString()}`);
+        console.debug(`DST active for this date: ${isDaylightSavingTime(utcDate, userTimezone)}`);
+      }
+      
+      return localDate;
+    } catch (error) {
+      console.error('Error converting to local date:', error);
+      return null;
+    }
+  };
+  
+  /**
+   * Convert a local Date object to a UTC ISO string for storage in the database
+   */
+  const toUTCString = (date: Date | null | undefined): string | null => {
+    if (!date) return null;
+    
+    try {
+      if (isNaN(date.getTime())) return null;
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error converting to UTC string:', error);
+      return null;
+    }
+  };
+  
+  /**
+   * Get the current date and time as a UTC ISO string
+   */
+  const getCurrentUTCString = (): string => {
+    return new Date().toISOString();
   };
 
   return (
     <TimezoneContext.Provider value={{
+      isLoading,
       userTimezone,
+      isDST,
       formatDate,
       formatTime,
       formatDateOnly,
@@ -374,7 +461,12 @@ export function TimezoneProvider({ children }: { children: ReactNode }) {
       formatDuration,
       isToday,
       isYesterday,
-      getTimezoneInfo
+      isDaylightSavingTime,
+      getTimezoneInfo,
+      toLocalDate,
+      toUTCString,
+      getCurrentUTCString,
+      refreshTimezone
     }}>
       {children}
     </TimezoneContext.Provider>
