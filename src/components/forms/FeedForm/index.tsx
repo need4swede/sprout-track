@@ -35,7 +35,7 @@ export default function FeedForm({
   activity,
   onSuccess,
 }: FeedFormProps) {
-  const { formatDate } = useTimezone();
+  const { formatDate, toUTCString } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     type: '' as FeedType | '',
@@ -345,14 +345,21 @@ export default function FeedForm({
       }
     }
     
+    // Convert local time to UTC ISO string
+    const localDate = new Date(formData.time);
+    const utcTimeString = toUTCString(localDate);
+    
+    console.log('Original time (local):', formData.time);
+    console.log('Converted time (UTC):', utcTimeString);
+    
     const payload = {
       babyId,
-      time: formData.time, // Send the ISO string directly
+      time: utcTimeString, // Send the UTC ISO string instead of local time
       type: formData.type,
       ...(formData.type === 'BREAST' && side && { 
         side,
-        ...(startTime && { startTime: startTime.toISOString() }),
-        ...(endTime && { endTime: endTime.toISOString() }),
+        ...(startTime && { startTime: toUTCString(startTime) }),
+        ...(endTime && { endTime: toUTCString(endTime) }),
         feedDuration: duration
       }),
       ...((formData.type === 'BOTTLE' || formData.type === 'SOLIDS') && formData.amount && { 

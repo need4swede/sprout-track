@@ -31,7 +31,7 @@ export default function PumpForm({
   activity,
   onSuccess,
 }: PumpFormProps) {
-  const { formatDate } = useTimezone();
+  const { formatDate, toUTCString } = useTimezone();
   const [formData, setFormData] = useState({
     startTime: initialTime,
     endTime: '',
@@ -138,10 +138,28 @@ export default function PumpForm({
         duration = Math.round((endDate.getTime() - startDate.getTime()) / 60000); // Convert ms to minutes
       }
       
+      // Convert local times to UTC ISO strings
+      const localStartDate = new Date(formData.startTime);
+      const utcStartTime = toUTCString(localStartDate);
+      
+      // Only convert end time if it exists
+      let utcEndTime = undefined;
+      if (formData.endTime) {
+        const localEndDate = new Date(formData.endTime);
+        utcEndTime = toUTCString(localEndDate);
+      }
+      
+      console.log('Original start time (local):', formData.startTime);
+      console.log('Converted start time (UTC):', utcStartTime);
+      if (utcEndTime) {
+        console.log('Original end time (local):', formData.endTime);
+        console.log('Converted end time (UTC):', utcEndTime);
+      }
+      
       const payload = {
         babyId,
-        startTime: formData.startTime, // Send the ISO string directly
-        endTime: formData.endTime || undefined,
+        startTime: utcStartTime, // Send the UTC ISO string instead of local time
+        endTime: utcEndTime,
         duration,
         leftAmount: formData.leftAmount ? parseFloat(formData.leftAmount) : undefined,
         rightAmount: formData.rightAmount ? parseFloat(formData.rightAmount) : undefined,

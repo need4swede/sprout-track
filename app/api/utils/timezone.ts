@@ -76,21 +76,49 @@ export async function getSettings() {
 
 /**
  * Convert a date string or Date object to UTC for storage in the database
- * This function creates a new Date object which is already in UTC internally
+ * This function properly handles different date input formats and ensures
+ * consistent UTC conversion regardless of the server's timezone
  * @param dateInput - Date string or Date object to convert
  * @returns Date object in UTC
  */
 export function toUTC(dateInput: string | Date): Date {
   try {
-    // If it's already a Date object, create a new one to avoid mutation
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : new Date(dateInput);
-    
-    // Validate the date
-    if (isNaN(date.getTime())) {
-      throw new Error('Invalid date input');
+    // If it's already a Date object, just return a new copy
+    if (dateInput instanceof Date) {
+      return new Date(dateInput);
     }
     
-    return date;
+    // If it's a string with timezone info (Z or +/-), parse it directly
+    if (typeof dateInput === 'string' && 
+        (dateInput.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(dateInput))) {
+      return new Date(dateInput);
+    }
+    
+    // For strings without timezone info (from datetime-local inputs)
+    // We need to treat them as UTC directly, not interpret in server's timezone
+    if (typeof dateInput === 'string') {
+      // Parse the date string components
+      const [datePart, timePart] = dateInput.split('T');
+      if (!datePart) {
+        throw new Error('Invalid date format');
+      }
+      
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes, secondsStr = '0'] = timePart ? timePart.split(':') : ['0', '0', '0'];
+      
+      // Create a UTC date directly using Date.UTC
+      // This bypasses any server timezone interpretation
+      return new Date(Date.UTC(
+        year,
+        month - 1, // Month is 0-indexed in JavaScript
+        day,
+        Number(hours),
+        Number(minutes),
+        Number(secondsStr)
+      ));
+    }
+    
+    throw new Error('Invalid date input type');
   } catch (error) {
     console.error('Error converting to UTC:', error);
     // Return current date as fallback

@@ -40,7 +40,7 @@ export default function SleepForm({
   activity,
   onSuccess,
 }: SleepFormProps) {
-  const { formatDate, calculateDurationMinutes } = useTimezone();
+  const { formatDate, calculateDurationMinutes, toUTCString } = useTimezone();
   const [formData, setFormData] = useState({
     startTime: initialTime,
     endTime: '',
@@ -159,12 +159,27 @@ export default function SleepForm({
     setLoading(true);
 
     try {
-      const startTime = formData.startTime;
-      const endTime = formData.endTime || null;
+      // Convert local times to UTC ISO strings using the timezone context
+      const localStartDate = new Date(formData.startTime);
+      const utcStartTime = toUTCString(localStartDate);
+      
+      // Only convert end time if it exists
+      let utcEndTime = null;
+      if (formData.endTime) {
+        const localEndDate = new Date(formData.endTime);
+        utcEndTime = toUTCString(localEndDate);
+      }
+      
+      console.log('Original start time (local):', formData.startTime);
+      console.log('Converted start time (UTC):', utcStartTime);
+      if (utcEndTime) {
+        console.log('Original end time (local):', formData.endTime);
+        console.log('Converted end time (UTC):', utcEndTime);
+      }
       
       // Calculate duration using the timezone context if both start and end times are provided
-      const duration = endTime ? 
-        calculateDurationMinutes(startTime, endTime) : 
+      const duration = utcEndTime ? 
+        calculateDurationMinutes(utcStartTime, utcEndTime) : 
         null;
 
       let response;
@@ -172,8 +187,8 @@ export default function SleepForm({
       if (activity) {
         // Editing mode - update existing record
         const payload = {
-          startTime,
-          endTime,
+          startTime: utcStartTime,
+          endTime: utcEndTime,
           duration,
           type: formData.type,
           location: formData.location || null,
@@ -215,7 +230,7 @@ export default function SleepForm({
             'Authorization': authToken ? `Bearer ${authToken}` : '',
           },
           body: JSON.stringify({
-            endTime,
+            endTime: utcEndTime,
             duration,
             quality: formData.quality || null,
           }),
@@ -224,7 +239,7 @@ export default function SleepForm({
         // Starting new sleep
         const payload = {
           babyId,
-          startTime,
+          startTime: utcStartTime,
           endTime: null,
           duration: null,
           type: formData.type,

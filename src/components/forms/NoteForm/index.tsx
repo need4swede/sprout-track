@@ -29,7 +29,7 @@ export default function NoteForm({
   activity,
   onSuccess,
 }: NoteFormProps) {
-  const { formatDate } = useTimezone();
+  const { formatDate, toUTCString } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     content: '',
@@ -145,9 +145,19 @@ export default function NoteForm({
     setLoading(true);
 
     try {
+      // Convert local time to UTC ISO string using the timezone context
+      // Create a Date object from the local time string (interpreted in user's timezone)
+      const localDate = new Date(formData.time);
+      
+      // Use the timezone context's toUTCString function to convert to UTC
+      const utcTimeString = toUTCString(localDate);
+      
+      console.log('Original time (local):', formData.time);
+      console.log('Converted time (UTC):', utcTimeString);
+
       const payload = {
         babyId,
-        time: formData.time, // Send the ISO string directly
+        time: utcTimeString, // Send the UTC ISO string instead of local time
         content: formData.content,
         category: formData.category || null,
       };

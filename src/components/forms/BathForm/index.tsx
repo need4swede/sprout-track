@@ -31,7 +31,7 @@ export default function BathForm({
   activity,
   onSuccess,
 }: BathFormProps) {
-  const { formatDate } = useTimezone();
+  const { formatDate, toUTCString } = useTimezone();
   const [formData, setFormData] = useState({
     time: initialTime,
     soapUsed: false,
@@ -102,9 +102,16 @@ export default function BathForm({
     setLoading(true);
     
     try {
+      // Convert local time to UTC ISO string
+      const localDate = new Date(formData.time);
+      const utcTimeString = toUTCString(localDate);
+      
+      console.log('Original time (local):', formData.time);
+      console.log('Converted time (UTC):', utcTimeString);
+      
       const payload = {
         babyId,
-        time: formData.time, // Send the ISO string directly
+        time: utcTimeString, // Send the UTC ISO string instead of local time
         soapUsed: formData.soapUsed,
         shampooUsed: formData.shampooUsed,
         notes: formData.notes || null,
