@@ -269,7 +269,7 @@ function HomeContent(): React.ReactElement {
 
       {/* Timeline Section */}
       {selectedBaby && (
-        <Card className="overflow-hidden border-t-[1px] border-b-0 border-l-0 border-r-0 border-white relative z-0">
+        <Card className="overflow-hidden border-0 relative z-0">
           {activities.length > 0 ? (
             <Timeline 
               activities={activities} 

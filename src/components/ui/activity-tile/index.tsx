@@ -42,20 +42,30 @@ export function ActivityTile({
       )}
       onClick={onClick}
     >
-      <div className={isButton ? "h-full w-full flex items-center justify-center p-2" : styles.container}>
-        {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
-        {!isButton && (
+      {isButton ? (
+        <div className="flex flex-col items-center justify-center h-full w-full">
+          <div className={cn(
+            "relative flex items-center justify-center p-2 transition-transform duration-200 group-hover:scale-110 group-active:rotate-12",
+            styles.iconContainer.base,
+            styles.iconContainer.variants[variant]
+          )}>
+            {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
+          </div>
+          {title && (
+            <span className="text-xs font-medium mt-1 text-center">
+              {title}
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className={styles.container}>
+          {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
           <ActivityTileContent
             activity={activity}
             title={title}
             description={description}
           />
-        )}
-      </div>
-      {isButton && title && (
-        <span className="absolute bottom-1 text-xs font-medium z-20 bg-black/50 px-2 py-0.5 rounded-sm left-0 right-0 mx-auto text-center w-max">
-          {title}
-        </span>
+        </div>
       )}
     </div>
   );

@@ -10,41 +10,41 @@ export const activityTileStyles = {
   
   // Button styles for each variant when used as a button
   button: {
-    base: "h-20 relative cursor-pointer",
+    base: "h-24 relative cursor-pointer rounded-lg overflow-hidden hover:shadow-md transition-all duration-200",
     variants: {
-      sleep: "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white border-r border-white",
-      feed: "bg-[#B8E6FE] text-white",
-      diaper: "bg-gradient-to-r from-teal-600 to-teal-700 text-white border-l border-white",
-      note: "bg-[#FFFF99] text-white border-l border-white",
-      bath: "bg-gradient-to-r from-orange-400 to-orange-500 text-white border-l border-white",
-      pump: "bg-gradient-to-r from-purple-200 to-purple-300 text-white border-l border-white",
-      default: "bg-gray-100 text-white"
+      sleep: "bg-gray-100/75",
+      feed: "bg-gray-100/75",
+      diaper: "bg-gray-100/75",
+      note: "bg-gray-100/75",
+      bath: "bg-gray-100/75",
+      pump: "bg-gray-100/75",
+      default: "bg-gray-100/75"
     }
   },
   
   iconContainer: {
-    base: "flex-shrink-0 p-2 rounded-xl items-center justify-center transition-transform duration-200 group-hover:scale-110 overflow-hidden",
+    base: "flex-shrink-0 p-2 items-center justify-center transition-transform duration-200 overflow-hidden",
     variants: {
-      sleep: "bg-transparent",
-      feed: "bg-transparent",
-      diaper: "bg-transparent",
-      note: "bg-transparent",
-      bath: "bg-transparent",
-      pump: "bg-transparent",
-      default: "bg-transparent"
+      sleep: "[filter:drop-shadow(0_0_7px_rgba(107,114,128,1))]",
+      feed: "[filter:drop-shadow(0_0_7px_rgba(184,230,254,1))]",
+      diaper: "[filter:drop-shadow(0_0_7px_rgba(13,148,136,1))]",
+      note: "[filter:drop-shadow(0_0_7px_rgba(225,255,153,1))]",
+      bath: "[filter:drop-shadow(0_0_7px_rgba(234,88,12,1))]",
+      pump: "[filter:drop-shadow(0_0_7px_rgba(147,51,234,1))]",
+      default: "[filter:drop-shadow(0_0_7px_rgba(107,114,128,1))]"
     }
   },
   
   icon: {
-    base: "h-4 w-4",
+    base: "h-10 w-10",
     variants: {
-      sleep: "text-white",
-      feed: "text-white",
-      diaper: "text-white",
-      note: "text-white",
-      bath: "text-white",
-      pump: "text-white",
-      default: "text-white"
+      sleep: "text-gray-700",
+      feed: "text-blue-600",
+      diaper: "text-teal-600",
+      note: "text-yellow-600",
+      bath: "text-orange-600",
+      pump: "text-purple-600",
+      default: "text-gray-600"
     },
     // Default icon paths for each variant
     defaultIcons: {

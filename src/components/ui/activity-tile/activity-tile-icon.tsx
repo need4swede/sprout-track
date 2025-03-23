@@ -24,9 +24,9 @@ export function ActivityTileIcon({
     icon = <img
       src={styles.icon.defaultIcons[variant]}
       alt={variant}
-      width={64}
-      height={64}
-      className="h-16 w-16 object-contain"
+      width={48}
+      height={48}
+      className={cn("object-contain", styles.icon.base)}
     />;
   }
   // For timeline view, use Lucide icons (smaller icons)
@@ -51,9 +51,9 @@ export function ActivityTileIcon({
     icon = <img
       src={styles.icon.defaultIcons[variant]}
       alt={variant}
-      width={64}
-      height={64}
-      className="h-16 w-16 object-contain"
+      width={48}
+      height={48}
+      className={cn("object-contain", styles.icon.base)}
     />;
   }
   
