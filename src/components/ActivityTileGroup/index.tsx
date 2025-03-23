@@ -539,12 +539,12 @@ export function ActivityTileGroup({
   };
 
   return (
-    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative p-2 gap-2">
+    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 p-2 gap-2">
       {/* Render activity tiles based on order and visibility */}
       {activityOrder.map(activity => renderActivityTile(activity))}
 
       {/* Menu Button for customizing activity tiles */}
-      <div className="relative min-w-[50px] w-[50px] h-24 flex-shrink-0 snap-center flex items-center justify-center ml-1">
+      <div className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center flex items-center justify-center ml-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={styles.menuButton}>

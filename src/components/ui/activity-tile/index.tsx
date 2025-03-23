@@ -45,7 +45,7 @@ export function ActivityTile({
       {isButton ? (
         <div className="flex flex-col items-center justify-center h-full w-full">
           <div className={cn(
-            "relative flex items-center justify-center p-2 transition-transform duration-200 group-hover:scale-110 group-active:rotate-12",
+            "relative overflow-visible flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-active:rotate-12",
             styles.iconContainer.base,
             styles.iconContainer.variants[variant]
           )}>
