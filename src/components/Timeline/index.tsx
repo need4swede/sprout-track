@@ -20,8 +20,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pagination removed as it breaks up view by day
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   // Keep track of the last fetched date to prevent duplicate fetches
@@ -84,7 +83,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   // Handle date selection and fetch data for the selected date
   const handleDateSelection = (newDate: Date) => {
     setSelectedDate(newDate);
-    setCurrentPage(1); // Reset to first page when date changes
+    // Pagination removed as it breaks up view by day
     
     // Get the baby ID from the first activity if available
     const babyId = activities.length > 0 ? activities[0].babyId : null;
@@ -182,34 +181,10 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
       return timeB.getTime() - timeA.getTime();
     });
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return sorted.slice(startIndex, startIndex + itemsPerPage);
-  }, [dateFilteredActivities, activeFilter, currentPage, itemsPerPage]);
+    return sorted;
+  }, [dateFilteredActivities, activeFilter]);
 
-  const totalPages = useMemo(() => {
-    // Only use dateFilteredActivities, never fall back to activities from props
-    const filtered = !activeFilter || activeFilter === null
-      ? dateFilteredActivities 
-      : dateFilteredActivities.filter(activity => {
-          switch (activeFilter) {
-            case 'sleep':
-              return 'duration' in activity;
-            case 'feed':
-              return 'amount' in activity;
-            case 'diaper':
-              return 'condition' in activity;
-            case 'note':
-              return 'content' in activity;
-            case 'bath':
-              return 'soapUsed' in activity;
-            case 'pump':
-              return 'leftAmount' in activity || 'rightAmount' in activity;
-            default:
-              return true;
-          }
-        });
-    return Math.ceil(filtered.length / itemsPerPage);
-  }, [dateFilteredActivities, activeFilter, itemsPerPage]);
+  // Pagination removed as it breaks up view by day
 
   const handleDelete = async (activity: ActivityType) => {
     if (!confirm('Are you sure you want to delete this activity?')) return;
@@ -258,15 +233,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         activities={sortedActivities}
         settings={settings}
         isLoading={isLoadingActivities}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        totalPages={totalPages}
         onActivitySelect={setSelectedActivity}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={(value) => {
-          setItemsPerPage(value);
-          setCurrentPage(1);
-        }}
         onSwipeLeft={() => handleDateChange(1)} // Next day (swipe left)
         onSwipeRight={() => handleDateChange(-1)} // Previous day (swipe right)
       />

@@ -195,45 +195,7 @@ const TimelineActivityList = ({
         )}
       </div>
 
-      {/* Pagination Controls */}
-      {activities.length > 0 && (
-        <div className="flex justify-between items-center px-6 py-2 border-t border-gray-100">
-          <select
-            className="h-6 px-1 rounded-md border border-gray-200 text-xs"
-            value={itemsPerPage}
-            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          >
-            <option value="5">5 per page</option>
-            <option value="10">10 per page</option>
-            <option value="20">20 per page</option>
-            <option value="50">50 per page</option>
-          </select>
-          
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                {'<'}
-              </Button>
-              <span className="px-4 py-2 text-xs">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                {'>'}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Pagination Controls removed as it breaks up view by day */}
     </>
   );
 };
