@@ -131,46 +131,47 @@ const TimelineActivityList = ({
       )}
         
         {/* Activity List */}
-        <div className="divide-y divide-gray-100 bg-white">
-          <AnimatePresence>
-            {activities.map((activity, index) => {
-              const style = getActivityStyle(activity);
-              const description = getActivityDescription(activity, settings);
-              return (
-                <motion.div
-                  key={activity.id}
-                  className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
-                  onClick={() => onActivitySelect(activity)}
-                  initial={{ opacity: 0, y: -50, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{
-                    delay: index * 0.05,
-                    duration: 0.5,
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 25
-                  }}
-                >
-                  <div className="flex items-center px-6 py-3">
-                    <div className={`flex-shrink-0 ${style.bg} p-2 rounded-xl mr-4`}>
-                      {getActivityIcon(activity)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
-                          {description.type}
-                        </span>
-                        <span className="text-gray-900">{description.details}</span>
+        <div className="divide-y divide-gray-100 h-full bg-white relative">
+          {activities.length > 0 ? (
+            <AnimatePresence>
+              {activities.map((activity, index) => {
+                const style = getActivityStyle(activity);
+                const description = getActivityDescription(activity, settings);
+                return (
+                  <motion.div
+                    key={activity.id}
+                    className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
+                    onClick={() => onActivitySelect(activity)}
+                    initial={{ opacity: 0, y: -50, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      delay: index * 0.05,
+                      duration: 0.5,
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 25
+                    }}
+                  >
+                    <div className="flex items-center px-6 py-3">
+                      <div className={`flex-shrink-0 ${style.bg} p-2 rounded-xl mr-4`}>
+                        {getActivityIcon(activity)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10`}>
+                            {description.type}
+                          </span>
+                          <span className="text-gray-900">{description.details}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-          {activities.length === 0 && !isLoading && (
-            <div className="flex-1 flex items-center justify-center py-10">
-              <div className="text-center">
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          ) : !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center h-full">
+              <div className="text-center p-6">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
                   <BabyIcon className="h-8 w-8 text-indigo-600" />
                 </div>
@@ -182,10 +183,10 @@ const TimelineActivityList = ({
             </div>
           )}
         </div>
-        {/* Loading State */}
+        {/* Loading State - positioned the same way as the empty state */}
         {isLoading && activities.length === 0 && (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
+          <div className="absolute inset-0 flex items-center justify-center h-full">
+            <div className="text-center p-6">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
               </div>
