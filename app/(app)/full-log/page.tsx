@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useBaby } from '../context/baby';
-import { useTimezone } from '../context/timezone';
+import { useBaby } from '../../context/baby';
+import { useTimezone } from '../../context/timezone';
 import FullLogTimeline from '@/src/components/FullLogTimeline';
 
 function FullLogPage() {

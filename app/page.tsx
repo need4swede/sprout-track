@@ -1,11 +1,25 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Page() {
+export default function HomePage() {
+  const router = useRouter();
+
   useEffect(() => {
-    window.location.href = '/log-entry';
-  }, []);
+    // Check if user is already authenticated
+    const authToken = localStorage.getItem('authToken');
+    const unlockTime = localStorage.getItem('unlockTime');
+    
+    if (authToken && unlockTime) {
+      // User is authenticated, redirect to main app
+      router.push('/log-entry');
+    } else {
+      // Not authenticated, redirect to login
+      router.push('/login');
+    }
+  }, [router]);
 
+  // Return null as this is just a redirect page
   return null;
 }
