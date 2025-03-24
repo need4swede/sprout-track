@@ -25,13 +25,13 @@ export const activityTileStyles = {
   iconContainer: {
     base: "flex-shrink-0 mt-1 items-center justify-center transition-transform duration-200 overflow-visible",
     variants: {
-      sleep: "[filter:drop-shadow(0_0_4px_rgba(107,114,128,1))]",
-      feed: "[filter:drop-shadow(0_0_7px_rgba(184,230,254,1))]",
-      diaper: "[filter:drop-shadow(0_0_4px_rgba(13,148,136,1))]",
-      note: "[filter:drop-shadow(0_0_4px_rgba(225,255,153,1))]",
-      bath: "[filter:drop-shadow(0_0_4px_rgba(234,88,12,1))]",
-      pump: "[filter:drop-shadow(0_0_4px_rgba(147,51,234,1))]",
-      default: "[filter:drop-shadow(0_0_4px_rgba(107,114,128,1))]"
+      sleep: "",
+      feed: "",
+      diaper: "",
+      note: "",
+      bath: "",
+      pump: "",
+      default: ""
     }
   },
   
@@ -48,10 +48,10 @@ export const activityTileStyles = {
     },
     // Default icon paths for each variant
     defaultIcons: {
-      sleep: "/crib-256.png",
-      feed: "/bottle-256.png",
-      diaper: "/diaper-256.png",
-      note: "/notepad-256.png",
+      sleep: "/crib-128.png",
+      feed: "/bottle-128.png",
+      diaper: "/diaper-128.png",
+      note: "/note-128.png",
       bath: "/bath-128.png",
       pump: "/pump-128.png",
       default: ""
