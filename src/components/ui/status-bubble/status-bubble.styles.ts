@@ -3,22 +3,22 @@ export const statusBubbleStyles = {
   icon: "h-3.5 w-3.5",
   statusStyles: {
     sleeping: {
-      bgColor: "bg-gray-700/90 text-white",
+      bgColor: "bg-gray-700 text-white",
     },
     awake: {
       bgColor: "bg-sky-100 text-sky-900",
       iconColor: "text-amber-500",
     },
     feed: {
-      normal: "bg-green-500/90 text-white",
-      warning: "bg-red-500/90 text-white",
+      normal: "bg-green-500 text-white",
+      warning: "bg-red-500 text-white",
     },
     diaper: {
-      normal: "bg-green-500/90 text-white",
-      warning: "bg-red-500/90 text-white",
+      normal: "bg-green-500 text-white",
+      warning: "bg-red-500 text-white",
     },
     default: {
-      bgColor: "bg-gray-500/90 text-white",
+      bgColor: "bg-gray-500 text-white",
     }
   }
 } as const;
