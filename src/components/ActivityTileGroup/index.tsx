@@ -333,7 +333,7 @@ export function ActivityTileGroup({
     switch (activity) {
       case 'sleep':
         return (
-          <div key="sleep" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="sleep" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 type: 'NAP', // Using a valid SleepType enum value
@@ -380,7 +380,7 @@ export function ActivityTileGroup({
         );
       case 'feed':
         return (
-          <div key="feed" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="feed" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 type: 'BOTTLE',
@@ -417,7 +417,7 @@ export function ActivityTileGroup({
         );
       case 'diaper':
         return (
-          <div key="diaper" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="diaper" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 type: 'WET',
@@ -452,7 +452,7 @@ export function ActivityTileGroup({
         );
       case 'note':
         return (
-          <div key="note" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="note" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 id: 'note-button',
@@ -477,7 +477,7 @@ export function ActivityTileGroup({
         );
       case 'bath':
         return (
-          <div key="bath" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="bath" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 id: 'bath-button',
@@ -505,7 +505,7 @@ export function ActivityTileGroup({
         );
       case 'pump':
         return (
-          <div key="pump" className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center">
+          <div key="pump" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
             <ActivityTile
               activity={{
                 id: 'pump-button',
@@ -544,7 +544,7 @@ export function ActivityTileGroup({
       {activityOrder.map(activity => renderActivityTile(activity))}
 
       {/* Menu Button for customizing activity tiles */}
-      <div className="relative min-w-[100px] w-[100px] h-24 flex-shrink-0 snap-center flex items-center justify-center ml-1">
+      <div className="relative w-[82px] h-24 flex-shrink-0 snap-center flex items-center justify-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={styles.menuButton}>
