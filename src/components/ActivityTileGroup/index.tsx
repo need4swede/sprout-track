@@ -539,7 +539,7 @@ export function ActivityTileGroup({
   };
 
   return (
-    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 p-2 gap-2">
+    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 p-2 gap-1">
       {/* Render activity tiles based on order and visibility */}
       {activityOrder.map(activity => renderActivityTile(activity))}
 
