@@ -201,6 +201,13 @@ export const SideNav: React.FC<SideNavProps> = ({
             onClick={onNavigate}
             className="side-nav-item"
           />
+          <SideNavItem
+            path="/calendar"
+            label="Calendar"
+            isActive={currentPath === '/calendar'}
+            onClick={onNavigate}
+            className="side-nav-item"
+          />
         </nav>
 
         {/* Footer with Theme Toggle, Settings and Logout */}

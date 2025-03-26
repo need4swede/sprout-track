@@ -347,7 +347,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
                         </span>
                       )}
                       <span className="text-white text-sm font-medium">
-                        {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
+                        {window.location.pathname === '/log-entry' 
+                          ? 'Log Entry' 
+                          : window.location.pathname === '/calendar'
+                          ? 'Calendar'
+                          : 'Full Log'}
                       </span>
                     </div>
                   </div>
