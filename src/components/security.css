@@ -1,0 +1,64 @@
+/* Dark mode overrides for Security component */
+
+html.dark .security-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .security-title {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .security-description {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .security-section-title {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .security-dot-placeholder {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .security-dot-active {
+  background-color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .security-dot-focus {
+  background-color: #6b7280 !important; /* gray-500 */
+}
+
+html.dark .security-error {
+  color: #f87171 !important; /* red-400 */
+}
+
+html.dark .security-numpad-button {
+  background-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb !important; /* gray-200 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .security-numpad-button:hover:not(:disabled) {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .security-delete-button {
+  background-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb !important; /* gray-200 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .security-delete-button:hover:not(:disabled) {
+  background-color: #4b5563 !important; /* gray-600 */
+  color: #f87171 !important; /* red-400 */
+}
+
+html.dark .security-go-button {
+  background-color: #0d9488 !important; /* teal-600 */
+  color: #f3f4f6 !important; /* gray-100 */
+}
+
+html.dark .security-go-button:hover:not(:disabled) {
+  background-color: #0f766e !important; /* teal-700 */
+}

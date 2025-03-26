@@ -548,13 +548,27 @@ export function ActivityTileGroup({
       {/* Render activity tiles based on order and visibility */}
       {activityOrder.map(activity => renderActivityTile(activity))}
 
-      {/* Menu Button for customizing activity tiles */}
-      <div className="relative w-[82px] h-24 flex-shrink-0 snap-center flex items-center justify-center">
+      {/* Configure Button for customizing activity tiles */}
+      <div className="relative w-[82px] h-24 flex-shrink-0 snap-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className={cn(styles.menuButton, "dropdown-menu-button")}>
-              <MoreVertical className={cn(styles.menuIcon, "dropdown-menu-button-icon")} />
-            </button>
+            <ActivityTile
+              activity={{
+                id: 'configure-button',
+                babyId: selectedBaby.id,
+                time: new Date().toISOString(),
+                content: '',
+                category: 'Configure',
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as NoteResponse}
+              title="Configure"
+              variant="default"
+              isButton={true}
+              icon={<img src="/config-128.png" alt="Configure" width={48} height={48} className="object-contain" />}
+            />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* Combined Visibility and Reordering Options */}

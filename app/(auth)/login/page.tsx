@@ -3,9 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginSecurity from '@/src/components/LoginSecurity';
+import { useTheme } from '@/src/context/theme';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { theme } = useTheme();
 
   // Handle successful authentication
   const handleUnlock = (caretakerId?: string) => {

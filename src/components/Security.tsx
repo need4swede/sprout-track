@@ -5,12 +5,15 @@ import Image from 'next/image';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { X } from 'lucide-react';
+import { useTheme } from '@/src/context/theme';
+import './security.css';
 
 interface SecurityProps {
   onUnlock: (caretakerId?: string) => void;
 }
 
 export default function Security({ onUnlock }: SecurityProps) {
+  const { theme } = useTheme();
   const [loginId, setLoginId] = useState<string>('');
   const [pin, setPin] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -320,13 +323,13 @@ export default function Security({ onUnlock }: SecurityProps) {
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-white ${showDialog ? 'block' : 'hidden'}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-white ${showDialog ? 'block' : 'hidden'} security-container`}
       aria-describedby="pin-description"
     >
       <div className="w-full max-w-md mx-auto p-6">
         <div className="text-center mt-2 mb-4">
-          <h2 className="text-xl font-semibold">Security Check</h2>
-          <p id="pin-description" className="text-sm text-gray-500">
+          <h2 className="text-xl font-semibold security-title">Security Check</h2>
+          <p id="pin-description" className="text-sm text-gray-500 security-description">
             {!hasCaretakers
               ? 'Please enter your system security PIN'
               : 'Please enter your login ID and security PIN'}
@@ -348,7 +351,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             {/* Login ID section - only show if caretakers exist */}
             {hasCaretakers && (
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-gray-900 text-center">Login ID</h2>
+                <h2 className="text-lg font-semibold text-gray-900 text-center security-section-title">Login ID</h2>
                 
                 {/* Login ID Display */}
                 <div 
@@ -360,7 +363,7 @@ export default function Security({ onUnlock }: SecurityProps) {
                     Array.from({ length: 2 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full ${activeInput === 'loginId' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
+                        className={`w-3 h-3 rounded-full ${activeInput === 'loginId' ? 'bg-gray-300 security-dot-focus' : 'bg-gray-200/50 security-dot-placeholder'}`}
                       />
                     ))
                   ) : (
@@ -368,7 +371,7 @@ export default function Security({ onUnlock }: SecurityProps) {
                     Array.from({ length: 2 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full ${i < loginId.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
+                        className={`w-3 h-3 rounded-full ${i < loginId.length ? 'bg-teal-600 security-dot-active' : 'bg-gray-200/50 security-dot-placeholder'}`}
                       />
                     ))
                   )}
@@ -388,7 +391,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             
             {/* PIN input section */}
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-gray-900 text-center">Security PIN</h2>
+              <h2 className="text-lg font-semibold text-gray-900 text-center security-section-title">Security PIN</h2>
               
               {/* PIN Display */}
               <div 
@@ -400,7 +403,7 @@ export default function Security({ onUnlock }: SecurityProps) {
                   Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-3 h-3 rounded-full ${activeInput === 'pin' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
+                      className={`w-3 h-3 rounded-full ${activeInput === 'pin' ? 'bg-gray-300 security-dot-focus' : 'bg-gray-200/50 security-dot-placeholder'}`}
                     />
                   ))
                 ) : (
@@ -408,7 +411,7 @@ export default function Security({ onUnlock }: SecurityProps) {
                   Array.from({ length: Math.max(pin.length, 6) }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
+                      className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-600 security-dot-active' : 'bg-gray-200/50 security-dot-placeholder'}`}
                     />
                   ))
                 )}
@@ -428,7 +431,7 @@ export default function Security({ onUnlock }: SecurityProps) {
           </div>
           
           {error && (
-            <p className="text-red-500 text-sm">
+            <p className="text-red-500 text-sm security-error">
               {error}
               {lockoutTime && ` (${formatTimeRemaining(lockoutTime)})`}
             </p>
@@ -440,7 +443,7 @@ export default function Security({ onUnlock }: SecurityProps) {
               <Button
                 key={number}
                 variant="outline"
-                className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
+                className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50 security-numpad-button"
                 onClick={() => handleNumberClick(number.toString())}
                 disabled={!!lockoutTime}
               >
@@ -450,7 +453,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             <Button
               key="0"
               variant="outline"
-              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
+              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50 security-numpad-button"
               onClick={() => handleNumberClick("0")}
               disabled={!!lockoutTime}
             >
@@ -458,7 +461,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             </Button>
             <Button
               variant="outline"
-              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-red-50 disabled:opacity-50"
+              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-red-50 disabled:opacity-50 security-delete-button"
               onClick={handleDelete}
               disabled={!!lockoutTime}
             >
@@ -467,7 +470,7 @@ export default function Security({ onUnlock }: SecurityProps) {
             {/* Go Button integrated into keypad */}
             <Button
               variant="default"
-              className="w-14 h-14 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50"
+              className="w-14 h-14 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50 security-go-button"
               onClick={handleAuthenticate}
               disabled={!!lockoutTime || (hasCaretakers && loginId.length !== 2) || pin.length < 6}
             >

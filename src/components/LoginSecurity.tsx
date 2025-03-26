@@ -5,12 +5,15 @@ import Image from 'next/image';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { X } from 'lucide-react';
+import { useTheme } from '@/src/context/theme';
+import './login-security.css';
 
 interface LoginSecurityProps {
   onUnlock: (caretakerId?: string) => void;
 }
 
 export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
+  const { theme } = useTheme();
   const [loginId, setLoginId] = useState<string>('');
   const [pin, setPin] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -223,11 +226,11 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white login-container">
       <div className="w-full max-w-md mx-auto p-6">
         <div className="text-center mt-2 mb-4">
-          <h2 className="text-xl font-semibold">Security Check</h2>
-          <p id="pin-description" className="text-sm text-gray-500">
+          <h2 className="text-xl font-semibold login-title">Security Check</h2>
+          <p id="pin-description" className="text-sm text-gray-500 login-description">
             {!hasCaretakers
               ? 'Please enter your system security PIN'
               : 'Please enter your login ID and security PIN'}
@@ -249,7 +252,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
             {/* Login ID section - only show if caretakers exist */}
             {hasCaretakers && (
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-gray-900 text-center">Login ID</h2>
+                <h2 className="text-lg font-semibold text-gray-900 text-center login-card-title">Login ID</h2>
                 
                 {/* Login ID Display */}
                 <div 
@@ -261,7 +264,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                     Array.from({ length: 2 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full ${activeInput === 'loginId' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
+                        className={`w-3 h-3 rounded-full ${activeInput === 'loginId' ? 'bg-gray-300 security-dot-focus' : 'bg-gray-200/50 security-dot-placeholder'}`}
                       />
                     ))
                   ) : (
@@ -269,7 +272,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                     Array.from({ length: 2 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full ${i < loginId.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
+                        className={`w-3 h-3 rounded-full ${i < loginId.length ? 'bg-teal-600 security-dot-active' : 'bg-gray-200/50 security-dot-placeholder'}`}
                       />
                     ))
                   )}
@@ -277,7 +280,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                 <Input
                   value={loginId}
                   onChange={handleLoginIdChange}
-                  className="text-center text-xl font-semibold sr-only"
+                  className="text-center text-xl font-semibold sr-only login-input"
                   placeholder="ID"
                   maxLength={2}
                   autoFocus={activeInput === 'loginId'}
@@ -289,7 +292,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
             
             {/* PIN input section */}
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-gray-900 text-center">Security PIN</h2>
+              <h2 className="text-lg font-semibold text-gray-900 text-center login-card-title">Security PIN</h2>
               
               {/* PIN Display */}
               <div 
@@ -301,7 +304,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                   Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-3 h-3 rounded-full ${activeInput === 'pin' ? 'bg-gray-300' : 'bg-gray-200/50'}`}
+                      className={`w-3 h-3 rounded-full ${activeInput === 'pin' ? 'bg-gray-300 security-dot-focus' : 'bg-gray-200/50 security-dot-placeholder'}`}
                     />
                   ))
                 ) : (
@@ -309,7 +312,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                   Array.from({ length: Math.max(pin.length, 6) }).map((_, i) => (
                     <div
                       key={i}
-                      className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-600' : 'bg-gray-200/50'}`}
+                      className={`w-3 h-3 rounded-full ${i < pin.length ? 'bg-teal-600 security-dot-active' : 'bg-gray-200/50 security-dot-placeholder'}`}
                     />
                   ))
                 )}
@@ -318,7 +321,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
                 type="password"
                 value={pin}
                 onChange={handlePinChange}
-                className="text-center text-xl font-semibold sr-only"
+                className="text-center text-xl font-semibold sr-only login-input"
                 placeholder="PIN"
                 maxLength={10}
                 autoFocus={activeInput === 'pin'}
@@ -329,7 +332,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
           </div>
           
           {error && (
-            <p className="text-red-500 text-sm">
+            <p className="text-red-500 text-sm login-error">
               {error}
               {lockoutTime && ` (${formatTimeRemaining(lockoutTime)})`}
             </p>
@@ -341,7 +344,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
               <Button
                 key={number}
                 variant="outline"
-                className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
+                className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50 security-numpad-button"
                 onClick={() => handleNumberClick(number.toString())}
                 disabled={!!lockoutTime}
               >
@@ -351,7 +354,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
             <Button
               key="0"
               variant="outline"
-              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50"
+              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-teal-50 disabled:opacity-50 security-numpad-button"
               onClick={() => handleNumberClick("0")}
               disabled={!!lockoutTime}
             >
@@ -359,7 +362,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
             </Button>
             <Button
               variant="outline"
-              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-red-50 disabled:opacity-50"
+              className="w-14 h-14 text-xl font-semibold rounded-xl hover:bg-red-50 disabled:opacity-50 security-delete-button"
               onClick={handleDelete}
               disabled={!!lockoutTime}
             >
@@ -368,7 +371,7 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
             {/* Go Button integrated into keypad */}
             <Button
               variant="default"
-              className="w-14 h-14 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50"
+              className="w-14 h-14 text-sm font-semibold rounded-xl bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50 security-go-button"
               onClick={handleAuthenticate}
               disabled={!!lockoutTime || (hasCaretakers && loginId.length !== 2) || pin.length < 6}
             >
