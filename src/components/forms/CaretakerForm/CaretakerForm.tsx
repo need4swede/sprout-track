@@ -21,6 +21,7 @@ import { caretakerFormStyles } from './caretaker-form.styles';
 // Extended type to include the loginId field
 interface Caretaker extends PrismaCaretaker {
   loginId: string;
+  inactive?: boolean;
 }
 
 interface CaretakerFormProps {
@@ -36,6 +37,7 @@ const defaultFormData = {
   name: '',
   type: '',
   role: 'USER' as UserRole,
+  inactive: false,
   securityPin: '',
 };
 
@@ -60,6 +62,7 @@ export default function CaretakerForm({
         name: caretaker.name,
         type: caretaker.type || '',
         role: caretaker.role || 'USER',
+        inactive: (caretaker as any).inactive || false,
         securityPin: caretaker.securityPin,
       });
       setConfirmPin(caretaker.securityPin);
@@ -250,6 +253,25 @@ export default function CaretakerForm({
               </p>
             )}
           </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="inactive"
+              checked={formData.inactive}
+              onChange={(e) => setFormData({ ...formData, inactive: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              disabled={isFirstCaretaker}
+            />
+            <label htmlFor="inactive" className="form-label mb-0">
+              Mark as inactive
+            </label>
+          </div>
+          {formData.inactive && (
+            <p className="text-xs text-amber-600 mt-1">
+              Inactive caretakers cannot log in to the system
+            </p>
+          )}
           <div>
             <label className="form-label">Security PIN</label>
             <Input

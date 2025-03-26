@@ -140,6 +140,7 @@ export interface CaretakerCreate {
   loginId: string;
   name: string;
   type?: string;
+  inactive?: boolean;
   securityPin: string;
 }
 

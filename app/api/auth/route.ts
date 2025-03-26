@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
         where: {
           loginId: loginId,
           securityPin: securityPin,
+          inactive: false,
           deletedAt: null,
         } as any, // Type assertion for loginId field
       });

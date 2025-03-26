@@ -47,14 +47,15 @@ export default function SettingsForm({
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
   const [selectedCaretaker, setSelectedCaretaker] = useState<Caretaker | null>(null);
-  const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string | undefined>(selectedBabyId);
+  const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string>('');
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setLocalSelectedBabyId(selectedBabyId);
+    // Only set the selected baby ID if explicitly provided
+    setLocalSelectedBabyId(selectedBabyId || '');
   }, [selectedBabyId]);
 
   const fetchData = async () => {
@@ -64,7 +65,7 @@ export default function SettingsForm({
         fetch('/api/settings'),
         fetch('/api/baby'),
         fetch('/api/units'),
-        fetch('/api/caretaker')
+        fetch('/api/caretaker?includeInactive=true')
       ]);
 
       if (settingsResponse.ok) {
@@ -265,7 +266,7 @@ export default function SettingsForm({
                 <div className="flex flex-wrap items-center gap-2 w-full">
                   <div className="flex-1 min-w-[200px]">
                     <Select 
-                      value={localSelectedBabyId} 
+                      value={localSelectedBabyId || ''} 
                       onValueChange={(babyId) => {
                         setLocalSelectedBabyId(babyId);
                         onBabySelect?.(babyId);
@@ -277,7 +278,7 @@ export default function SettingsForm({
                       <SelectContent>
                         {babies.map((baby) => (
                           <SelectItem key={baby.id} value={baby.id}>
-                            {baby.firstName} {baby.lastName}
+                            {baby.firstName} {baby.lastName}{baby.inactive ? ' (Inactive)' : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -326,7 +327,7 @@ export default function SettingsForm({
                       <SelectContent>
                         {caretakers.map((caretaker) => (
                           <SelectItem key={caretaker.id} value={caretaker.id}>
-                            {caretaker.name} {caretaker.type ? `(${caretaker.type})` : ''}
+                            {caretaker.name} {caretaker.type ? `(${caretaker.type})` : ''}{(caretaker as any).inactive ? ' (Inactive)' : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

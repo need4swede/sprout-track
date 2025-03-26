@@ -85,9 +85,11 @@ export const BabySelector: React.FC<BabySelectorProps> = ({
           <DropdownMenuRadioGroup
             value={selectedBaby?.id || ''}
             onValueChange={(id) => {
-              const baby = babies.find((b) => b.id === id);
-              if (baby) {
-                onBabySelect(baby);
+              if (id) {
+                const baby = babies.find((b) => b.id === id);
+                if (baby) {
+                  onBabySelect(baby);
+                }
               }
             }}
           >
@@ -98,7 +100,7 @@ export const BabySelector: React.FC<BabySelectorProps> = ({
                 className={babySelectorDropdownItem(baby.gender)}
               >
                 <div className="flex flex-col">
-                  <span>{baby.firstName}</span>
+                  <span>{baby.firstName}{baby.inactive ? ' (Inactive)' : ''}</span>
                   <span className="text-xs opacity-80">{calculateAge(baby.birthDate)}</span>
                 </div>
               </DropdownMenuRadioItem>

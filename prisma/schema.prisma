@@ -113,6 +113,7 @@ model Caretaker {
   name         String
   type         String?   // parent, daycare, nanny, grandparent, uncle, etc.
   role         UserRole  @default(USER) // User role for authentication permissions
+  inactive     Boolean   @default(false)
   securityPin  String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

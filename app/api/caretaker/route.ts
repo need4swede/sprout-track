@@ -198,9 +198,13 @@ async function getHandler(req: NextRequest) {
       });
     }
 
+    // Get query parameter for including inactive caretakers
+    const includeInactive = searchParams.get('includeInactive') === 'true';
+    
     const caretakers = await prisma.caretaker.findMany({
       where: {
         deletedAt: null,
+        ...(includeInactive ? {} : { inactive: false }),
       },
       orderBy: {
         name: 'asc',
