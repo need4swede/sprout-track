@@ -21,7 +21,6 @@ import { caretakerFormStyles } from './caretaker-form.styles';
 // Extended type to include the loginId field
 interface Caretaker extends PrismaCaretaker {
   loginId: string;
-  inactive?: boolean;
 }
 
 interface CaretakerFormProps {
