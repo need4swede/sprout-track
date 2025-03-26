@@ -44,7 +44,7 @@ export const activityTileStyles = {
       note: "text-yellow-600",
       bath: "text-orange-600",
       pump: "text-purple-600",
-      default: "text-gray-600"
+      default: "text-gray-800 dark:text-gray-200"
     },
     // Default icon paths for each variant
     defaultIcons: {
@@ -54,7 +54,7 @@ export const activityTileStyles = {
       note: "/note-128.png",
       bath: "/bath-128.png",
       pump: "/pump-128.png",
-      default: ""
+      default: "/config-128.png"
     }
   },
   
