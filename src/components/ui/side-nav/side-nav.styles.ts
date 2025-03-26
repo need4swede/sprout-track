@@ -8,10 +8,10 @@ import { cva } from "class-variance-authority";
  */
 export const sideNavStyles = {
   // Main container
-  container: "fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transform transition-all duration-300 ease-in-out w-64",
+  container: "fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-600 shadow-xl transform transition-all duration-300 ease-in-out w-64",
   
   // Container for non-modal mode (wide screens)
-  containerNonModal: "flex flex-col bg-white shadow-xl w-64 min-h-screen h-full transition-all duration-300 ease-in-out",
+  containerNonModal: "flex flex-col bg-white dark:bg-gray-600 shadow-xl w-64 min-h-screen h-full transition-all duration-300 ease-in-out",
   
   // Container when open
   containerOpen: "translate-x-0",
@@ -32,7 +32,7 @@ export const sideNavStyles = {
   overlayClosed: "opacity-0 pointer-events-none",
   
   // Header section
-  header: "flex items-center justify-between p-4 border-b border-gray-200",
+  header: "flex items-center justify-between px-4 border-gray-200 dark:border-gray-500",
   
   // Logo container
   logoContainer: "flex items-center space-x-3",
@@ -41,19 +41,19 @@ export const sideNavStyles = {
   logo: "w-10 h-10 object-contain",
   
   // App name
-  appName: "text-lg font-semibold text-teal-700",
+  appName: "text-lg font-semibold text-teal-700 dark:text-teal-400",
   
   // Close button
-  closeButton: "text-gray-500 hover:text-gray-700 transition-colors duration-200",
+  closeButton: "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors duration-200",
   
   // Navigation items container
-  navItems: "flex-1 py-4 overflow-y-auto",
+  navItems: "flex-1 py-4 px-4 overflow-y-auto",
   
   // Navigation item
-  navItem: "flex items-center px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200",
+  navItem: "flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-700 dark:hover:text-gray-300 transition-colors duration-200 rounded-lg mb-2",
   
   // Active navigation item
-  navItemActive: "bg-teal-50 text-teal-700 font-medium",
+  navItemActive: "bg-teal-50 dark:bg-gray-800 text-teal-700 dark:text-teal-300 font-medium",
   
   // Navigation item icon
   navItemIcon: "mr-3 h-5 w-5",
@@ -62,10 +62,10 @@ export const sideNavStyles = {
   navItemLabel: "text-sm",
   
   // Footer section
-  footer: "border-t border-gray-200 p-4",
+  footer: "border-t border-gray-200 dark:border-gray-500 p-4",
   
   // Settings button
-  settingsButton: "flex items-center w-full px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 rounded-lg",
+  settingsButton: "flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-700 dark:hover:text-gray-300 transition-colors duration-200 rounded-lg mb-2",
   
   // Settings icon
   settingsIcon: "mr-3 h-5 w-5",

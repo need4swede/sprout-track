@@ -4,11 +4,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { BabyProvider, useBaby } from '../context/baby';
 import { TimezoneProvider } from '../context/timezone';
+import { ThemeProvider } from '@/src/context/theme';
 import Image from 'next/image';
 import '../globals.css';
 import SettingsForm from '@/src/components/forms/SettingsForm';
 import { DebugSessionTimer } from '@/src/components/debugSessionTimer';
 import { TimezoneDebug } from '@/src/components/debugTimezone';
+import { ThemeTest } from '@/src/components/ThemeTest';
 import { SideNav, SideNavTrigger } from '@/src/components/ui/side-nav';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
@@ -416,6 +418,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
       {/* Debug components - only visible in development mode */}
       <DebugSessionTimer />
       <TimezoneDebug />
+      
+      {/* Theme test component */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ThemeTest />
+        </div>
+      )}
     </>
   );
 }
@@ -426,14 +435,16 @@ export default function AppLayout({
   children: React.ReactNode
 }) {
   return (
-    <BabyProvider>
-      <TimezoneProvider>
-        <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
-          <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 font-sans antialiased')} suppressHydrationWarning>
-            <AppContent>{children}</AppContent>
-          </body>
-        </html>
-      </TimezoneProvider>
-    </BabyProvider>
+    <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
+      <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-900 dark:to-black font-sans antialiased')} suppressHydrationWarning>
+        <BabyProvider>
+          <TimezoneProvider>
+            <ThemeProvider>
+              <AppContent>{children}</AppContent>
+            </ThemeProvider>
+          </TimezoneProvider>
+        </BabyProvider>
+      </body>
+    </html>
   );
 }

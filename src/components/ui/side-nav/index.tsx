@@ -1,9 +1,43 @@
 import React, { useEffect } from 'react';
-import { X, Settings, LogOut } from 'lucide-react';
+import { X, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/src/context/theme';
 import Image from 'next/image';
 import { cn } from '@/src/lib/utils';
 import { sideNavStyles, triggerButtonVariants } from './side-nav.styles';
 import { SideNavProps, SideNavTriggerProps, SideNavItemProps } from './side-nav.types';
+import { ReactNode } from 'react';
+import './side-nav.css'; // Import the CSS file with dark mode overrides
+
+// Interface for the FooterButton component
+interface FooterButtonProps {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  ariaLabel?: string;
+}
+
+/**
+ * FooterButton component
+ * 
+ * A button used in the footer of the side navigation
+ */
+const FooterButton: React.FC<FooterButtonProps> = ({
+  icon,
+  label,
+  onClick,
+  ariaLabel,
+}) => {
+  return (
+    <button
+      className={cn(sideNavStyles.settingsButton, "side-nav-settings-button")}
+      onClick={onClick}
+      aria-label={ariaLabel}
+    >
+      <span className={sideNavStyles.settingsIcon}>{icon}</span>
+      <span className={sideNavStyles.settingsLabel}>{label}</span>
+    </button>
+  );
+};
 
 /**
  * SideNavTrigger component
@@ -44,7 +78,8 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
       className={cn(
         sideNavStyles.navItem,
         isActive && sideNavStyles.navItemActive,
-        className
+        className,
+        isActive && "active" // Add active class for CSS targeting
       )}
       onClick={() => onClick(path)}
     >
@@ -70,6 +105,8 @@ export const SideNav: React.FC<SideNavProps> = ({
   className,
   nonModal = false,
 }) => {
+  const { theme, toggleTheme } = useTheme();
+  
   // Close the side nav when pressing Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -112,36 +149,41 @@ export const SideNav: React.FC<SideNavProps> = ({
         className={cn(
           nonModal ? sideNavStyles.containerNonModal : sideNavStyles.container,
           !nonModal && (isOpen ? sideNavStyles.containerOpen : sideNavStyles.containerClosed),
-          className
+          className,
+          "side-nav" // Add this class for direct CSS targeting
         )}
         role={nonModal ? "navigation" : "dialog"}
         aria-modal={nonModal ? "false" : "true"}
         aria-label="Main navigation"
       >
-        {/* Header */}
-        <div className={sideNavStyles.header}>
-          <div className={sideNavStyles.logoContainer}>
-            <Image
-              src="/acorn-128.png"
-              alt="Acorn Logo"
-              width={40}
-              height={40}
-              className={sideNavStyles.logo}
-              priority
-            />
-            <span className={sideNavStyles.appName}>Baby Tracker</span>
+        {/* Header - matching the structure of the green bar in the main layout */}
+        <header className="w-full bg-white dark:bg-gray-600 sticky top-0 z-40 side-nav-header">
+          <div className="mx-auto">
+            <div className={cn("flex justify-between items-center h-20", sideNavStyles.header)}>
+              <div className={sideNavStyles.logoContainer}>
+                <Image
+                  src="/acorn-128.png"
+                  alt="Acorn Logo"
+                  width={40}
+                  height={40}
+                  className={sideNavStyles.logo}
+                  priority
+                />
+                <span className={cn(sideNavStyles.appName, "side-nav-app-name")}>Baby Tracker</span>
+              </div>
+              {/* Only show close button in modal mode */}
+              {!nonModal && (
+                <button
+                  onClick={onClose}
+                  className={cn(sideNavStyles.closeButton, "side-nav-close-button")}
+                  aria-label="Close navigation"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
           </div>
-          {/* Only show close button in modal mode */}
-          {!nonModal && (
-            <button
-              onClick={onClose}
-              className={sideNavStyles.closeButton}
-              aria-label="Close navigation"
-            >
-              <X size={20} />
-            </button>
-          )}
-        </div>
+        </header>
 
         {/* Navigation Items */}
         <nav className={sideNavStyles.navItems}>
@@ -150,33 +192,42 @@ export const SideNav: React.FC<SideNavProps> = ({
             label="Log Entry"
             isActive={currentPath === '/log-entry'}
             onClick={onNavigate}
+            className="side-nav-item"
           />
           <SideNavItem
             path="/full-log"
             label="Full Log"
             isActive={currentPath === '/full-log'}
             onClick={onNavigate}
+            className="side-nav-item"
           />
         </nav>
 
-        {/* Footer with Settings and Logout */}
-        <div className={sideNavStyles.footer}>
+        {/* Footer with Theme Toggle, Settings and Logout */}
+        <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
+          {/* Theme Toggle Button */}
+          <FooterButton
+            icon={theme === 'light' ? <Moon /> : <Sun />}
+            label={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            onClick={toggleTheme}
+            ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          />
+          
+          {/* Settings Button - only shown for admins */}
           {isAdmin && (
-            <button
-              className={sideNavStyles.settingsButton}
+            <FooterButton
+              icon={<Settings />}
+              label="Settings"
               onClick={onSettingsClick}
-            >
-              <Settings className={sideNavStyles.settingsIcon} />
-              <span className={sideNavStyles.settingsLabel}>Settings</span>
-            </button>
+            />
           )}
-          <button
-            className={sideNavStyles.settingsButton}
+          
+          {/* Logout Button */}
+          <FooterButton
+            icon={<LogOut />}
+            label="Logout"
             onClick={onLogout}
-          >
-            <LogOut className={sideNavStyles.settingsIcon} />
-            <span className={sideNavStyles.settingsLabel}>Logout</span>
-          </button>
+          />
         </div>
       </div>
     </>
