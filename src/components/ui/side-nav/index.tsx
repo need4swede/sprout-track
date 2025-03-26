@@ -68,19 +68,20 @@ export const SideNav: React.FC<SideNavProps> = ({
   onLogout,
   isAdmin,
   className,
+  nonModal = false,
 }) => {
   // Close the side nav when pressing Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && !nonModal) {
         onClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     
-    // Prevent scrolling when side nav is open
-    if (isOpen) {
+    // Prevent scrolling when side nav is open in modal mode
+    if (isOpen && !nonModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -90,29 +91,31 @@ export const SideNav: React.FC<SideNavProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, nonModal]);
 
   return (
     <>
-      {/* Overlay */}
-      <div 
-        className={cn(
-          sideNavStyles.overlay,
-          isOpen ? sideNavStyles.overlayOpen : sideNavStyles.overlayClosed
-        )}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      {/* Overlay - only shown in modal mode */}
+      {!nonModal && (
+        <div 
+          className={cn(
+            sideNavStyles.overlay,
+            isOpen ? sideNavStyles.overlayOpen : sideNavStyles.overlayClosed
+          )}
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Side Navigation Panel */}
       <div
         className={cn(
-          sideNavStyles.container,
-          isOpen ? sideNavStyles.containerOpen : sideNavStyles.containerClosed,
+          nonModal ? sideNavStyles.containerNonModal : sideNavStyles.container,
+          !nonModal && (isOpen ? sideNavStyles.containerOpen : sideNavStyles.containerClosed),
           className
         )}
-        role="dialog"
-        aria-modal="true"
+        role={nonModal ? "navigation" : "dialog"}
+        aria-modal={nonModal ? "false" : "true"}
         aria-label="Main navigation"
       >
         {/* Header */}
@@ -128,13 +131,16 @@ export const SideNav: React.FC<SideNavProps> = ({
             />
             <span className={sideNavStyles.appName}>Baby Tracker</span>
           </div>
-          <button
-            onClick={onClose}
-            className={sideNavStyles.closeButton}
-            aria-label="Close navigation"
-          >
-            <X size={20} />
-          </button>
+          {/* Only show close button in modal mode */}
+          {!nonModal && (
+            <button
+              onClick={onClose}
+              className={sideNavStyles.closeButton}
+              aria-label="Close navigation"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Items */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { BabyProvider, useBaby } from '../context/baby';
 import { TimezoneProvider } from '../context/timezone';
@@ -29,6 +29,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [quickStatsOpen, setQuickStatsOpen] = useState(false);
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [isWideScreen, setIsWideScreen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
   const [isUnlocked, setIsUnlocked] = useState(() => {
@@ -181,15 +182,32 @@ function AppContent({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
+  // Check if screen is wider than 600px
+  const checkScreenWidth = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const isWide = window.innerWidth > 600;
+      setIsWideScreen(isWide);
+      
+      // Automatically open side nav on wide screens, hide on small screens
+      setSideNavOpen(isWide);
+    }
+  }, []);
+
   useEffect(() => {
     setMounted(true);
     fetchData();
+    
+    // Check screen width initially
+    checkScreenWidth();
 
     // Add listeners for user activity
     window.addEventListener('click', updateUnlockTimer);
     window.addEventListener('keydown', updateUnlockTimer);
     window.addEventListener('mousemove', updateUnlockTimer);
     window.addEventListener('touchstart', updateUnlockTimer);
+    
+    // Add resize listener
+    window.addEventListener('resize', checkScreenWidth);
 
     return () => {
       // Clean up event listeners
@@ -197,8 +215,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
       window.removeEventListener('keydown', updateUnlockTimer);
       window.removeEventListener('mousemove', updateUnlockTimer);
       window.removeEventListener('touchstart', updateUnlockTimer);
+      window.removeEventListener('resize', checkScreenWidth);
     };
-  }, []);
+  }, [checkScreenWidth]);
   
   // Add continuous authentication check and redirect
   useEffect(() => {
@@ -277,72 +296,99 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       {(isUnlocked || process.env.NODE_ENV === 'development') && (
-        <div className="min-h-screen flex flex-col">
-          <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <SideNavTrigger
-                    onClick={() => setSideNavOpen(true)}
-                    isOpen={sideNavOpen}
-                    className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
-                  >
-                    <Image
-                      src="/acorn-128.png"
-                      alt="Acorn Logo"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                      priority
-                    />
-                  </SideNavTrigger>
-                  <div className="flex flex-col">
-                    {caretakerName && caretakerName !== 'System Administrator' && (
-                      <span className="text-white text-xs opacity-80">
-                        Hi, {caretakerName}
+        <div className="min-h-screen flex">
+          {/* Side Navigation - non-modal on wide screens */}
+          {isWideScreen && (
+            <SideNav
+              isOpen={true}
+              nonModal={true}
+              onClose={() => {}}
+              currentPath={window.location.pathname}
+              onNavigate={(path) => {
+                window.location.href = path;
+              }}
+              onSettingsClick={() => {
+                setSettingsOpen(true);
+              }}
+              onLogout={handleLogout}
+              isAdmin={isAdmin}
+              className="h-screen sticky top-0"
+            />
+          )}
+          
+          {/* Main content area */}
+          <div className={`flex flex-col flex-1 min-h-screen ${isWideScreen ? 'w-[calc(100%-16rem)]' : 'w-full'}`}>
+            <header className="w-full bg-gradient-to-r from-teal-600 to-teal-700 sticky top-0 z-40">
+              <div className="mx-auto py-2">
+                <div className="flex justify-between items-center h-16"> {/* Fixed height for consistency */}
+                  <div className={`flex items-center ${isWideScreen ? 'ml-8' : 'ml-4 sm:ml-6 lg:ml-8'}`}>
+                    {/* Only show Acorn button on small screens */}
+                    {!isWideScreen ? (
+                      <SideNavTrigger
+                        onClick={() => setSideNavOpen(true)}
+                        isOpen={sideNavOpen}
+                        className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110 mr-4"
+                      >
+                        <Image
+                          src="/acorn-128.png"
+                          alt="Acorn Logo"
+                          width={64}
+                          height={64}
+                          className="object-contain"
+                          priority
+                        />
+                      </SideNavTrigger>
+                    ) : null}
+                    <div className="flex flex-col">
+                      {caretakerName && caretakerName !== 'System Administrator' && (
+                        <span className="text-white text-xs opacity-80">
+                          Hi, {caretakerName}
+                        </span>
+                      )}
+                      <span className="text-white text-sm font-medium">
+                        {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
                       </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center mr-4 sm:mr-6 lg:mr-8">
+                    {babies.length > 0 && (
+                      <BabySelector
+                        selectedBaby={selectedBaby}
+                        onBabySelect={(baby) => setSelectedBaby(baby)}
+                        babies={babies}
+                        sleepingBabies={sleepingBabies}
+                        calculateAge={calculateAge}
+                        onOpenQuickStats={() => setQuickStatsOpen(true)}
+                      />
                     )}
-                    <span className="text-white text-sm font-medium">
-                      {window.location.pathname === '/log-entry' ? 'Log Entry' : 'Full Log'}
-                    </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {babies.length > 0 && (
-                    <BabySelector
-                      selectedBaby={selectedBaby}
-                      onBabySelect={(baby) => setSelectedBaby(baby)}
-                      babies={babies}
-                      sleepingBabies={sleepingBabies}
-                      calculateAge={calculateAge}
-                      onOpenQuickStats={() => setQuickStatsOpen(true)}
-                    />
-                  )}
-                </div>
               </div>
-            </div>
-          </header>
-          
-          <main className="flex-1 w-full relative z-0">
-            {children}
-          </main>
+            </header>
+            
+            <main className="flex-1 relative z-0">
+              {children}
+            </main>
+          </div>
 
-          {/* Side Navigation */}
-          <SideNav
-            isOpen={sideNavOpen}
-            onClose={() => setSideNavOpen(false)}
-            currentPath={window.location.pathname}
-            onNavigate={(path) => {
-              window.location.href = path;
-              setSideNavOpen(false);
-            }}
-            onSettingsClick={() => {
-              setSettingsOpen(true);
-              setSideNavOpen(false);
-            }}
-            onLogout={handleLogout}
-            isAdmin={isAdmin}
-          />
+          {/* Modal Side Navigation - only for small screens */}
+          {!isWideScreen && (
+            <SideNav
+              isOpen={sideNavOpen}
+              onClose={() => setSideNavOpen(false)}
+              currentPath={window.location.pathname}
+              onNavigate={(path) => {
+                window.location.href = path;
+                setSideNavOpen(false);
+              }}
+              onSettingsClick={() => {
+                setSettingsOpen(true);
+                setSideNavOpen(false);
+              }}
+              onLogout={handleLogout}
+              isAdmin={isAdmin}
+            />
+          )}
         </div>
       )}
 

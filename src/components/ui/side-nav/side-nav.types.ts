@@ -43,6 +43,11 @@ export interface SideNavProps {
    * Additional CSS classes to apply to the side navigation
    */
   className?: string;
+  
+  /**
+   * Whether to render the side nav in non-modal mode (for wide screens)
+   */
+  nonModal?: boolean;
 }
 
 /**

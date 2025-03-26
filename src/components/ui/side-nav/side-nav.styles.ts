@@ -8,7 +8,10 @@ import { cva } from "class-variance-authority";
  */
 export const sideNavStyles = {
   // Main container
-  container: "fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transform transition-transform duration-300 ease-in-out w-64",
+  container: "fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-xl transform transition-all duration-300 ease-in-out w-64",
+  
+  // Container for non-modal mode (wide screens)
+  containerNonModal: "flex flex-col bg-white shadow-xl w-64 min-h-screen h-full transition-all duration-300 ease-in-out",
   
   // Container when open
   containerOpen: "translate-x-0",
@@ -18,6 +21,9 @@ export const sideNavStyles = {
   
   // Overlay background
   overlay: "fixed inset-0 bg-black/30 z-40 transition-opacity duration-300",
+  
+  // Hide overlay for non-modal mode
+  overlayHidden: "hidden",
   
   // Overlay when open
   overlayOpen: "opacity-100",
