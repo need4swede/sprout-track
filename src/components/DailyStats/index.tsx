@@ -281,7 +281,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   }, [activities, date]);
 
   return (
-    <Card className={cn(cardStyles.base2, 'overflow-hidden')}>
+    <Card className={cn(cardStyles.base2, 'overflow-hidden border-0')}>
       <div 
         className={cn("flex items-center px-6 py-3 bg-gray-50 dark:bg-gray-600 cursor-pointer border-b border-transparent dark:border-gray-500", "daily-stats-header")}
         onClick={() => setIsExpanded(!isExpanded)}
