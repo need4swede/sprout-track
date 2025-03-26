@@ -3,6 +3,8 @@ import { ActivityTile } from '@/src/components/ui/activity-tile';
 import { StatusBubble } from "@/src/components/ui/status-bubble";
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, ActivitySettings } from '@/app/api/types';
 import { MoreVertical, ArrowDownUp } from 'lucide-react';
+import { useTheme } from '@/src/context/theme';
+import './activity-tile-group.css';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -57,6 +59,8 @@ export function ActivityTileGroup({
   onBathClick,
   onPumpClick
 }: ActivityTileGroupProps) {
+  const { theme } = useTheme();
+  
   if (!selectedBaby?.id) return null;
 
   // State for visible activities and their order
@@ -539,7 +543,7 @@ export function ActivityTileGroup({
   };
 
   return (
-    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 p-2 gap-1">
+    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 dark:bg-gray-800 p-2 gap-1 activity-tile-group">
       {/* Render activity tiles based on order and visibility */}
       {activityOrder.map(activity => renderActivityTile(activity))}
 
@@ -556,7 +560,7 @@ export function ActivityTileGroup({
             {activityOrder.map((activity, index) => (
               <div 
                 key={`order-${activity}`} 
-                className={`flex items-center px-2 py-2 hover:bg-gray-50 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50' : ''}`}
+                className={`flex items-center px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : ''} activity-dropdown-item`}
                 draggable="true"
                 onDragStart={(e) => {
                   e.dataTransfer.effectAllowed = 'move';
@@ -721,7 +725,7 @@ export function ActivityTileGroup({
                 data-key={`order-${activity}`}
               >
                 <button 
-                  className="p-1 rounded-full hover:bg-gray-100 cursor-grab active:cursor-grabbing mr-2"
+                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing mr-2"
                   onMouseDown={(e) => {
                     // Prevent dropdown from closing when starting drag
                     e.stopPropagation();
@@ -729,7 +733,7 @@ export function ActivityTileGroup({
                   aria-label={`Drag to reorder ${activityDisplayNames[activity]}`}
                   title="Drag to reorder"
                 >
-                  <ArrowDownUp className="h-4 w-4 text-gray-500" />
+                  <ArrowDownUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </button>
                 <DropdownMenuCheckboxItem
                   checked={visibleActivities.has(activity)}

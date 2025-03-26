@@ -61,7 +61,7 @@ export const activityTileStyles = {
   content: {
     base: "min-w-0 flex-1",
     typeContainer: "flex items-center gap-2 text-xs",
-    typeLabel: "inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10",
-    description: "text-gray-900"
+    typeLabel: "inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-200 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-600",
+    description: "text-gray-900 dark:text-gray-200"
   }
 } as const;

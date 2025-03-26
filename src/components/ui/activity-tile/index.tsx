@@ -5,6 +5,8 @@ import { ActivityTileProps, ActivityType } from './activity-tile.types';
 import { getActivityVariant } from './activity-tile-utils';
 import { ActivityTileIcon } from './activity-tile-icon';
 import { ActivityTileContent } from './activity-tile-content';
+import { useTheme } from '@/src/context/theme';
+import './activity-tile.css';
 
 /**
  * ActivityTile component displays an activity in a consistent, styled manner
@@ -30,6 +32,7 @@ export function ActivityTile({
   className,
   isButton = false
 }: ActivityTileProps) {
+  const { theme } = useTheme();
   const variant = variantProp || getActivityVariant(activity);
   
   return (
@@ -52,7 +55,7 @@ export function ActivityTile({
             {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
           </div>
           {title && (
-            <span className="text-xs font-medium mt-1 text-center">
+            <span className="text-xs font-medium mt-1 text-center dark:text-gray-200 activity-tile-title">
               {title}
             </span>
           )}

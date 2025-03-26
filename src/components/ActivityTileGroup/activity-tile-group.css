@@ -1,0 +1,12 @@
+/* Dark mode overrides for ActivityTileGroup component */
+html.dark .activity-tile-group {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+html.dark .activity-tile-title {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .activity-dropdown-item:hover {
+  background-color: #374151 !important; /* gray-700 */
+}

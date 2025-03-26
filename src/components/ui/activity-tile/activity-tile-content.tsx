@@ -3,6 +3,7 @@ import { cn } from "@/src/lib/utils";
 import { activityTileStyles as styles } from './activity-tile.styles';
 import { ActivityTileContentProps } from './activity-tile.types';
 import { useActivityDescription } from './activity-tile-utils';
+import { useTheme } from '@/src/context/theme';
 
 /**
  * ActivityTileContent component displays the title and description of an activity
@@ -13,6 +14,7 @@ export function ActivityTileContent({
   description, 
   className
 }: ActivityTileContentProps) {
+  const { theme } = useTheme();
   // Use the new hook to get the activity description
   const { getActivityDescription } = useActivityDescription();
   const activityDesc = getActivityDescription(activity);
@@ -23,10 +25,10 @@ export function ActivityTileContent({
   return (
     <div className={cn(styles.content.base, className)}>
       <div className={styles.content.typeContainer}>
-        <span className={styles.content.typeLabel}>
+        <span className={cn(styles.content.typeLabel, "activity-tile-label")}>
           {displayTitle}
         </span>
-        <span className={styles.content.description}>
+        <span className={cn(styles.content.description, "dark:text-gray-200 activity-tile-description")}>
           {displayDescription}
         </span>
       </div>
