@@ -11,7 +11,7 @@ import { cva } from "class-variance-authority"
  * @see https://cva.style/docs for more information on class-variance-authority
  */
 export const calendarVariants = cva(
-  "p-3 bg-white rounded-lg shadow-lg border border-gray-200",
+  "p-3 bg-white dark:bg-gray-600 rounded-lg shadow-lg border border-gray-200 dark:border-gray-500",
   {
     variants: {
       variant: {
@@ -47,7 +47,7 @@ export const calendarHeaderVariants = cva(
  * Calendar navigation button styles
  */
 export const calendarNavButtonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2",
+  "inline-flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -65,7 +65,7 @@ export const calendarNavButtonVariants = cva(
  * Calendar month select styles
  */
 export const calendarMonthSelectVariants = cva(
-  "font-semibold text-gray-900",
+  "font-semibold text-gray-900 dark:text-gray-200",
   {
     variants: {
       variant: {
@@ -91,19 +91,19 @@ export const calendarDayVariants = cva(
         compact: "h-7 w-7 text-xs",
       },
       selected: {
-        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700",
-        false: "hover:bg-teal-50 hover:text-teal-700",
+        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 dark:from-teal-600 dark:to-emerald-600 dark:hover:from-teal-700 dark:hover:to-emerald-700",
+        false: "hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-gray-700 dark:hover:text-gray-300",
       },
       today: {
-        true: "border-2 border-teal-500 font-bold",
+        true: "border-2 border-teal-500 dark:border-teal-300 font-bold",
         false: "",
       },
       disabled: {
-        true: "text-gray-300 hover:bg-transparent hover:text-gray-300 cursor-not-allowed",
+        true: "text-gray-300 dark:text-gray-600 hover:bg-transparent hover:text-gray-300 dark:hover:text-gray-600 cursor-not-allowed",
         false: "",
       },
       outside: {
-        true: "text-gray-400",
+        true: "text-gray-400 dark:text-gray-500",
         false: "",
       },
     },
@@ -118,7 +118,7 @@ export const calendarDayVariants = cva(
       {
         selected: true,
         today: true,
-        className: "border-white",
+        className: "border-white dark:border-white",
       },
     ],
   }
@@ -146,7 +146,7 @@ export const calendarDayNamesVariants = cva(
  * Calendar day name styles
  */
 export const calendarDayNameVariants = cva(
-  "text-center font-medium text-gray-500",
+  "text-center font-medium text-gray-500 dark:text-gray-400",
   {
     variants: {
       variant: {

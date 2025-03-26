@@ -1,0 +1,56 @@
+/* Dark mode overrides for calendar component */
+html.dark .calendar {
+  background-color: #4b5563 !important; /* gray-600 */
+  color: #e5e7eb !important; /* gray-200 */
+  border-color: #6b7280 !important; /* gray-500 */
+}
+
+html.dark .calendar-header {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-month-select {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-nav-button {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-nav-button:hover {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-day-name {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-day {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-day:hover:not(.calendar-day-disabled):not(.calendar-day-selected) {
+  background-color: #374151 !important; /* gray-700 */
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-day-outside {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+html.dark .calendar-day-today {
+  border-color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .calendar-day-selected {
+  background: linear-gradient(to right, #0d9488, #059669) !important; /* teal-600 to emerald-600 */
+  color: #ffffff !important; /* white */
+}
+
+html.dark .calendar-day-selected:hover {
+  background: linear-gradient(to right, #0f766e, #047857) !important; /* teal-700 to emerald-700 */
+}
+
+html.dark .calendar-day-disabled {
+  color: #4b5563 !important; /* gray-600 */
+}

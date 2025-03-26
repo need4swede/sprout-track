@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { useTheme } from '@/src/context/theme';
+import './calendar.css'; // Import the CSS file with dark mode overrides
 
 import {
   calendarVariants,
@@ -51,6 +53,7 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
     initialFocus,
     ...props 
   }, ref) => {
+    const { theme } = useTheme();
     // State for the currently displayed month
     const [month, setMonth] = React.useState(() => {
       return monthProp || (selected || new Date());
@@ -197,45 +200,47 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
     return (
       <div
         ref={ref}
-        className={cn(calendarVariants({ variant }), className)}
+        className={cn(calendarVariants({ variant }), className, "calendar")}
         {...props}
       >
         {/* Calendar Header */}
-        <div className={cn(calendarHeaderVariants({ variant }))}>
+        <div className={cn(calendarHeaderVariants({ variant }), "calendar-header")}>
           <button
             type="button"
             onClick={handlePrevMonth}
-            className={cn(calendarNavButtonVariants({ variant }))}
+            className={cn(calendarNavButtonVariants({ variant }), "calendar-nav-button")}
             aria-label="Previous month"
+            tabIndex={-1} // Prevent default focus
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           
-          <span className={cn(calendarMonthSelectVariants({ variant }))}>
+          <span className={cn(calendarMonthSelectVariants({ variant }), "calendar-month-select")}>
             {month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </span>
           
           <button
             type="button"
             onClick={handleNextMonth}
-            className={cn(calendarNavButtonVariants({ variant }))}
+            className={cn(calendarNavButtonVariants({ variant }), "calendar-nav-button")}
             aria-label="Next month"
+            tabIndex={-1} // Prevent default focus
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
         
         {/* Day Names */}
-        <div className={cn(calendarDayNamesVariants({ variant }))}>
+        <div className={cn(calendarDayNamesVariants({ variant }), "calendar-day-names")}>
           {dayNames.map((day) => (
-            <div key={day} className={cn(calendarDayNameVariants({ variant }))}>
+            <div key={day} className={cn(calendarDayNameVariants({ variant }), "calendar-day-name")}>
               {day}
             </div>
           ))}
         </div>
         
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 calendar-grid">
           {days.map((day, index) => (
             <button
               key={`${day.date.toISOString()}-${index}`}
@@ -249,7 +254,12 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
                   today: day.isToday,
                   disabled: day.isDisabled,
                   outside: day.isOutsideMonth,
-                })
+                }),
+                "calendar-day",
+                day.isSelected && "calendar-day-selected",
+                day.isToday && "calendar-day-today",
+                day.isDisabled && "calendar-day-disabled",
+                day.isOutsideMonth && "calendar-day-outside"
               )}
               aria-label={day.date.toLocaleDateString()}
               aria-selected={day.isSelected}

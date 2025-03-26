@@ -3,6 +3,10 @@ import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils,
 import { diaper, bottleBaby } from '@lucide/lab';
 import { ActivityType } from '../ui/activity-tile/activity-tile.types';
 import { Card } from '@/src/components/ui/card';
+import { useTheme } from '@/src/context/theme';
+import './daily-stats.css';
+import { cardStyles } from '../ui/card/card.styles';
+import { cn } from '@/src/lib/utils';
 
 interface DailyStatsProps {
   activities: ActivityType[];
@@ -25,6 +29,7 @@ interface StatsTickerProps {
 }
 
 const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
+  const { theme } = useTheme();
   const tickerRef = useRef<HTMLDivElement>(null);
   const [animationDuration, setAnimationDuration] = useState(30); // seconds
   
@@ -51,8 +56,8 @@ const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
       {stats.map((stat, index) => (
         <div key={index} className="inline-flex items-center mr-6">
           <div className="mr-1">{stat.icon}</div>
-          <span className="text-xs text-gray-600">{stat.label}: </span>
-          <span className="text-xs font-medium ml-1">{stat.value}</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400 daily-stats-ticker-text">{stat.label}: </span>
+          <span className="text-xs font-medium ml-1 dark:text-gray-200 daily-stats-ticker-value">{stat.value}</span>
         </div>
       ))}
     </>
@@ -85,17 +90,18 @@ const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
 
 const StatItem: React.FC<StatItemProps> = ({ icon, label, value }) => (
   <div className="flex items-center gap-2">
-    <div className="flex-shrink-0 p-2 rounded-xl bg-gray-100">
+    <div className="flex-shrink-0 p-2 rounded-xl bg-gray-100 dark:bg-gray-600 daily-stats-item-bg">
       {icon}
     </div>
     <div>
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className="text-sm font-medium">{value}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 daily-stats-item-label">{label}</div>
+      <div className="text-sm font-medium dark:text-gray-200 daily-stats-item-value">{value}</div>
     </div>
   </div>
 );
 
 export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoading = false }) => {
+  const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Helper function to format minutes into hours and minutes
@@ -275,12 +281,12 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   }, [activities, date]);
 
   return (
-    <Card className="overflow-hidden">
+    <Card className={cn(cardStyles.base2, 'overflow-hidden')}>
       <div 
-        className="flex items-center px-6 py-3 bg-gray-50 cursor-pointer"
+        className={cn("flex items-center px-6 py-3 bg-gray-50 dark:bg-gray-600 cursor-pointer border-b border-transparent dark:border-gray-500", "daily-stats-header")}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="text-sm font-medium">Daily Stats</h3>
+        <h3 className="text-sm font-medium dark:text-gray-200">Daily Stats</h3>
         
         {!isExpanded && !isLoading && activities.length > 0 && (
           <StatsTicker 
@@ -299,19 +305,19 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
           />
         )}
         
-        <button className="text-gray-500 hover:text-gray-700 ml-auto">
+        <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 ml-auto">
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
       </div>
       
       {isExpanded && (
-        <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
+        <div className={cn("grid grid-cols-2 gap-4 p-4 md:grid-cols-5", "dark:bg-gray-700", "daily-stats-content")}>
           {isLoading ? (
-            <div className="col-span-2 md:col-span-5 py-4 text-center text-gray-500">
+            <div className={cn("col-span-2 md:col-span-5 py-4 text-center text-gray-500 dark:text-gray-400", "daily-stats-empty")}>
               Loading daily statistics...
             </div>
           ) : activities.length === 0 ? (
-            <div className="col-span-2 md:col-span-5 py-4 text-center text-gray-500">
+            <div className={cn("col-span-2 md:col-span-5 py-4 text-center text-gray-500 dark:text-gray-400", "daily-stats-empty")}>
               No activities recorded for this day
             </div>
           ) : (
