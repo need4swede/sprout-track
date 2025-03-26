@@ -3,6 +3,8 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/src/lib/utils"
 import { selectStyles as styles } from "./select.styles"
+import { useTheme } from "@/src/context/theme"
+import "./select.css"
 import {
   SelectProps,
   SelectGroupProps,
@@ -25,18 +27,22 @@ const SelectValue = SelectPrimitive.Value
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(styles.trigger, className)}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className={styles.chevronIcon} />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
+>(({ className, children, ...props }, ref) => {
+  const { theme } = useTheme();
+  
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(styles.trigger, className, "select-trigger")}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className={cn(styles.chevronIcon, "select-icon")} />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  );
+})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef<
@@ -45,7 +51,7 @@ const SelectScrollUpButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
-    className={cn(styles.scrollButton, className)}
+    className={cn(styles.scrollButton, className, "select-icon")}
     {...props}
   >
     <ChevronUp className="h-4 w-4" />
@@ -59,7 +65,7 @@ const SelectScrollDownButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
-    className={cn(styles.scrollButton, className)}
+    className={cn(styles.scrollButton, className, "select-icon")}
     {...props}
   >
     <ChevronDown className="h-4 w-4" />
@@ -70,32 +76,37 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   SelectContentProps
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        styles.content,
-        position === "popper" && styles.contentPopper,
-        className
-      )}
-      position={position}
-      style={{ zIndex: 300 }} // Ensure higher z-index than form-page
-      {...props}
-    >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport
+>(({ className, children, position = "popper", ...props }, ref) => {
+  const { theme } = useTheme();
+  
+  return (
+    <SelectPrimitive.Portal>
+      <SelectPrimitive.Content
+        ref={ref}
         className={cn(
-          styles.viewport,
-          position === "popper" && styles.viewportPopper
+          styles.content,
+          position === "popper" && styles.contentPopper,
+          className,
+          "select-content"
         )}
+        position={position}
+        style={{ zIndex: 300 }} // Ensure higher z-index than form-page
+        {...props}
       >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-))
+        <SelectScrollUpButton />
+        <SelectPrimitive.Viewport
+          className={cn(
+            styles.viewport,
+            position === "popper" && styles.viewportPopper
+          )}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  );
+})
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
 const SelectLabel = React.forwardRef<
@@ -104,7 +115,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn(styles.label, className)}
+    className={cn(styles.label, className, "select-label")}
     {...props}
   />
 ))
@@ -116,12 +127,12 @@ const SelectItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
-    className={cn(styles.item, className)}
+    className={cn(styles.item, className, "select-item")}
     {...props}
   >
-    <span className={styles.itemIndicatorWrapper}>
+    <span className={cn(styles.itemIndicatorWrapper, "select-icon")}>
       <SelectPrimitive.ItemIndicator>
-        <Check className={styles.checkIcon} />
+        <Check className={cn(styles.checkIcon, "select-check-icon")} />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
@@ -135,7 +146,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn(styles.separator, className)}
+    className={cn(styles.separator, className, "select-separator")}
     {...props}
   />
 ))

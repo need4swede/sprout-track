@@ -15,13 +15,13 @@ export const checkboxVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500",
-        primary: "border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500",
-        secondary: "border-slate-300 data-[state=checked]:bg-slate-500 data-[state=checked]:border-slate-500",
-        success: "border-emerald-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500",
-        warning: "border-amber-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500",
-        danger: "border-red-300 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500",
-        info: "border-blue-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500",
+        default: "border-gray-300 dark:border-gray-600 data-[state=checked]:bg-orange-500 dark:data-[state=checked]:bg-teal-300 data-[state=checked]:border-orange-500 dark:data-[state=checked]:border-teal-300",
+        primary: "border-teal-300 dark:border-teal-600 data-[state=checked]:bg-teal-500 dark:data-[state=checked]:bg-teal-300 data-[state=checked]:border-teal-500 dark:data-[state=checked]:border-teal-300",
+        secondary: "border-slate-300 dark:border-slate-600 data-[state=checked]:bg-slate-500 dark:data-[state=checked]:bg-slate-400 data-[state=checked]:border-slate-500 dark:data-[state=checked]:border-slate-400",
+        success: "border-emerald-300 dark:border-emerald-600 data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-400 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-400",
+        warning: "border-amber-300 dark:border-amber-600 data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-400 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-400",
+        danger: "border-red-300 dark:border-red-600 data-[state=checked]:bg-red-500 dark:data-[state=checked]:bg-red-400 data-[state=checked]:border-red-500 dark:data-[state=checked]:border-red-400",
+        info: "border-blue-300 dark:border-blue-600 data-[state=checked]:bg-blue-500 dark:data-[state=checked]:bg-blue-400 data-[state=checked]:border-blue-500 dark:data-[state=checked]:border-blue-400",
       },
       size: {
         default: "h-5 w-5",

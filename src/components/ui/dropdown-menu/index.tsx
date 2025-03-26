@@ -3,6 +3,8 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Check, ChevronRight, Circle, GripVertical } from "lucide-react"
 import { cn } from "@/src/lib/utils"
 import { dropdownMenuStyles as styles } from "./dropdown-menu.styles"
+import { useTheme } from "@/src/context/theme"
+import "./dropdown-menu.css"
 import {
   DropdownMenuProps,
   DropdownMenuTriggerProps,
@@ -51,29 +53,37 @@ DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayNam
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   DropdownMenuSubContentProps
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubContent
-    ref={ref}
-    className={cn(styles.subContent, className)}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const { theme } = useTheme();
+  
+  return (
+    <DropdownMenuPrimitive.SubContent
+      ref={ref}
+      className={cn(styles.subContent, className, "dropdown-menu-content")}
+      {...props}
+    />
+  );
+})
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   DropdownMenuContentProps
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(styles.content, className)}
-      style={{ zIndex: 300 }} // Ensure higher z-index than form-page
-      {...props}
-    />
-  </DropdownMenuPrimitive.Portal>
-))
+>(({ className, sideOffset = 4, ...props }, ref) => {
+  const { theme } = useTheme();
+  
+  return (
+    <DropdownMenuPrimitive.Portal>
+      <DropdownMenuPrimitive.Content
+        ref={ref}
+        sideOffset={sideOffset}
+        className={cn(styles.content, className, "dropdown-menu-content")}
+        style={{ zIndex: 300 }} // Ensure higher z-index than form-page
+        {...props}
+      />
+    </DropdownMenuPrimitive.Portal>
+  );
+})
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
 
 const DropdownMenuItem = React.forwardRef<
@@ -82,7 +92,7 @@ const DropdownMenuItem = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
-    className={cn(styles.item, inset && styles.itemInset, className)}
+    className={cn(styles.item, inset && styles.itemInset, className, "dropdown-menu-item")}
     {...props}
   />
 ))
@@ -94,17 +104,17 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 >(({ className, children, checked, sortable, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
-    className={cn(sortable ? styles.sortableCheckboxItem : styles.checkboxItem, className)}
+    className={cn(sortable ? styles.sortableCheckboxItem : styles.checkboxItem, className, "dropdown-menu-item")}
     checked={checked}
     {...props}
   >
-    <span className={styles.iconWrapper}>
+    <span className={cn(styles.iconWrapper, "dropdown-menu-icon")}>
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className={styles.checkIcon} />
+        <Check className={cn(styles.checkIcon, "dropdown-menu-check-icon")} />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
-    {sortable && <GripVertical className={styles.dragHandle} />}
+    {sortable && <GripVertical className={cn(styles.dragHandle, "dropdown-menu-icon")} />}
   </DropdownMenuPrimitive.CheckboxItem>
 ))
 DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName
@@ -115,12 +125,12 @@ const DropdownMenuRadioItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
-    className={cn(styles.radioItem, className)}
+    className={cn(styles.radioItem, className, "dropdown-menu-item")}
     {...props}
   >
-    <span className={styles.iconWrapper}>
+    <span className={cn(styles.iconWrapper, "dropdown-menu-icon")}>
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className={styles.circleIcon} />
+        <Circle className={cn(styles.circleIcon, "dropdown-menu-circle-icon")} />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -134,7 +144,7 @@ const DropdownMenuLabel = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={cn(styles.label, inset && styles.labelInset, className)}
+    className={cn(styles.label, inset && styles.labelInset, className, "dropdown-menu-label")}
     {...props}
   />
 ))
@@ -146,7 +156,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn(styles.separator, className)}
+    className={cn(styles.separator, className, "dropdown-menu-separator")}
     {...props}
   />
 ))
@@ -158,7 +168,7 @@ const DropdownMenuShortcut = ({
 }: DropdownMenuShortcutProps) => {
   return (
     <span
-      className={cn(styles.shortcut, className)}
+      className={cn(styles.shortcut, className, "dropdown-menu-shortcut")}
       {...props}
     />
   )

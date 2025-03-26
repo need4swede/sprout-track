@@ -3,10 +3,18 @@ html.dark .activity-tile-group {
   background-color: #1f2937 !important; /* gray-800 */
 }
 
-html.dark .activity-tile-title {
+html.dark .activity-dropdown-item {
   color: #e5e7eb !important; /* gray-200 */
 }
 
 html.dark .activity-dropdown-item:hover {
   background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .activity-dropdown-item-drag-button {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .activity-dropdown-item-drag-button:hover {
+  background-color: #4b5563 !important; /* gray-600 */
 }

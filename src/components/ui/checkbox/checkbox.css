@@ -1,0 +1,19 @@
+/* Dark mode overrides for Checkbox component */
+html.dark .checkbox {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .checkbox[data-state="checked"] {
+  background-color: #5eead4 !important; /* teal-300 */
+  border-color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .checkbox-check {
+  color: #1f2937 !important; /* gray-800 */
+}
+
+html.dark .checkbox:focus-visible {
+  outline: 2px solid #5eead4 !important; /* teal-300 */
+  outline-offset: 2px !important;
+}

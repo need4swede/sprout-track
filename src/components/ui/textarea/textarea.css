@@ -1,0 +1,20 @@
+/* Dark mode overrides for Textarea component */
+html.dark .textarea {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #4b5563 !important; /* gray-600 */
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .textarea:hover {
+  background-color: #374151 !important; /* gray-700 */
+  border-color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .textarea:focus {
+  border-color: #5eead4 !important; /* teal-300 */
+  ring-color: rgba(94, 234, 212, 0.2) !important; /* teal-300 with opacity */
+}
+
+html.dark .textarea::placeholder {
+  color: #9ca3af !important; /* gray-400 */
+}

@@ -1,0 +1,38 @@
+/* Dark mode overrides for DropdownMenu component */
+html.dark .dropdown-menu-content {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .dropdown-menu-item {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .dropdown-menu-item:hover {
+  background-color: #374151 !important; /* gray-700 */
+  color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .dropdown-menu-label {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .dropdown-menu-separator {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .dropdown-menu-shortcut {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .dropdown-menu-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .dropdown-menu-check-icon {
+  color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .dropdown-menu-circle-icon {
+  fill: #5eead4 !important; /* teal-300 */
+}

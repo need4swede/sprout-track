@@ -4,6 +4,7 @@ import { StatusBubble } from "@/src/components/ui/status-bubble";
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, ActivitySettings } from '@/app/api/types';
 import { MoreVertical, ArrowDownUp } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
+import { cn } from '@/src/lib/utils';
 import './activity-tile-group.css';
 import {
   DropdownMenu,
@@ -551,8 +552,8 @@ export function ActivityTileGroup({
       <div className="relative w-[82px] h-24 flex-shrink-0 snap-center flex items-center justify-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className={styles.menuButton}>
-              <MoreVertical className={styles.menuIcon} />
+            <button className={cn(styles.menuButton, "dropdown-menu-button")}>
+              <MoreVertical className={cn(styles.menuIcon, "dropdown-menu-button-icon")} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -725,7 +726,7 @@ export function ActivityTileGroup({
                 data-key={`order-${activity}`}
               >
                 <button 
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing mr-2"
+                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing mr-2 activity-dropdown-item-drag-button"
                   onMouseDown={(e) => {
                     // Prevent dropdown from closing when starting drag
                     e.stopPropagation();

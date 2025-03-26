@@ -3,9 +3,11 @@
 import * as React from 'react';
 import { cn } from '@/src/lib/utils';
 import { Check } from 'lucide-react';
+import { useTheme } from '@/src/context/theme';
 
 import { checkboxVariants } from './checkbox.styles';
 import { CheckboxProps } from './checkbox.types';
+import './checkbox.css';
 
 /**
  * Checkbox component
@@ -31,6 +33,8 @@ import { CheckboxProps } from './checkbox.types';
  */
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, variant, size, checked, onCheckedChange, ...props }, ref) => {
+    const { theme } = useTheme();
+    
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (onCheckedChange) {
         onCheckedChange(event.target.checked);
@@ -50,13 +54,14 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <div
           className={cn(
             checkboxVariants({ variant, size }),
-            checked ? "" : "bg-white",
-            className
+            checked ? "" : "bg-white dark:bg-gray-800",
+            className,
+            "checkbox"
           )}
           data-state={checked ? "checked" : "unchecked"}
           onClick={() => onCheckedChange?.(!checked)}
         >
-          {checked && <Check className="h-3.5 w-3.5 text-white" />}
+          {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-800 checkbox-check" />}
         </div>
       </div>
     );
