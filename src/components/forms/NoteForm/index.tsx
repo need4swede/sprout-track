@@ -10,7 +10,18 @@ import {
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/src/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
 import { useTimezone } from '@/app/context/timezone';
+import { useTheme } from '@/src/context/theme';
+import './note-form.css';
 
 interface NoteFormProps {
   isOpen: boolean;
@@ -30,23 +41,17 @@ export default function NoteForm({
   onSuccess,
 }: NoteFormProps) {
   const { formatDate, toUTCString } = useTimezone();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     time: initialTime,
     content: '',
     category: '',
   });
   const [categories, setCategories] = useState<string[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Filter categories based on input
-  const filteredCategories = categories.filter(category =>
-    category.toLowerCase().includes(formData.category.toLowerCase())
-  );
 
   useEffect(() => {
     // Fetch existing categories
@@ -67,30 +72,6 @@ export default function NoteForm({
       fetchCategories();
     }
   }, [isOpen]);
-
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Reset selected index when input changes
-  useEffect(() => {
-    setSelectedIndex(-1);
-  }, [formData.category]);
 
   // Format date string to be compatible with datetime-local input
   const formatDateForInput = (dateStr: string) => {
@@ -196,27 +177,7 @@ export default function NoteForm({
 
   const handleCategorySelect = (category: string) => {
     setFormData(prev => ({ ...prev, category }));
-    setShowDropdown(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || filteredCategories.length === 0) return;
-
-    // Handle arrow keys for navigation
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(prev => 
-        prev < filteredCategories.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
-      e.preventDefault();
-      handleCategorySelect(filteredCategories[selectedIndex]);
-    } else if (e.key === 'Escape') {
-      setShowDropdown(false);
-    }
+    setDropdownOpen(false);
   };
 
   return (
@@ -247,37 +208,40 @@ export default function NoteForm({
               <div>
                 <label className="form-label">Category</label>
                 <div className="relative">
-                  <Input
-                    ref={inputRef}
-                    value={formData.category}
-                    onChange={(e) => {
-                      setFormData({ ...formData, category: e.target.value });
-                      setShowDropdown(true);
-                    }}
-                    onFocus={() => setShowDropdown(true)}
-                    onKeyDown={handleKeyDown}
-                    className="w-full"
-                    placeholder="Enter category"
-                    disabled={loading}
-                  />
-                  {showDropdown && filteredCategories.length > 0 && (
-                    <div 
-                      ref={dropdownRef}
-                      className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
-                    >
-                      {filteredCategories.map((category, index) => (
-                        <div
-                          key={category}
-                          className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                            index === selectedIndex ? 'bg-gray-100' : ''
-                          }`}
-                          onClick={() => handleCategorySelect(category)}
-                        >
-                          {category}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <div className="flex items-center w-full">
+                        <Input
+                          ref={inputRef}
+                          value={formData.category}
+                          onChange={(e) => {
+                            setFormData({ ...formData, category: e.target.value });
+                          }}
+                          className="w-full pr-10 note-form-dropdown-trigger"
+                          placeholder="Enter category"
+                          disabled={loading}
+                          onClick={() => setDropdownOpen(true)}
+                        />
+                        <ChevronDown className="absolute right-3 h-4 w-4 text-gray-500 dark:text-gray-400 note-form-dropdown-icon" />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-full" style={{ width: inputRef.current?.offsetWidth }}>
+                      {categories.length > 0 ? (
+                        <>
+                          {categories.map((category) => (
+                            <DropdownMenuItem 
+                              key={category}
+                              onClick={() => handleCategorySelect(category)}
+                            >
+                              {category}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      ) : (
+                        <DropdownMenuItem disabled>No categories found</DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>

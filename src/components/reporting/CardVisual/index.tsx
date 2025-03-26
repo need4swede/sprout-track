@@ -11,6 +11,8 @@ import {
 } from './card-visual.styles';
 import { CardVisualProps } from './card-visual.types';
 import { cn } from '@/src/lib/utils';
+import { useTheme } from '@/src/context/theme';
+import './card-visual.css';
 
 /**
  * CardVisual Component
@@ -37,33 +39,40 @@ const CardVisual: React.FC<CardVisualProps> = ({
   description,
   trend
 }) => {
+  const { theme } = useTheme();
   return (
-    <div className={cn(cardVisualContainer({ trend }), className)}>
+    <div className={cn(
+      cardVisualContainer({ trend }), 
+      className, 
+      "card-visual-container",
+      trend === 'positive' && "card-visual-trend-positive",
+      trend === 'negative' && "card-visual-trend-negative"
+    )}>
       <div className="relative">
-        <h3 className={cardVisualTitle()}>
+        <h3 className={cn(cardVisualTitle(), "card-visual-title")}>
           {title}
         </h3>
         
         {icon && (
-          <div className={cardVisualIconContainer()}>
+          <div className={cn(cardVisualIconContainer(), "card-visual-icon")}>
             {icon}
           </div>
         )}
       </div>
       
       <div className="mt-auto">
-        <div className={cardVisualMainValue()}>
+        <div className={cn(cardVisualMainValue(), "card-visual-main-value")}>
           {mainValue}
         </div>
         
         {comparativeValue && (
-          <div className={cardVisualComparativeValue()}>
+          <div className={cn(cardVisualComparativeValue(), "card-visual-comparative-value")}>
             {comparativeValue}
           </div>
         )}
         
         {description && (
-          <div className={cardVisualDescription()}>
+          <div className={cn(cardVisualDescription(), "card-visual-description")}>
             {description}
           </div>
         )}

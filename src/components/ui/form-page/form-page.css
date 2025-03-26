@@ -37,3 +37,8 @@ html.dark .form-page-footer {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */
 }
+
+/* Form label styling for dark mode */
+html.dark .form-label {
+  color: #9ca3af !important; /* gray-400 - lighter color for form labels */
+}

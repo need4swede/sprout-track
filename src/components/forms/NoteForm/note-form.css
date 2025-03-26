@@ -1,0 +1,24 @@
+/* Dark mode overrides for NoteForm component */
+
+/* Make dropdown trigger input look better in dark mode */
+html.dark .note-form-dropdown-trigger {
+  background-color: transparent !important;
+  border-color: #374151 !important; /* gray-700 */
+}
+
+/* Style for dropdown trigger icon in dark mode */
+html.dark .note-form-dropdown-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+/* Style for dropdown trigger on hover in dark mode */
+html.dark .note-form-dropdown-trigger:hover {
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+/* Style for dropdown trigger when focused in dark mode */
+html.dark .note-form-dropdown-trigger:focus {
+  border-color: #5eead4 !important; /* teal-300 */
+  outline: none !important;
+  ring-color: rgba(94, 234, 212, 0.5) !important; /* teal-300 with opacity */
+}

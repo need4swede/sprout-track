@@ -12,6 +12,8 @@ import {
 } from '@/src/components/ui/form-page';
 import { Check } from 'lucide-react';
 import { useTimezone } from '@/app/context/timezone';
+import { useTheme } from '@/src/context/theme';
+import './feed-form.css';
 
 // Import subcomponents
 import BreastFeedForm from './BreastFeedForm';
@@ -36,6 +38,7 @@ export default function FeedForm({
   onSuccess,
 }: FeedFormProps) {
   const { formatDate, toUTCString } = useTimezone();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     time: initialTime,
     type: '' as FeedType | '',
@@ -498,8 +501,8 @@ export default function FeedForm({
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'BREAST' })}
                     disabled={loading}
-                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'BREAST' 
-                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all feed-type-button ${formData.type === 'BREAST' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md feed-type-selected' 
                       : 'bg-gray-50 hover:bg-gray-100'}`}
                   >
                     <img 
@@ -520,8 +523,8 @@ export default function FeedForm({
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'BOTTLE' })}
                     disabled={loading}
-                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'BOTTLE' 
-                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all feed-type-button ${formData.type === 'BOTTLE' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md feed-type-selected' 
                       : 'bg-gray-50 hover:bg-gray-100'}`}
                   >
                     <img 
@@ -542,8 +545,8 @@ export default function FeedForm({
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'SOLIDS' })}
                     disabled={loading}
-                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all ${formData.type === 'SOLIDS' 
-                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md' 
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-full w-24 h-24 transition-all feed-type-button ${formData.type === 'SOLIDS' 
+                      ? 'bg-blue-100 ring-2 ring-blue-500 shadow-md feed-type-selected' 
                       : 'bg-gray-50 hover:bg-gray-100'}`}
                   >
                     <img 
