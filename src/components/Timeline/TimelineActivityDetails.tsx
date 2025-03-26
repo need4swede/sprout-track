@@ -7,6 +7,8 @@ import {
 } from '@/src/components/ui/form-page';
 import { TimelineActivityDetailsProps } from './types';
 import { getActivityDetails } from './utils';
+import { useTheme } from '@/src/context/theme';
+import './timeline-activity-details.css';
 
 const TimelineActivityDetails = ({
   activity,
@@ -16,6 +18,8 @@ const TimelineActivityDetails = ({
   onDelete,
   onEdit,
 }: TimelineActivityDetailsProps) => {
+  const { theme } = useTheme();
+  
   if (!activity) return null;
 
   const activityDetails = getActivityDetails(activity, settings);
@@ -44,8 +48,8 @@ const TimelineActivityDetails = ({
         <div className="space-y-4 p-4">
           {activityDetails.details.map((detail, index) => (
             <div key={index} className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-500">{detail.label}:</span>
-              <span className="text-sm text-gray-900">{detail.value}</span>
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400 timeline-details-label">{detail.label}:</span>
+              <span className="text-sm text-gray-900 dark:text-gray-200 timeline-details-value">{detail.value}</span>
             </div>
           ))}
         </div>

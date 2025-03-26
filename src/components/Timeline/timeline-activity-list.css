@@ -1,0 +1,39 @@
+/* Dark mode overrides for TimelineActivityList component */
+html.dark .timeline-activity-list,
+html.dark .timeline-activity-scroll-container {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+html.dark .timeline-activity-item {
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .timeline-activity-item:hover {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .timeline-activity-type {
+  background-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb !important; /* gray-200 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .timeline-activity-details {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .timeline-empty-state {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .timeline-empty-description {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .timeline-swipe-shadow-left {
+  background: linear-gradient(to right, rgba(75, 85, 99, 0.5), transparent) !important;
+}
+
+html.dark .timeline-swipe-shadow-right {
+  background: linear-gradient(to left, rgba(75, 85, 99, 0.5), transparent) !important;
+}

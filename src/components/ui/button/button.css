@@ -1,0 +1,24 @@
+/* Dark mode overrides for Button component */
+html.dark .button-dark-outline {
+  border-color: #4b5563 !important; /* gray-600 */
+  background-color: #1f2937 !important; /* gray-800 */
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .button-dark-outline:hover {
+  border-color: #5eead4 !important; /* teal-300 */
+  background-color: rgba(94, 234, 212, 0.1) !important; /* teal-300 with opacity */
+}
+
+html.dark .button-dark-ghost {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .button-dark-ghost:hover {
+  background-color: rgba(94, 234, 212, 0.1) !important; /* teal-300 with opacity */
+  color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .button-dark-link {
+  color: #5eead4 !important; /* teal-300 */
+}

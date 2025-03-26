@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/src/lib/utils';
 import { formPageStyles } from './form-page.styles';
+import { useTheme } from '@/src/context/theme';
+import './form-page.css';
 import { 
   FormPageProps, 
   FormPageHeaderProps, 
@@ -20,12 +22,13 @@ export function FormPageHeader({
   onClose,
   className
 }: FormPageHeaderProps) {
+  const { theme } = useTheme();
   return (
-    <div className={cn(formPageStyles.header, className)}>
+    <div className={cn(formPageStyles.header, className, "form-page-header")}>
       <div className={formPageStyles.titleContainer}>
-        <h2 className={formPageStyles.title}>{title}</h2>
+        <h2 className={cn(formPageStyles.title, "form-page-title")}>{title}</h2>
         {description && (
-          <p className={formPageStyles.description}>{description}</p>
+          <p className={cn(formPageStyles.description, "form-page-description")}>{description}</p>
         )}
       </div>
     </div>
@@ -41,8 +44,9 @@ export function FormPageContent({
   children, 
   className 
 }: FormPageContentProps) {
+  const { theme } = useTheme();
   return (
-    <div className={cn(formPageStyles.content, className)}>
+    <div className={cn(formPageStyles.content, className, "form-page-content")}>
       <div className={formPageStyles.formContent}>
         {children}
       </div>
@@ -59,8 +63,9 @@ export function FormPageFooter({
   children, 
   className 
 }: FormPageFooterProps) {
+  const { theme } = useTheme();
   return (
-    <div className={cn(formPageStyles.footer, className)}>
+    <div className={cn(formPageStyles.footer, className, "form-page-footer")}>
       {children}
     </div>
   );
@@ -83,6 +88,7 @@ export function FormPage({
   children,
   className,
 }: FormPageProps) {
+  const { theme } = useTheme();
   // State to track if we're in a browser environment
   const [mounted, setMounted] = useState(false);
 
@@ -122,7 +128,8 @@ export function FormPage({
       <div 
         className={cn(
           formPageStyles.overlay,
-          isOpen ? formPageStyles.overlayOpen : formPageStyles.overlayClosed
+          isOpen ? formPageStyles.overlayOpen : formPageStyles.overlayClosed,
+          "form-page-overlay"
         )}
         onClick={onClose}
         aria-hidden="true"
@@ -134,7 +141,8 @@ export function FormPage({
         className={cn(
           formPageStyles.container,
           isOpen ? formPageStyles.containerOpen : formPageStyles.containerClosed,
-          className
+          className,
+          "form-page-container dark:bg-gray-800 dark:border-gray-700"
         )}
         role="dialog"
         aria-modal="true"

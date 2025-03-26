@@ -8,7 +8,7 @@ import { cva } from "class-variance-authority";
  */
 export const formPageStyles = {
   // Main container
-  container: "fixed inset-y-0 right-0 z-[99] flex flex-col bg-white/95 backdrop-blur-sm transform transition-transform duration-300 ease-in-out w-full sm:max-w-lg md:max-w-xl border-l border-slate-200 overflow-hidden",
+  container: "fixed inset-y-0 right-0 z-[99] flex flex-col bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm transform transition-transform duration-300 ease-in-out w-full sm:max-w-lg md:max-w-xl border-l border-slate-200 dark:border-gray-700 overflow-hidden",
   
   // Container when open
   containerOpen: "translate-x-0",
@@ -17,7 +17,7 @@ export const formPageStyles = {
   containerClosed: "translate-x-full",
   
   // Overlay background
-  overlay: "fixed inset-0 bg-black/30 z-[98] transition-opacity duration-300",
+  overlay: "fixed inset-0 bg-black/30 dark:bg-black/50 z-[98] transition-opacity duration-300",
   
   // Overlay when open
   overlayOpen: "opacity-100",
@@ -26,19 +26,19 @@ export const formPageStyles = {
   overlayClosed: "opacity-0 pointer-events-none",
   
   // Header section
-  header: "flex items-center justify-between p-4 border-b border-gray-200",
+  header: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700",
   
   // Title container
   titleContainer: "flex flex-col",
   
   // Title
-  title: "text-lg font-semibold text-slate-800",
+  title: "text-lg font-semibold text-slate-800 dark:text-gray-200",
   
   // Description
-  description: "text-sm text-gray-500 mt-1",
+  description: "text-sm text-gray-500 dark:text-gray-400 mt-1",
   
   // Close button
-  closeButton: "text-gray-500 hover:text-gray-700 transition-colors duration-200 p-2 rounded-full hover:bg-slate-100/80",
+  closeButton: "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200 p-2 rounded-full hover:bg-slate-100/80 dark:hover:bg-gray-700/80",
   
   // Content container (scrollable area)
   content: "flex-1 overflow-y-auto p-4 pb-20", // Added bottom padding to ensure content doesn't get hidden behind fixed footer
@@ -47,7 +47,7 @@ export const formPageStyles = {
   formContent: "flex flex-col space-y-6 mx-auto max-w-md sm:mx-0",
   
   // Footer section
-  footer: "border-t border-gray-200 p-4 flex justify-end gap-2 bg-white/95 backdrop-blur-sm absolute bottom-0 left-0 right-0 z-10",
+  footer: "border-t border-gray-200 dark:border-gray-700 p-4 flex justify-end gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm absolute bottom-0 left-0 right-0 z-10",
 };
 
 /**

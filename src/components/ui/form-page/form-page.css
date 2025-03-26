@@ -1,0 +1,39 @@
+/* Dark mode overrides for FormPage component */
+html.dark .form-page-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .form-page-overlay {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .form-page-header {
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .form-page-title {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .form-page-description {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .form-page-close-button {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .form-page-close-button:hover {
+  color: #e5e7eb !important; /* gray-200 */
+  background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .form-page-content {
+  /* No specific overrides needed for content container */
+}
+
+html.dark .form-page-footer {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}

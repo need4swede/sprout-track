@@ -1,9 +1,11 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/src/lib/utils"
+import { useTheme } from "@/src/context/theme"
 
 import { buttonVariants } from "./button.styles"
 import { ButtonProps } from "./button.types"
+import "./button.css"
 
 /**
  * Button component with multiple variants and sizes
@@ -27,10 +29,16 @@ import { ButtonProps } from "./button.types"
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const { theme } = useTheme();
+    
+    // Add dark mode specific classes based on variant
+    const darkModeClass = variant === 'outline' ? 'button-dark-outline' : 
+                          variant === 'ghost' ? 'button-dark-ghost' : 
+                          variant === 'link' ? 'button-dark-link' : '';
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, className }), darkModeClass)}
         ref={ref}
         {...props}
       />
