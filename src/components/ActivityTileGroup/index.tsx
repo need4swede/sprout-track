@@ -552,23 +552,25 @@ export function ActivityTileGroup({
       <div className="relative w-[82px] h-24 flex-shrink-0 snap-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <ActivityTile
-              activity={{
-                id: 'configure-button',
-                babyId: selectedBaby.id,
-                time: new Date().toISOString(),
-                content: '',
-                category: 'Configure',
-                caretakerId: null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                deletedAt: null
-              } as unknown as NoteResponse}
-              title="Configure"
-              variant="default"
-              isButton={true}
-              icon={<img src="/config-128.png" alt="Configure" width={48} height={48} className="object-contain" />}
-            />
+            <button className="w-full h-full bg-transparent border-0 cursor-pointer p-0 m-0">
+              <ActivityTile
+                activity={{
+                  id: 'configure-button',
+                  babyId: selectedBaby.id,
+                  time: new Date().toISOString(),
+                  content: '',
+                  category: 'Configure',
+                  caretakerId: null,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  deletedAt: null
+                } as unknown as NoteResponse}
+                title="Configure"
+                variant="default"
+                isButton={true}
+                icon={<img src="/config-128.png" alt="Configure" width={48} height={48} className="object-contain" />}
+              />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* Combined Visibility and Reordering Options */}
