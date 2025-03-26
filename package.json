@@ -43,7 +43,7 @@
   "devDependencies": {
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/postcss": "^4.0.17",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.4",
     "@types/react": "^19.0.8",
