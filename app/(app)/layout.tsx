@@ -431,16 +431,12 @@ export default function AppLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={cn('h-full', fontSans.variable)} suppressHydrationWarning>
-      <body className={cn('min-h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-900 dark:to-black font-sans antialiased')} suppressHydrationWarning>
-        <BabyProvider>
-          <TimezoneProvider>
-            <ThemeProvider>
-              <AppContent>{children}</AppContent>
-            </ThemeProvider>
-          </TimezoneProvider>
-        </BabyProvider>
-      </body>
-    </html>
+    <BabyProvider>
+      <TimezoneProvider>
+        <ThemeProvider>
+          <AppContent>{children}</AppContent>
+        </ThemeProvider>
+      </TimezoneProvider>
+    </BabyProvider>
   );
 }
