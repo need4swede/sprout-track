@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Settings, LogOut } from 'lucide-react';
 import ThemeToggle from '@/src/components/ui/theme-toggle';
 import Image from 'next/image';
+import { useTheme } from '@/src/context/theme';
 import { cn } from '@/src/lib/utils';
 import { sideNavStyles, triggerButtonVariants } from './side-nav.styles';
 import { SideNavProps, SideNavTriggerProps, SideNavItemProps } from './side-nav.types';
@@ -105,6 +106,24 @@ export const SideNav: React.FC<SideNavProps> = ({
   className,
   nonModal = false,
 }) => {
+  const { theme } = useTheme();
+  const [isSystemDarkMode, setIsSystemDarkMode] = useState<boolean>(false);
+  
+  // Check if system is in dark mode
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      setIsSystemDarkMode(darkModeMediaQuery.matches);
+      
+      const handleChange = (e: MediaQueryListEvent) => {
+        setIsSystemDarkMode(e.matches);
+      };
+      
+      darkModeMediaQuery.addEventListener('change', handleChange);
+      return () => darkModeMediaQuery.removeEventListener('change', handleChange);
+    }
+  }, []);
+  
   // Close the side nav when pressing Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -210,8 +229,10 @@ export const SideNav: React.FC<SideNavProps> = ({
 
         {/* Footer with Theme Toggle, Settings and Logout */}
         <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
-          {/* Theme Toggle Component */}
-          <ThemeToggle className="mb-2" />
+          {/* Theme Toggle Component - only shown when system is not in dark mode */}
+          {!isSystemDarkMode && (
+            <ThemeToggle className="mb-2" />
+          )}
           
           {/* Settings Button - only shown for admins */}
           {isAdmin && (

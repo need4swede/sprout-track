@@ -14,11 +14,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize useSystemTheme state - default to true
+  // Initialize useSystemTheme state - default to false
   const [useSystemTheme, setUseSystemTheme] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true; // Default for SSR
+    if (typeof window === 'undefined') return false; // Default for SSR
     const savedUseSystemTheme = localStorage.getItem('useSystemTheme');
-    return savedUseSystemTheme === null ? true : savedUseSystemTheme === 'true';
+    return savedUseSystemTheme === null ? false : savedUseSystemTheme === 'true';
   });
 
   // Initialize theme state based on localStorage, system preference, or default
