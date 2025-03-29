@@ -1,0 +1,23 @@
+/* Theme toggle styles */
+.theme-toggle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Dark mode overrides */
+html.dark .theme-toggle-button {
+  color: #e5e7eb; /* gray-200 */
+}
+
+html.dark .theme-toggle-button:hover {
+  background-color: #374151; /* gray-700 */
+  color: #9ca3af; /* gray-400 */
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+  .theme-toggle-container {
+    flex-direction: row;
+  }
+}

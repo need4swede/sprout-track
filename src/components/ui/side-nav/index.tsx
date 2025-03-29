@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { X, Settings, LogOut, Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/src/context/theme';
+import { X, Settings, LogOut } from 'lucide-react';
+import ThemeToggle from '@/src/components/ui/theme-toggle';
 import Image from 'next/image';
 import { cn } from '@/src/lib/utils';
 import { sideNavStyles, triggerButtonVariants } from './side-nav.styles';
@@ -105,8 +105,6 @@ export const SideNav: React.FC<SideNavProps> = ({
   className,
   nonModal = false,
 }) => {
-  const { theme, toggleTheme } = useTheme();
-  
   // Close the side nav when pressing Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -212,13 +210,8 @@ export const SideNav: React.FC<SideNavProps> = ({
 
         {/* Footer with Theme Toggle, Settings and Logout */}
         <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
-          {/* Theme Toggle Button */}
-          <FooterButton
-            icon={theme === 'light' ? <Moon /> : <Sun />}
-            label={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-            onClick={toggleTheme}
-            ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          />
+          {/* Theme Toggle Component */}
+          <ThemeToggle className="mb-2" />
           
           {/* Settings Button - only shown for admins */}
           {isAdmin && (

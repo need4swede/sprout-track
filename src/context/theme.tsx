@@ -6,18 +6,33 @@ type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
+  useSystemTheme: boolean;
   toggleTheme: () => void;
+  toggleUseSystemTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize theme state based on localStorage or system preference
+  // Initialize useSystemTheme state - default to true
+  const [useSystemTheme, setUseSystemTheme] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true; // Default for SSR
+    const savedUseSystemTheme = localStorage.getItem('useSystemTheme');
+    return savedUseSystemTheme === null ? true : savedUseSystemTheme === 'true';
+  });
+
+  // Initialize theme state based on localStorage, system preference, or default
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light'; // Default for SSR
+    
+    // If using system theme, check system preference
+    if (useSystemTheme) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    // Otherwise use saved theme or default to light
     const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme) return savedTheme;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return savedTheme || 'light';
   });
 
   // Effect to apply theme class to HTML element and listen for system changes
@@ -30,37 +45,75 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.classList.remove('dark');
       }
 
-      // Listener for system theme changes
+      // Listener for system theme changes - only active when useSystemTheme is true
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e: MediaQueryListEvent) => {
-        // Only update if NO user preference is stored in localStorage
-        if (!localStorage.getItem('theme')) {
+        if (useSystemTheme) {
           const systemTheme: Theme = e.matches ? 'dark' : 'light';
-          setTheme(systemTheme); // Update state, which triggers this effect again
+          setTheme(systemTheme);
         }
       };
 
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [theme]); // Re-run this effect whenever the theme state changes
+  }, [theme, useSystemTheme]); // Re-run this effect when theme or useSystemTheme changes
+
+  // Update theme based on system preference when useSystemTheme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (useSystemTheme) {
+        // If using system theme, update theme based on system preference
+        const systemTheme: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        setTheme(systemTheme);
+      } else {
+        // If not using system theme, use the saved theme or default to light
+        const savedTheme = localStorage.getItem('theme') as Theme;
+        if (savedTheme) {
+          setTheme(savedTheme);
+        }
+      }
+    }
+  }, [useSystemTheme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    // Save the user's explicit preference to localStorage
-    localStorage.setItem('theme', newTheme);
+    
+    // Only save to localStorage if not using system theme
+    if (!useSystemTheme) {
+      localStorage.setItem('theme', newTheme);
+    }
+    
     // Update the theme state, triggering the useEffect to update the DOM
     setTheme(newTheme);
 
     // Optional: Keep debug info if needed
     console.log('Theme toggled to:', newTheme);
+    console.log('Using system theme:', useSystemTheme);
     console.log('localStorage theme:', localStorage.getItem('theme'));
     console.log('Dark class present:', document.documentElement.classList.contains('dark'));
-    console.log('HTML classes:', document.documentElement.className);
+  };
+  
+  const toggleUseSystemTheme = () => {
+    const newUseSystemTheme = !useSystemTheme;
+    
+    // Save the preference to localStorage
+    localStorage.setItem('useSystemTheme', String(newUseSystemTheme));
+    
+    // Update the state
+    setUseSystemTheme(newUseSystemTheme);
+    
+    // If switching to system theme, update theme immediately based on system preference
+    if (newUseSystemTheme && typeof window !== 'undefined') {
+      const systemTheme: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      setTheme(systemTheme);
+    }
+    
+    console.log('Use system theme toggled to:', newUseSystemTheme);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, useSystemTheme, toggleTheme, toggleUseSystemTheme }}>
       {children}
     </ThemeContext.Provider>
   );
