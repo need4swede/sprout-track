@@ -1,65 +1,70 @@
-/* Dark mode overrides for side navigation */
+/* 
+  Dark mode styles are now handled by Tailwind's dark: variants 
+  in side-nav.styles.ts, driven by the ThemeProvider context.
+  Removed manual html.dark overrides and !important flags to prevent conflicts.
+*/
 html.dark .side-nav {
-  background-color: #4b5563 !important; /* gray-600 */
-  color: #e5e7eb !important; /* gray-200 */
+  background-color: #4b5563; /* gray-600 */
+  color: #e5e7eb; /* gray-200 */
 }
 
 html.dark .side-nav-header {
-  background-color: #4b5563 !important; /* gray-600 */
+  background-color: #4b5563; /* gray-600 */
 }
 
 html.dark .side-nav-header .mx-auto {
-  border-bottom: 1px solid #6b7280 !important; /* gray-500 */
+  border-bottom: 1px solid #6b7280; /* gray-500 */
 }
 
 html.dark .side-nav-footer {
-  border-color: #6b7280 !important; /* gray-500 */
+  border-color: #6b7280; /* gray-500 */
 }
 
 html.dark .side-nav-app-name {
-  color: #5eead4 !important; /* teal-300 */
+  color: #5eead4; /* teal-300 */
 }
 
 html.dark .side-nav-close-button {
-  color: #e5e7eb !important; /* gray-200 */
+  color: #e5e7eb; /* gray-200 */
 }
 
 html.dark .side-nav-close-button:hover {
-  color: #ffffff !important; /* white */
+  color: #ffffff; /* white */
 }
 
 html.dark .side-nav-item {
-  color: #e5e7eb !important; /* gray-200 */
+  color: #e5e7eb; /* gray-200 */
 }
 
 html.dark .side-nav-item:hover {
-  background-color: #374151 !important; /* gray-700 */
-  color: #9ca3af !important; /* gray-400 */
+  background-color: #374151; /* gray-700 */
+  color: #9ca3af; /* gray-400 */
 }
 
 html.dark .side-nav-item.active {
-  background-color: #1f2937 !important; /* gray-800 */
-  color: #5eead4 !important; /* teal-300 */
+  background-color: #1f2937; /* gray-800 */
+  color: #5eead4; /* teal-300 */
 }
 
 /* Ensure consistent spacing between nav items and footer buttons */
+/* These might still be needed if not covered by Tailwind utilities */
 .side-nav-item:last-child {
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
 }
 
 .side-nav-settings-button {
-  margin-bottom: 8px !important;
+  margin-bottom: 8px;
 }
 
 .side-nav-settings-button:last-child {
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
 }
 
 html.dark .side-nav-settings-button {
-  color: #e5e7eb !important; /* gray-200 */
+  color: #e5e7eb; /* gray-200 */
 }
 
 html.dark .side-nav-settings-button:hover {
-  background-color: #374151 !important; /* gray-700 */
-  color: #9ca3af !important; /* gray-400 */
+  background-color: #374151; /* gray-700 */
+  color: #9ca3af; /* gray-400 */
 }

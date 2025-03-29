@@ -12,75 +12,53 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
-  
-  // Initialize theme from localStorage or system preference on mount
+  // Initialize theme state based on localStorage or system preference
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light'; // Default for SSR
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  // Effect to apply theme class to HTML element and listen for system changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // First check localStorage for user preference
-      const savedTheme = localStorage.getItem('theme') as Theme;
-      
-      if (savedTheme) {
-        // Use saved preference if available
-        setTheme(savedTheme);
-        if (savedTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+      // Apply the current theme state to the DOM
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
       } else {
-        // Otherwise, check system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const systemTheme: Theme = prefersDark ? 'dark' : 'light';
-        
-        setTheme(systemTheme);
-        if (systemTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.remove('dark');
       }
-      
-      // Listen for system theme changes
+
+      // Listener for system theme changes
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e: MediaQueryListEvent) => {
-        // Only apply system preference if user hasn't set a preference
+        // Only update if NO user preference is stored in localStorage
         if (!localStorage.getItem('theme')) {
-          const newTheme: Theme = e.matches ? 'dark' : 'light';
-          setTheme(newTheme);
-          if (newTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
+          const systemTheme: Theme = e.matches ? 'dark' : 'light';
+          setTheme(systemTheme); // Update state, which triggers this effect again
         }
       };
-      
+
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, []);
-  
+  }, [theme]); // Re-run this effect whenever the theme state changes
+
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    
-    // Save to localStorage
+    // Save the user's explicit preference to localStorage
     localStorage.setItem('theme', newTheme);
-    
-    // Toggle the dark class on the html element
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
-    // Debug information
+    // Update the theme state, triggering the useEffect to update the DOM
+    setTheme(newTheme);
+
+    // Optional: Keep debug info if needed
     console.log('Theme toggled to:', newTheme);
+    console.log('localStorage theme:', localStorage.getItem('theme'));
     console.log('Dark class present:', document.documentElement.classList.contains('dark'));
     console.log('HTML classes:', document.documentElement.className);
   };
-  
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
