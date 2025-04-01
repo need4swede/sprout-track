@@ -19,6 +19,7 @@ export const activityTileStyles = {
       bath: "",
       pump: "",
       measurement: "",
+      milestone: "",
       default: ""
     }
   },
@@ -33,6 +34,7 @@ export const activityTileStyles = {
       bath: "",
       pump: "",
       measurement: "",
+      milestone: "",
       default: ""
     }
   },
@@ -47,6 +49,7 @@ export const activityTileStyles = {
       bath: "text-orange-600",
       pump: "text-purple-600",
       measurement: "text-indigo-600",
+      milestone: "text-pink-600",
       default: "text-gray-800 dark:text-gray-200"
     },
     // Default icon paths for each variant
@@ -58,6 +61,7 @@ export const activityTileStyles = {
       bath: "/bath-128.png",
       pump: "/pump-128.png",
       measurement: "/measurement-128.png",
+      milestone: "/milestone-128.png",
       default: "/config-128.png"
     }
   },

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse, MilestoneResponse } from '@/app/api/types';
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import { StatusBubble } from "@/src/components/ui/status-bubble";
@@ -19,6 +19,7 @@ import NoteForm from '@/src/components/forms/NoteForm';
 import BathForm from '@/src/components/forms/BathForm';
 import PumpForm from '@/src/components/forms/PumpForm';
 import MeasurementForm from '@/src/components/forms/MeasurementForm';
+import MilestoneForm from '@/src/components/forms/MilestoneForm';
 
 function HomeContent(): React.ReactElement {
   const { selectedBaby, sleepingBabies, setSleepingBabies } = useBaby();
@@ -31,6 +32,7 @@ function HomeContent(): React.ReactElement {
   const [showBathModal, setShowBathModal] = useState(false);
   const [showPumpModal, setShowPumpModal] = useState(false);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [localTime, setLocalTime] = useState<string>('');
@@ -267,6 +269,7 @@ function HomeContent(): React.ReactElement {
           onBathClick={() => setShowBathModal(true)}
           onPumpClick={() => setShowPumpModal(true)}
           onMeasurementClick={() => setShowMeasurementModal(true)}
+          onMilestoneClick={() => setShowMilestoneModal(true)}
         />
       )}
 
@@ -435,6 +438,21 @@ function HomeContent(): React.ReactElement {
         isOpen={showMeasurementModal}
         onClose={() => {
           setShowMeasurementModal(false);
+        }}
+        babyId={selectedBaby?.id || ''}
+        initialTime={localTime}
+        onSuccess={() => {
+          if (selectedBaby?.id) {
+            refreshActivities(selectedBaby.id);
+          }
+        }}
+      />
+      
+      {/* Milestone Form */}
+      <MilestoneForm
+        isOpen={showMilestoneModal}
+        onClose={() => {
+          setShowMilestoneModal(false);
         }}
         babyId={selectedBaby?.id || ''}
         initialTime={localTime}

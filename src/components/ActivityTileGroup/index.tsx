@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ActivityTile } from '@/src/components/ui/activity-tile';
 import { StatusBubble } from "@/src/components/ui/status-bubble";
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse, ActivitySettings } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse, MilestoneResponse, ActivitySettings } from '@/app/api/types';
 import { MoreVertical, ArrowDownUp } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
 import { cn } from '@/src/lib/utils';
@@ -35,6 +35,7 @@ interface ActivityTileGroupProps {
   onBathClick: () => void;
   onPumpClick: () => void;
   onMeasurementClick: () => void;
+  onMilestoneClick: () => void;
 }
 
 /**
@@ -44,7 +45,7 @@ interface ActivityTileGroupProps {
  * and displaying status bubbles with timing information.
  */
 // Activity type definition
-type ActivityType = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'measurement';
+type ActivityType = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'measurement' | 'milestone';
 
 export function ActivityTileGroup({
   selectedBaby,
@@ -60,7 +61,8 @@ export function ActivityTileGroup({
   onNoteClick,
   onBathClick,
   onPumpClick,
-  onMeasurementClick
+  onMeasurementClick,
+  onMilestoneClick
 }: ActivityTileGroupProps) {
   const { theme } = useTheme();
   
@@ -150,11 +152,15 @@ export function ActivityTileGroup({
           if (data.success && data.data) {
             console.log(`Successfully loaded settings:`, data.data);
             
-            // Get the loaded order and ensure measurement is included
+            // Get the loaded order and ensure measurement and milestone are included
             const loadedOrder = [...data.data.order] as ActivityType[];
             if (!loadedOrder.includes('measurement')) {
               // Add measurement to the end of the order if it doesn't exist
               loadedOrder.push('measurement');
+            }
+            if (!loadedOrder.includes('milestone')) {
+              // Add milestone to the end of the order if it doesn't exist
+              loadedOrder.push('milestone');
             }
             
             // Get visible activities without modifying them
@@ -205,10 +211,10 @@ export function ActivityTileGroup({
   
   // Function to set default settings
   const setDefaultSettings = () => {
-    // Include measurement in the order but not necessarily in visible activities
-    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'];
-    // Default visible activities (not including measurement by default)
-    const defaultVisible: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'];
+    // Include measurement and milestone in the order but not necessarily in visible activities
+    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
+    // Default visible activities
+    const defaultVisible: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
     
     setActivityOrder(defaultOrder);
     setVisibleActivities(new Set(defaultOrder));
@@ -225,8 +231,8 @@ export function ActivityTileGroup({
   };
   
   // Refs to store the original settings for comparison
-  const originalOrderRef = React.useRef<ActivityType[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement']);
-  const originalVisibleRef = React.useRef<string[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']);
+  const originalOrderRef = React.useRef<ActivityType[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone']);
+  const originalVisibleRef = React.useRef<string[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone']);
   
   // Track if settings have been modified since loading
   const [settingsModified, setSettingsModified] = useState(false);
@@ -345,7 +351,8 @@ export function ActivityTileGroup({
     note: 'Note',
     bath: 'Bath',
     pump: 'Pump',
-    measurement: 'Measurement'
+    measurement: 'Measurement',
+    milestone: 'Milestone'
   };
 
   // Function to render activity tile based on type
@@ -578,6 +585,32 @@ export function ActivityTileGroup({
               onClick={() => {
                 updateUnlockTimer();
                 onMeasurementClick();
+              }}
+            />
+          </div>
+        );
+      case 'milestone':
+        return (
+          <div key="milestone" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
+            <ActivityTile
+              activity={{
+                id: 'milestone-button',
+                babyId: selectedBaby.id,
+                date: new Date().toISOString(),
+                title: 'New Milestone',
+                description: '',
+                category: 'MOTOR',
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              } as unknown as MilestoneResponse}
+              title="Milestone"
+              variant="milestone"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                onMilestoneClick();
               }}
             />
           </div>
