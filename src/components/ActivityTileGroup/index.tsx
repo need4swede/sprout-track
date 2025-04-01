@@ -80,6 +80,7 @@ export function ActivityTileGroup({
   
   // State for drag and drop
   const [draggedActivity, setDraggedActivity] = useState<ActivityType | null>(null);
+  const touchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null); // Ref for touch start timeout
   
   // State for tracking if settings have been loaded
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -649,32 +650,35 @@ export function ActivityTileGroup({
               />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          {/* Apply scrolling directly to DropdownMenuContent */}
+          <DropdownMenuContent align="end" className="max-h-[80vh] overflow-y-auto p-1"> 
             {/* Combined Visibility and Reordering Options */}
             {activityOrder.map((activity, index) => (
-              <div 
+                <div
                 key={`order-${activity}`} 
                 className={`flex items-center px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : ''} activity-dropdown-item`}
                 draggable="true"
                 onDragStart={(e) => {
+                  // Original onDragStart logic
                   e.dataTransfer.effectAllowed = 'move';
                   e.dataTransfer.setData('text/plain', activity);
                   setDraggedActivity(activity);
                   
-                  // Capture a reference to the element before setTimeout
-                  const element = e.currentTarget;
+                  // Capture a reference to the element for visual feedback (desktop)
+                  const element = e.currentTarget as HTMLElement;
                   // Add a delay to make sure the drag effect is visible
                   setTimeout(() => {
                     if (element) {
-                      element.classList.add('opacity-50', 'bg-gray-100');
+                      element.classList.add('opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
                     }
-                  }, 0);
+                  }, 0); 
                 }}
                 onDragEnd={(e) => {
                   setDraggedActivity(null);
-                  // Remove all highlights
+                  setDraggedActivity(null);
+                  // Remove all highlights (including dark mode)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
+                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
                   });
                 }}
                 onDragOver={(e) => {
@@ -682,17 +686,17 @@ export function ActivityTileGroup({
                   e.stopPropagation();
                   e.dataTransfer.dropEffect = 'move';
                   if (draggedActivity && draggedActivity !== activity) {
-                    e.currentTarget.classList.add('bg-emerald-50');
+                    e.currentTarget.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
                   }
                 }}
                 onDragLeave={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.remove('bg-emerald-50');
+                  e.currentTarget.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  e.currentTarget.classList.remove('bg-emerald-50');
+                  e.currentTarget.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
                   
                   const droppedActivity = e.dataTransfer.getData('text/plain') as ActivityType;
                   
@@ -713,22 +717,24 @@ export function ActivityTileGroup({
                 onTouchStart={(e) => {
                   // Store the initial touch position
                   const touch = e.touches[0];
-                  e.currentTarget.setAttribute('data-touch-start-x', touch.clientX.toString());
-                  e.currentTarget.setAttribute('data-touch-start-y', touch.clientY.toString());
-                  
-                  // Set a timeout to trigger drag mode if touch is held
-                  const touchTimeout = setTimeout(() => {
-                    setDraggedActivity(activity);
-                    e.currentTarget.classList.add('opacity-50', 'bg-gray-100');
-                  }, 200);
-                  
-                  e.currentTarget.setAttribute('data-touch-timeout', touchTimeout.toString());
+                  const targetElement = e.currentTarget as HTMLElement; // Cast here
+                  targetElement.setAttribute('data-touch-start-x', touch.clientX.toString());
+                  targetElement.setAttribute('data-touch-start-y', touch.clientY.toString());
+
+                  // Clear any previous timeout
+                  if (touchTimeoutRef.current) {
+                    clearTimeout(touchTimeoutRef.current);
+                  }
+
+                  // Set a timeout ONLY to set the drag state. Visuals handled by className.
+                  touchTimeoutRef.current = setTimeout(() => {
+                    setDraggedActivity(activity); 
+                    touchTimeoutRef.current = null; // Clear ref after execution
+                  }, 150); 
                 }}
                 onTouchMove={(e) => {
                   if (!draggedActivity) return;
-                  
-                  e.preventDefault(); // Prevent scrolling while dragging
-                  
+                                    
                   // Find the element under the touch point
                   const touch = e.touches[0];
                   const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
@@ -740,27 +746,34 @@ export function ActivityTileGroup({
                     el.getAttribute('data-key') !== `order-${draggedActivity}`
                   ) as HTMLElement | undefined;
                   
-                  // Remove highlight from all items
+                  // Remove highlight from all items (including dark mode)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
                     if (el !== e.currentTarget) {
-                      el.classList.remove('bg-emerald-50');
+                      el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
                     }
                   });
                   
-                  // Add highlight to the element under touch
+                  // Add highlight to the element under touch (including dark mode)
                   if (touchedElement) {
-                    touchedElement.classList.add('bg-emerald-50');
+                    touchedElement.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
                   }
                 }}
                 onTouchEnd={(e) => {
-                  // Clear the touch timeout if it exists
-                  const timeoutId = e.currentTarget.getAttribute('data-touch-timeout');
-                  if (timeoutId) {
-                    clearTimeout(parseInt(timeoutId));
-                    e.currentTarget.removeAttribute('data-touch-timeout');
+                  // Clear the timeout if touch ends before it fires
+                  if (touchTimeoutRef.current) {
+                    clearTimeout(touchTimeoutRef.current);
+                    touchTimeoutRef.current = null;
                   }
                   
-                  if (!draggedActivity) return;
+                  // Only proceed with drop logic if we actually entered drag mode
+                  if (!draggedActivity || draggedActivity !== activity) {
+                     // If not dragging this item, reset highlights and state just in case
+                     document.querySelectorAll('[draggable="true"]').forEach(el => {
+                       el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                     });
+                     if (draggedActivity === activity) setDraggedActivity(null); // Reset if it was this item briefly
+                     return; 
+                  }
                   
                   // Find the element under the touch point
                   const touch = e.changedTouches[0];
@@ -794,24 +807,23 @@ export function ActivityTileGroup({
                     }
                   }
                   
-                  // Remove highlight from all items
+                  // Remove all highlights (including self if needed)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
+                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
                   });
                   
-                  setDraggedActivity(null);
+                  setDraggedActivity(null); // End drag state
                 }}
                 onTouchCancel={(e) => {
-                  // Clear the touch timeout if it exists
-                  const timeoutId = e.currentTarget.getAttribute('data-touch-timeout');
-                  if (timeoutId) {
-                    clearTimeout(parseInt(timeoutId));
-                    e.currentTarget.removeAttribute('data-touch-timeout');
+                  // Clear the timeout if touch is cancelled
+                  if (touchTimeoutRef.current) {
+                    clearTimeout(touchTimeoutRef.current);
+                    touchTimeoutRef.current = null;
                   }
                   
                   // Remove all highlights
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'opacity-50', 'bg-gray-100');
+                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
                   });
                   
                   setDraggedActivity(null);
@@ -838,6 +850,7 @@ export function ActivityTileGroup({
                 </DropdownMenuCheckboxItem>
               </div>
             ))}
+            {/* No inner wrapper div needed */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
