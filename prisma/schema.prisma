@@ -75,7 +75,6 @@ enum MeasurementType {
   WEIGHT
   HEAD_CIRCUMFERENCE
   TEMPERATURE
-  CUSTOM
 }
 
 model Baby {
