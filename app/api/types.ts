@@ -1,4 +1,4 @@
-import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood, PumpLog } from '@prisma/client';
+import { Baby, SleepLog, FeedLog, DiaperLog, MoodLog, Note, Caretaker, Settings as PrismaSettings, Gender, SleepType, SleepQuality, FeedType, BreastSide, DiaperType, Mood, PumpLog, Milestone, MilestoneCategory, Measurement, MeasurementType } from '@prisma/client';
 
 // Settings types
 export interface Settings extends PrismaSettings {
@@ -195,5 +195,40 @@ export interface PumpLogCreate {
   rightAmount?: number;
   totalAmount?: number;
   unitAbbr?: string;
+  notes?: string;
+}
+
+// Milestone types
+export type MilestoneResponse = Omit<Milestone, 'date' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+export interface MilestoneCreate {
+  babyId: string;
+  date: string;
+  title: string;
+  description?: string;
+  category: MilestoneCategory;
+  ageInDays?: number;
+  photo?: string;
+}
+
+// Measurement types
+export type MeasurementResponse = Omit<Measurement, 'date' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+export interface MeasurementCreate {
+  babyId: string;
+  date: string;
+  type: MeasurementType;
+  value: number;
+  unit: string;
   notes?: string;
 }
