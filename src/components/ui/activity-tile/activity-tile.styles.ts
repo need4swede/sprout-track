@@ -18,6 +18,7 @@ export const activityTileStyles = {
       note: "",
       bath: "",
       pump: "",
+      measurement: "",
       default: ""
     }
   },
@@ -31,6 +32,7 @@ export const activityTileStyles = {
       note: "",
       bath: "",
       pump: "",
+      measurement: "",
       default: ""
     }
   },
@@ -44,6 +46,7 @@ export const activityTileStyles = {
       note: "text-yellow-600",
       bath: "text-orange-600",
       pump: "text-purple-600",
+      measurement: "text-indigo-600",
       default: "text-gray-800 dark:text-gray-200"
     },
     // Default icon paths for each variant
@@ -54,6 +57,7 @@ export const activityTileStyles = {
       note: "/note-128.png",
       bath: "/bath-128.png",
       pump: "/pump-128.png",
+      measurement: "/measurement-128.png",
       default: "/config-128.png"
     }
   },

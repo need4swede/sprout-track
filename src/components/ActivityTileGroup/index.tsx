@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ActivityTile } from '@/src/components/ui/activity-tile';
 import { StatusBubble } from "@/src/components/ui/status-bubble";
-import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, ActivitySettings } from '@/app/api/types';
+import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse, ActivitySettings } from '@/app/api/types';
 import { MoreVertical, ArrowDownUp } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
 import { cn } from '@/src/lib/utils';
@@ -34,6 +34,7 @@ interface ActivityTileGroupProps {
   onNoteClick: () => void;
   onBathClick: () => void;
   onPumpClick: () => void;
+  onMeasurementClick: () => void;
 }
 
 /**
@@ -43,7 +44,7 @@ interface ActivityTileGroupProps {
  * and displaying status bubbles with timing information.
  */
 // Activity type definition
-type ActivityType = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump';
+type ActivityType = 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'measurement';
 
 export function ActivityTileGroup({
   selectedBaby,
@@ -58,7 +59,8 @@ export function ActivityTileGroup({
   onDiaperClick,
   onNoteClick,
   onBathClick,
-  onPumpClick
+  onPumpClick,
+  onMeasurementClick
 }: ActivityTileGroupProps) {
   const { theme } = useTheme();
   
@@ -66,12 +68,12 @@ export function ActivityTileGroup({
 
   // State for visible activities and their order
   const [visibleActivities, setVisibleActivities] = useState<Set<ActivityType>>(
-    () => new Set(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'] as ActivityType[])
+    () => new Set(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'] as ActivityType[])
   );
   
   // State for activity order
   const [activityOrder, setActivityOrder] = useState<ActivityType[]>([
-    'sleep', 'feed', 'diaper', 'note', 'bath', 'pump'
+    'sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'
   ]);
   
   // State for drag and drop
@@ -148,13 +150,23 @@ export function ActivityTileGroup({
           if (data.success && data.data) {
             console.log(`Successfully loaded settings:`, data.data);
             
+            // Get the loaded order and ensure measurement is included
+            const loadedOrder = [...data.data.order] as ActivityType[];
+            if (!loadedOrder.includes('measurement')) {
+              // Add measurement to the end of the order if it doesn't exist
+              loadedOrder.push('measurement');
+            }
+            
+            // Get visible activities without modifying them
+            const loadedVisible = new Set(data.data.visible as ActivityType[]);
+            
             // Store the original loaded settings for comparison
-            const originalOrder = [...data.data.order] as ActivityType[];
-            const originalVisible = new Set(data.data.visible as ActivityType[]);
+            const originalOrder = [...loadedOrder];
+            const originalVisible = new Set(loadedVisible);
             
             // Update state with loaded settings
-            setActivityOrder(data.data.order as ActivityType[]);
-            setVisibleActivities(new Set(data.data.visible as ActivityType[]));
+            setActivityOrder(loadedOrder);
+            setVisibleActivities(loadedVisible);
             
             // Mark settings as loaded AFTER state has been updated
             setTimeout(() => {
@@ -193,7 +205,11 @@ export function ActivityTileGroup({
   
   // Function to set default settings
   const setDefaultSettings = () => {
-    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'];
+    // Include measurement in the order but not necessarily in visible activities
+    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'];
+    // Default visible activities (not including measurement by default)
+    const defaultVisible: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'];
+    
     setActivityOrder(defaultOrder);
     setVisibleActivities(new Set(defaultOrder));
     
@@ -209,7 +225,7 @@ export function ActivityTileGroup({
   };
   
   // Refs to store the original settings for comparison
-  const originalOrderRef = React.useRef<ActivityType[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']);
+  const originalOrderRef = React.useRef<ActivityType[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement']);
   const originalVisibleRef = React.useRef<string[]>(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']);
   
   // Track if settings have been modified since loading
@@ -328,7 +344,8 @@ export function ActivityTileGroup({
     diaper: 'Diaper',
     note: 'Note',
     bath: 'Bath',
-    pump: 'Pump'
+    pump: 'Pump',
+    measurement: 'Measurement'
   };
 
   // Function to render activity tile based on type
@@ -534,6 +551,33 @@ export function ActivityTileGroup({
               onClick={() => {
                 updateUnlockTimer();
                 onPumpClick();
+              }}
+            />
+          </div>
+        );
+      case 'measurement':
+        return (
+          <div key="measurement" className="relative w-[82px] h-24 flex-shrink-0 snap-center">
+            <ActivityTile
+              activity={{
+                id: 'measurement-button',
+                babyId: selectedBaby.id,
+                date: new Date().toISOString(),
+                type: 'WEIGHT',
+                value: 0,
+                unit: 'lb',
+                notes: '',
+                caretakerId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null
+              }as unknown as MeasurementResponse}
+              title="Measurement"
+              variant="measurement"
+              isButton={true}
+              onClick={() => {
+                updateUnlockTimer();
+                onMeasurementClick();
               }}
             />
           </div>

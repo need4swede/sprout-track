@@ -24,8 +24,8 @@ export function ActivityTileIcon({
     icon = <img
       src={styles.icon.defaultIcons[variant]}
       alt={variant}
-      width={48}
-      height={48}
+      width={64}
+      height={64}
       className={cn("object-contain", styles.icon.base)}
     />;
   }
@@ -51,8 +51,8 @@ export function ActivityTileIcon({
     icon = <img
       src={styles.icon.defaultIcons[variant]}
       alt={variant}
-      width={48}
-      height={48}
+      width={64}
+      height={64}
       className={cn("object-contain", styles.icon.base)}
     />;
   }

@@ -1,5 +1,5 @@
 import { ActivityType } from './activity-tile.types';
-import { BathLogResponse, PumpLogResponse } from '@/app/api/types';
+import { BathLogResponse, PumpLogResponse, MeasurementResponse } from '@/app/api/types';
 import { useTimezone } from '@/app/context/timezone';
 
 /**
@@ -21,12 +21,13 @@ export const getActivityTime = (activity: ActivityType): string => {
 /**
  * Determines the variant based on the activity type
  */
-export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'default' => {
+export const getActivityVariant = (activity: ActivityType): 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'measurement' | 'default' => {
   if ('type' in activity) {
     if ('duration' in activity) return 'sleep';
     if ('amount' in activity) return 'feed';
     if ('condition' in activity) return 'diaper';
     if ('soapUsed' in activity || 'shampooUsed' in activity) return 'bath';
+    if ('value' in activity && 'unit' in activity) return 'measurement';
   }
   if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump';
   if ('content' in activity) return 'note';
