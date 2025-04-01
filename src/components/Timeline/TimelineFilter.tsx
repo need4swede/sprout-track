@@ -11,6 +11,8 @@ import {
   Check,
   Calendar as CalendarIcon,
   LampWallDown,
+  Trophy,
+  Ruler,
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { FilterType, TimelineFilterProps } from './types';
@@ -48,6 +50,8 @@ const TimelineFilter = ({
     { type: 'bath', icon: <Bath className="h-4 w-4" />, label: 'Bath' },
     { type: 'note', icon: <Edit className="h-4 w-4" />, label: 'Note' },
     { type: 'pump', icon: <LampWallDown className="h-4 w-4" />, label: 'Pump' },
+    { type: 'milestone', icon: <Trophy className="h-4 w-4" />, label: 'Milestone' },
+    { type: 'measurement', icon: <Ruler className="h-4 w-4" />, label: 'Measurement' },
   ] as const;
 
 

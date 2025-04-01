@@ -1,7 +1,7 @@
 import { Button } from '@/src/components/ui/button';
 import { Baby as BabyIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { ActivityType, TimelineActivityListProps } from './types';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { ActivityType, TimelineActivityListProps, FilterType } from './types';
 import { getActivityIcon, getActivityStyle, getActivityDescription } from './utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/src/context/theme';
@@ -20,6 +20,38 @@ const TimelineActivityList = ({
   onSwipeLeft,
   onSwipeRight,
 }: TimelineActivityListProps) => {
+  // Extract activeFilter from props if available
+  const activeFilter = (onSwipeLeft as any)?.activeFilter as FilterType | undefined;
+  
+  // Filter activities based on the activeFilter
+  const filteredActivities = useMemo(() => {
+    if (!activeFilter || activeFilter === null) {
+      return activities;
+    }
+    
+    return activities.filter(activity => {
+      switch (activeFilter) {
+        case 'sleep':
+          return 'duration' in activity;
+        case 'feed':
+          return 'amount' in activity;
+        case 'diaper':
+          return 'condition' in activity;
+        case 'note':
+          return 'content' in activity;
+        case 'bath':
+          return 'soapUsed' in activity;
+        case 'pump':
+          return 'leftAmount' in activity || 'rightAmount' in activity;
+        case 'milestone':
+          return 'title' in activity && 'category' in activity;
+        case 'measurement':
+          return 'value' in activity && 'unit' in activity;
+        default:
+          return true;
+      }
+    });
+  }, [activities, activeFilter]);
   const { theme } = useTheme();
   
   // Swipe handling
@@ -138,7 +170,7 @@ const TimelineActivityList = ({
         <div className="divide-y divide-gray-100 dark:divide-gray-700 min-h-full bg-white dark:bg-gray-800 relative timeline-activity-list">
           {activities.length > 0 ? (
             <AnimatePresence>
-              {activities.map((activity, index) => {
+              {filteredActivities.map((activity, index) => {
                 const style = getActivityStyle(activity);
                 const description = getActivityDescription(activity, settings);
                 return (

@@ -19,7 +19,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
-  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | null>(null);
+  const [editModalType, setEditModalType] = useState<'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'milestone' | 'measurement' | null>(null);
   // Pagination removed as it breaks up view by day
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
@@ -170,6 +170,10 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
               return 'soapUsed' in activity;
             case 'pump':
               return 'leftAmount' in activity || 'rightAmount' in activity;
+            case 'milestone':
+              return 'title' in activity && 'category' in activity;
+            case 'measurement':
+              return 'value' in activity && 'unit' in activity;
             default:
               return true;
           }
@@ -204,8 +208,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
     }
   };
 
-  const handleEdit = (activity: ActivityType, type: 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump') => {
-    setEditModalType(type);
+  const handleEdit = (activity: ActivityType, type: 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'milestone' | 'measurement') => {
+    setEditModalType(type as any); // Using 'as any' temporarily until we add milestone and measurement forms
   };
 
   return (
@@ -234,7 +238,7 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
         settings={settings}
         isLoading={isLoadingActivities}
         onActivitySelect={setSelectedActivity}
-        onSwipeLeft={() => handleDateChange(1)} // Next day (swipe left)
+        onSwipeLeft={Object.assign(() => handleDateChange(1), { activeFilter })} // Next day (swipe left) with activeFilter
         onSwipeRight={() => handleDateChange(-1)} // Previous day (swipe right)
       />
 

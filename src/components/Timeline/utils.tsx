@@ -4,7 +4,9 @@ import {
   Icon, 
   Edit,
   Bath,
-  LampWallDown
+  LampWallDown,
+  Trophy,
+  Ruler
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { 
@@ -34,6 +36,12 @@ export const getActivityIcon = (activity: ActivityType) => {
   }
   if ('leftAmount' in activity || 'rightAmount' in activity) {
     return <LampWallDown className="h-4 w-4 text-white" />; // Pump activity
+  }
+  if ('title' in activity && 'category' in activity) {
+    return <Trophy className="h-4 w-4 text-white" />; // Milestone activity
+  }
+  if ('value' in activity && 'unit' in activity) {
+    return <Ruler className="h-4 w-4 text-white" />; // Measurement activity
   }
   return null;
 };
@@ -338,6 +346,82 @@ export const getActivityDetails = (activity: ActivityType, settings: Settings | 
       details: [...pumpDetails, ...caretakerDetail],
     };
   }
+
+  // Milestone activity
+  if ('title' in activity && 'category' in activity) {
+    const formatMilestoneCategory = (category: string) => {
+      switch (category) {
+        case 'MOTOR': return 'Motor Skills';
+        case 'COGNITIVE': return 'Cognitive';
+        case 'SOCIAL': return 'Social';
+        case 'LANGUAGE': return 'Language';
+        case 'OTHER': return 'Other';
+        default: return category;
+      }
+    };
+
+    const milestoneDetails = [
+      { label: 'Date', value: formatTime(activity.date, settings) },
+      { label: 'Title', value: activity.title },
+      { label: 'Category', value: formatMilestoneCategory(activity.category) },
+    ];
+
+    if (activity.description) {
+      milestoneDetails.push({ label: 'Description', value: activity.description });
+    }
+
+    if (activity.ageInDays) {
+      const years = Math.floor(activity.ageInDays / 365);
+      const months = Math.floor((activity.ageInDays % 365) / 30);
+      const days = activity.ageInDays % 30;
+      let ageString = '';
+      
+      if (years > 0) {
+        ageString += `${years} year${years !== 1 ? 's' : ''} `;
+      }
+      if (months > 0) {
+        ageString += `${months} month${months !== 1 ? 's' : ''} `;
+      }
+      if (days > 0 || (years === 0 && months === 0)) {
+        ageString += `${days} day${days !== 1 ? 's' : ''}`;
+      }
+      
+      milestoneDetails.push({ label: 'Age', value: ageString.trim() });
+    }
+
+    return {
+      title: 'Milestone',
+      details: [...milestoneDetails, ...caretakerDetail],
+    };
+  }
+
+  // Measurement activity
+  if ('value' in activity && 'unit' in activity) {
+    const formatMeasurementType = (type: string) => {
+      switch (type) {
+        case 'HEIGHT': return 'Height';
+        case 'WEIGHT': return 'Weight';
+        case 'HEAD': return 'Head Circumference';
+        case 'OTHER': return 'Other';
+        default: return type;
+      }
+    };
+
+    const measurementDetails = [
+      { label: 'Date', value: formatTime(activity.date, settings) },
+      { label: 'Type', value: formatMeasurementType(activity.type) },
+      { label: 'Value', value: `${activity.value} ${activity.unit}` },
+    ];
+
+    if (activity.notes) {
+      measurementDetails.push({ label: 'Notes', value: activity.notes });
+    }
+
+    return {
+      title: 'Measurement',
+      details: [...measurementDetails, ...caretakerDetail],
+    };
+  }
   
   return { title: 'Activity', details: [...caretakerDetail] };
 };
@@ -543,6 +627,48 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
       };
     }
   }
+
+  // Milestone activity
+  if ('title' in activity && 'category' in activity) {
+    const formatMilestoneCategory = (category: string) => {
+      switch (category) {
+        case 'MOTOR': return 'Motor';
+        case 'COGNITIVE': return 'Cognitive';
+        case 'SOCIAL': return 'Social';
+        case 'LANGUAGE': return 'Language';
+        case 'OTHER': return 'Other';
+        default: return category;
+      }
+    };
+    
+    const date = formatTime(activity.date, settings, true);
+    const truncatedTitle = activity.title.length > 30 ? activity.title.substring(0, 30) + '...' : activity.title;
+    
+    return {
+      type: formatMilestoneCategory(activity.category),
+      details: `${date} - ${truncatedTitle}`
+    };
+  }
+
+  // Measurement activity
+  if ('value' in activity && 'unit' in activity) {
+    const formatMeasurementType = (type: string) => {
+      switch (type) {
+        case 'HEIGHT': return 'Height';
+        case 'WEIGHT': return 'Weight';
+        case 'HEAD': return 'Head';
+        case 'OTHER': return 'Other';
+        default: return type;
+      }
+    };
+    
+    const date = formatTime(activity.date, settings, true);
+    
+    return {
+      type: formatMeasurementType(activity.type),
+      details: `${date} - ${activity.value} ${activity.unit}`
+    };
+  }
   
   return {
     type: 'Activity',
@@ -557,6 +683,8 @@ export const getActivityEndpoint = (activity: ActivityType): string => {
   if ('content' in activity) return 'note';
   if ('soapUsed' in activity) return 'bath-log';
   if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump-log';
+  if ('title' in activity && 'category' in activity) return 'milestone-log';
+  if ('value' in activity && 'unit' in activity) return 'measurement-log';
   return '';
 };
 
@@ -596,6 +724,18 @@ export const getActivityStyle = (activity: ActivityType): ActivityStyle => {
   if ('leftAmount' in activity || 'rightAmount' in activity) {
     return {
       bg: 'bg-gradient-to-r from-purple-200 to-purple-300',
+      textColor: 'text-white',
+    };
+  }
+  if ('title' in activity && 'category' in activity) {
+    return {
+      bg: 'bg-[#4875EC]', // Blue background for milestone activities
+      textColor: 'text-white',
+    };
+  }
+  if ('value' in activity && 'unit' in activity) {
+    return {
+      bg: 'bg-[#EA6A5E]', // Red background for measurement activities
       textColor: 'text-white',
     };
   }
