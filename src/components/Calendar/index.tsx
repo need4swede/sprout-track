@@ -566,13 +566,15 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
         
         {/* Day view (only shown when a date is selected) */}
         {selectedDate && (
-          <div className={`flex-1 mt-0 md:mt-0 md:ml-4 ${selectedDate ? 'flex' : 'hidden md:flex'} flex-col`}>
+          <div className={`flex-1 mt-0 md:mt-0 ${selectedDate ? 'flex' : 'hidden md:flex'} flex-col`}>
             <CalendarDayView
               date={selectedDate}
               // Pass only events for the selected day
               events={getEventsForDay(selectedDate)} 
               onEventClick={handleEventClick}
               onAddEvent={handleAddEvent}
+              // Apply the slide-in animation class
+              className="calendar-day-view-slide-in"
               // isLoading removed as it's no longer needed
             />
           </div>

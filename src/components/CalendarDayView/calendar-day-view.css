@@ -1,3 +1,19 @@
+/* Animation for sliding in from right */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.calendar-day-view-slide-in {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
 /* Dark mode overrides for CalendarDayView component */
 html.dark .calendar-day-view {
   color: #e5e7eb !important; /* gray-200 */
