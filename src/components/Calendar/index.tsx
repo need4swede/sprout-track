@@ -497,7 +497,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   return (
     <div className="relative z-0 flex flex-col h-full calendar-container">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-t-md calendar-header">
+      <div className="flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white border-t border-gray-200 dark:border-gray-700 calendar-header">
         <Button
           variant="ghost"
           size="icon"
