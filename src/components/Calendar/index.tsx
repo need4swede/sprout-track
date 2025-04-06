@@ -81,7 +81,8 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
             ? babiesData.data.map((baby: any) => ({
                 id: baby.id,
                 firstName: baby.firstName,
-                lastName: baby.lastName
+                lastName: baby.lastName,
+                inactive: baby.inactive
               }))
             : [],
           caretakers: caretakersData.success 
@@ -93,6 +94,8 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
             : [],
           contacts: contactsData.success ? contactsData.data : []
         });
+        
+        console.log("Fetched babies:", babiesData.success ? babiesData.data : []);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

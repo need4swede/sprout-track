@@ -11,6 +11,7 @@ export interface Baby {
   id: string;
   firstName: string;
   lastName: string;
+  inactive?: boolean;
 }
 
 /**

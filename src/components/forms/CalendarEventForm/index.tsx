@@ -56,6 +56,10 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     const endTime = new Date(startTime);
     endTime.setHours(endTime.getHours() + 1);
     
+    // If there's only one active baby, select it by default
+    const activeBabies = babies.filter(baby => baby.inactive !== true);
+    const defaultBabyIds = activeBabies.length === 1 ? [activeBabies[0].id] : [];
+    
     return {
       title: '',
       startTime,
@@ -63,7 +67,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       allDay: false,
       type: CalendarEventType.APPOINTMENT,
       recurring: false,
-      babyIds: [],
+      babyIds: defaultBabyIds,
       caretakerIds: [],
       contactIds: [],
     };
@@ -82,13 +86,34 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       const endTime = new Date(startTime);
       endTime.setHours(endTime.getHours() + 1);
       
+      // If there's only one active baby, ensure it's selected
+      const activeBabies = babies.filter(baby => baby.inactive !== true);
+      const defaultBabyIds = activeBabies.length === 1 
+        ? [activeBabies[0].id] 
+        : formData.babyIds;
+      
       setFormData(prev => ({
         ...prev,
         startTime,
-        endTime
+        endTime,
+        babyIds: defaultBabyIds
       }));
     }
-  }, [initialDate, event]);
+  }, [initialDate, event, babies]);
+  
+  // Ensure baby is selected when editing an existing event
+  useEffect(() => {
+    // If we're editing an event and there's only one active baby but none selected
+    if (event && formData.babyIds.length === 0) {
+      const activeBabies = babies.filter(baby => baby.inactive !== true);
+      if (activeBabies.length === 1) {
+        setFormData(prev => ({
+          ...prev,
+          babyIds: [activeBabies[0].id]
+        }));
+      }
+    }
+  }, [event, babies, formData.babyIds]);
   
   // Form validation errors
   const [errors, setErrors] = useState<CalendarEventFormErrors>({});
@@ -579,32 +604,66 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>People</h3>
               
-              {/* Babies */}
-              <div className={styles.fieldGroup}>
-                <label className="form-label">
-                  Babies
-                </label>
-                <div className="space-y-2">
-                  {babies.map(baby => (
-                    <div key={baby.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`baby-${baby.id}`}
-                        checked={formData.babyIds.includes(baby.id)}
-                        onCheckedChange={() => handleBabyChange(baby.id)}
-                      />
-                      <label htmlFor={`baby-${baby.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {baby.firstName} {baby.lastName}
-                      </label>
-                    </div>
-                  ))}
-                  
-                  {babies.length === 0 && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      No babies available
-                    </div>
-                  )}
+              {/* Babies - Only show if there's more than one active baby */}
+              {babies.filter(baby => baby.inactive !== true).length > 1 ? (
+                <div className={styles.fieldGroup}>
+                  <label className="form-label">
+                    Babies
+                  </label>
+                  <div className="space-y-2">
+                    {babies.map(baby => (
+                      <div key={baby.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`baby-${baby.id}`}
+                          checked={formData.babyIds.includes(baby.id)}
+                          onCheckedChange={() => handleBabyChange(baby.id)}
+                        />
+                        <label 
+                          htmlFor={`baby-${baby.id}`} 
+                          className={`text-sm font-medium ${
+                            baby.inactive === true
+                              ? "text-gray-400 dark:text-gray-500 italic" 
+                              : "text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {baby.firstName} {baby.lastName}
+                          {baby.inactive === true && " (inactive)"}
+                        </label>
+                      </div>
+                    ))}
+                    
+                    {babies.length === 0 && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        No babies available
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                // If there's only one active baby, it's automatically selected and the selector is hidden
+                <div className="hidden">
+                  {/* Hidden input to ensure the baby is selected */}
+                  <input 
+                    type="hidden" 
+                    name="babyIds" 
+                    value={babies.filter(baby => baby.inactive !== true)[0]?.id || ''} 
+                  />
+                  {/* Ensure the baby is selected in the form data */}
+                  {(() => {
+                    const activeBaby = babies.filter(baby => baby.inactive !== true)[0];
+                    if (activeBaby && !formData.babyIds.includes(activeBaby.id)) {
+                      // Use setTimeout to avoid state update during render
+                      setTimeout(() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          babyIds: [activeBaby.id]
+                        }));
+                      }, 0);
+                    }
+                    return null;
+                  })()}
+                </div>
+              )}
               
               {/* Caretakers */}
               <div className={styles.fieldGroup}>
