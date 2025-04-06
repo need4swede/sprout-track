@@ -1,0 +1,71 @@
+/* Dark mode overrides for CalendarDayView component */
+html.dark .calendar-day-view {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-day-view-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .calendar-day-view-header {
+  background: linear-gradient(to right, #0d9488, #0f766e) !important; /* teal-600 to teal-700 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .calendar-day-view-group-title {
+  color: #d1d5db !important; /* gray-300 */
+}
+
+html.dark .calendar-day-view-empty-text {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-day-view-add-button-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+/* Custom scrollbar for the events list */
+.calendar-day-view-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calendar-day-view-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-day-view-content::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gray-400 with opacity */
+  border-radius: 4px;
+}
+
+html.dark .calendar-day-view-content::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5); /* gray-600 with opacity */
+}
+
+/* Loading spinner animation */
+@keyframes calendar-day-view-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.calendar-day-view-spinner {
+  animation: calendar-day-view-spin 1s linear infinite;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .calendar-day-view-header {
+    padding: 0.75rem;
+  }
+  
+  .calendar-day-view-content {
+    padding: 0.75rem;
+  }
+  
+  .calendar-day-view-add-button-container {
+    padding: 0.75rem;
+  }
+}

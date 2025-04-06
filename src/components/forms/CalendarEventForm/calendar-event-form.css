@@ -1,0 +1,94 @@
+/* Dark mode overrides for CalendarEventForm component */
+html.dark .calendar-event-form {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-event-form-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .calendar-event-form-title {
+  color: #f3f4f6 !important; /* gray-100 */
+}
+
+html.dark .calendar-event-form-label {
+  color: #d1d5db !important; /* gray-300 */
+}
+
+html.dark .calendar-event-form-hint {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-event-form-input,
+html.dark .calendar-event-form-textarea,
+html.dark .calendar-event-form-select {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #4b5563 !important; /* gray-600 */
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .calendar-event-form-input:focus,
+html.dark .calendar-event-form-textarea:focus,
+html.dark .calendar-event-form-select:focus {
+  border-color: #2dd4bf !important; /* teal-400 */
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.2) !important; /* teal-400 with opacity */
+}
+
+html.dark .calendar-event-form-checkbox {
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .calendar-event-form-checkbox:checked {
+  background-color: #14b8a6 !important; /* teal-500 */
+  border-color: #14b8a6 !important; /* teal-500 */
+}
+
+/* Custom date picker styling */
+.calendar-event-form-date-picker::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+}
+
+html.dark .calendar-event-form-date-picker::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+
+/* Custom scrollbar for multi-select lists */
+.calendar-event-form-multi-select::-webkit-scrollbar {
+  width: 6px;
+}
+
+.calendar-event-form-multi-select::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-event-form-multi-select::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gray-400 with opacity */
+  border-radius: 3px;
+}
+
+html.dark .calendar-event-form-multi-select::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5); /* gray-600 with opacity */
+}
+
+/* Loading spinner animation */
+@keyframes calendar-event-form-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.calendar-event-form-spinner {
+  animation: calendar-event-form-spin 1s linear infinite;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .calendar-event-form-date-time-container {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .calendar-event-form-recurrence-pattern-container {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
