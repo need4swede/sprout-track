@@ -2,7 +2,10 @@ import React from 'react';
 import { cn } from '@/src/lib/utils';
 import { RecurrencePattern } from '@prisma/client';
 import { calendarEventFormStyles as styles } from './calendar-event-form.styles';
-import { Calendar, Repeat, AlertCircle } from 'lucide-react';
+import { Repeat, AlertCircle } from 'lucide-react';
+import { Input } from '@/src/components/ui/input';
+import { Button } from '@/src/components/ui/button';
+import { Checkbox } from '@/src/components/ui/checkbox';
 
 interface RecurrenceSelectorProps {
   recurring: boolean;
@@ -51,22 +54,15 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
   return (
     <div className={styles.recurrenceContainer}>
       {/* Recurring checkbox */}
-      <div className={styles.checkboxContainer}>
-        <input
-          type="checkbox"
+      <div className="flex items-center space-x-2 py-2">
+        <Checkbox
           id="recurring"
           checked={recurring}
-          onChange={(e) => onRecurringChange(e.target.checked)}
-          className={cn(
-            styles.checkbox,
-            'calendar-event-form-checkbox'
-          )}
+          onCheckedChange={(checked) => onRecurringChange(checked === true)}
         />
-        <label htmlFor="recurring" className={styles.checkboxLabel}>
-          <span className="flex items-center">
-            <Repeat className="h-4 w-4 mr-1.5 text-gray-500 dark:text-gray-400" />
-            Recurring event
-          </span>
+        <label htmlFor="recurring" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+          <Repeat className="h-4 w-4 mr-1.5 text-gray-500 dark:text-gray-400" />
+          Recurring event
         </label>
       </div>
 
@@ -75,29 +71,21 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
         <>
           {/* Recurrence pattern */}
           <div className={styles.fieldGroup}>
-            <label className={cn(
-              styles.fieldLabel,
-              'calendar-event-form-label'
-            )}>
+            <label className="form-label">
               Recurrence Pattern
               <span className={styles.fieldRequired}>*</span>
             </label>
-            <div className={cn(
-              styles.recurrencePatternContainer,
-              'calendar-event-form-recurrence-pattern-container'
-            )}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {Object.values(RecurrencePattern).map((pattern) => (
-                <button
+                <Button
                   key={pattern}
                   type="button"
+                  variant={recurrencePattern === pattern ? "default" : "outline"}
                   onClick={() => onRecurrencePatternChange(pattern)}
-                  className={cn(
-                    styles.recurrencePatternButton,
-                    recurrencePattern === pattern && styles.recurrencePatternButtonSelected
-                  )}
+                  className="w-full"
                 >
                   {pattern.charAt(0) + pattern.slice(1).toLowerCase().replace('_', ' ')}
-                </button>
+                </Button>
               ))}
             </div>
             {error?.recurrencePattern && (
@@ -112,31 +100,18 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
           <div className={styles.fieldGroup}>
             <label 
               htmlFor="recurrenceEnd" 
-              className={cn(
-                styles.fieldLabel,
-                'calendar-event-form-label'
-              )}
+              className="form-label"
             >
               Ends On
             </label>
-            <div className={styles.datePickerContainer}>
-              <input
-                type="date"
-                id="recurrenceEnd"
-                value={formatDateForInput(recurrenceEnd)}
-                onChange={handleRecurrenceEndChange}
-                className={cn(
-                  styles.datePicker,
-                  'calendar-event-form-date-picker',
-                  'calendar-event-form-input'
-                )}
-              />
-              <Calendar className={styles.datePickerIcon} />
-            </div>
-            <div className={cn(
-              styles.fieldHint,
-              'calendar-event-form-hint'
-            )}>
+            <Input
+              type="date"
+              id="recurrenceEnd"
+              value={formatDateForInput(recurrenceEnd)}
+              onChange={handleRecurrenceEndChange}
+              className="w-full"
+            />
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Leave blank for an indefinite recurrence
             </div>
             {error?.recurrenceEnd && (

@@ -6,7 +6,18 @@ import { CalendarEventType, RecurrencePattern } from '@prisma/client';
 import { format } from 'date-fns'; // Import date-fns for formatting
 import RecurrenceSelector from './RecurrenceSelector';
 import ContactSelector from './ContactSelector';
-import { X, Calendar, Clock, MapPin, Palette, AlertCircle, Bell, Loader2, Trash2 } from 'lucide-react';
+import { MapPin, AlertCircle, Bell, Loader2, Trash2 } from 'lucide-react';
+import { FormPage, FormPageContent, FormPageFooter } from '@/src/components/ui/form-page';
+import { Input } from '@/src/components/ui/input';
+import { Textarea } from '@/src/components/ui/textarea';
+import { Button } from '@/src/components/ui/button';
+import { Checkbox } from '@/src/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/src/components/ui/dropdown-menu';
 import './calendar-event-form.css';
 
 /**
@@ -260,34 +271,16 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     onClose();
   };
   
-  // If the form is not open, don't render anything
-  if (!isOpen) {
-    return null;
-  }
-  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl calendar-event-form-container">
-        {/* Form header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className={cn(
-            "text-xl font-semibold text-gray-900",
-            "calendar-event-form-title"
-          )}>
-            {event ? 'Edit Event' : 'Add Event'}
-          </h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        
-        {/* Form content */}
-        <div className="p-4 overflow-y-auto max-h-[calc(90vh-120px)] calendar-event-form">
-          <form onSubmit={handleSubmit} className={styles.formContainer}>
+    <FormPage
+      isOpen={isOpen}
+      onClose={onClose}
+      title={event ? 'Edit Event' : 'Add Event'}
+      description="Schedule and manage calendar events"
+    >
+      <form onSubmit={handleSubmit} className="h-full flex flex-col">
+        <FormPageContent className="overflow-y-auto">
+          <div className="space-y-6 pb-20">
             {/* Event details section */}
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>Event Details</h3>
@@ -296,24 +289,18 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <div className={styles.fieldGroup}>
                 <label 
                   htmlFor="title" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
+                  className="form-label"
                 >
                   Title
                   <span className={styles.fieldRequired}>*</span>
                 </label>
-                <input
+                <Input
                   type="text"
                   id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className={cn(
-                    styles.input,
-                    'calendar-event-form-input'
-                  )}
+                  className="w-full"
                   placeholder="Enter event title"
                 />
                 {errors.title && (
@@ -328,30 +315,36 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <div className={styles.fieldGroup}>
                 <label 
                   htmlFor="type" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
+                  className="form-label"
                 >
                   Event Type
                   <span className={styles.fieldRequired}>*</span>
                 </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className={cn(
-                    styles.select,
-                    'calendar-event-form-select'
-                  )}
-                >
-                  {Object.values(CalendarEventType).map(type => (
-                    <option key={type} value={type}>
-                      {type.charAt(0) + type.slice(1).toLowerCase().replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      {formData.type.charAt(0) + formData.type.slice(1).toLowerCase().replace('_', ' ')}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    {Object.values(CalendarEventType).map(type => (
+                      <DropdownMenuItem 
+                        key={type} 
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, type }));
+                          if (errors.type) {
+                            setErrors(prev => ({ ...prev, type: undefined }));
+                          }
+                        }}
+                      >
+                        {type.charAt(0) + type.slice(1).toLowerCase().replace('_', ' ')}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {errors.type && (
                   <div className={styles.fieldError}>
                     <AlertCircle className="h-3 w-3 inline mr-1" />
@@ -361,55 +354,42 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               </div>
               
               {/* All day checkbox */}
-              <div className={styles.checkboxContainer}>
-                <input
-                  type="checkbox"
+              <div className="flex items-center space-x-2 py-2">
+                <Checkbox
                   id="allDay"
                   name="allDay"
                   checked={formData.allDay}
-                  onChange={handleCheckboxChange}
-                  className={cn(
-                    styles.checkbox,
-                    'calendar-event-form-checkbox'
-                  )}
+                  onCheckedChange={(checked) => 
+                    handleCheckboxChange({
+                      target: { name: 'allDay', checked: checked === true }
+                    } as React.ChangeEvent<HTMLInputElement>)
+                  }
                 />
-                <label htmlFor="allDay" className={styles.checkboxLabel}>
+                <label htmlFor="allDay" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   All day event
                 </label>
               </div>
               
               {/* Date and time */}
-              <div className={cn(
-                styles.dateTimeContainer,
-                'calendar-event-form-date-time-container'
-              )}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Start Date/Time */}
                 <div className={styles.fieldGroup}>
                   <label 
                     htmlFor="startTime" 
-                    className={cn(
-                      styles.fieldLabel,
-                      'calendar-event-form-label'
-                    )}
+                    className="form-label"
                   >
                     Start Time
                     <span className={styles.fieldRequired}>*</span>
                   </label>
-                  <div className={styles.datePickerContainer}>
-                    <input
-                      type="datetime-local"
-                      id="startTime"
-                      name="startTime"
-                      value={formatDateTimeForInput(formData.startTime)}
-                      onChange={handleDateTimeChange}
-                      className={cn(
-                        styles.datePicker,
-                        'calendar-event-form-input'
-                      )}
-                      disabled={formData.allDay} // Disable if allDay is checked
-                    />
-                    <Calendar className={styles.datePickerIcon} />
-                  </div>
+                  <Input
+                    type="datetime-local"
+                    id="startTime"
+                    name="startTime"
+                    value={formatDateTimeForInput(formData.startTime)}
+                    onChange={handleDateTimeChange}
+                    className="w-full"
+                    disabled={formData.allDay} // Disable if allDay is checked
+                  />
                   {errors.startTime && (
                     <div className={styles.fieldError}>
                       <AlertCircle className="h-3 w-3 inline mr-1" />
@@ -422,29 +402,20 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 <div className={styles.fieldGroup}>
                   <label 
                     htmlFor="endTime" 
-                    className={cn(
-                      styles.fieldLabel,
-                      'calendar-event-form-label'
-                    )}
+                    className="form-label"
                   >
                     End Time
                   </label>
-                  <div className={styles.datePickerContainer}>
-                    <input
-                      type="datetime-local"
-                      id="endTime"
-                      name="endTime"
-                      value={formatDateTimeForInput(formData.endTime)}
-                      onChange={handleDateTimeChange}
-                      className={cn(
-                        styles.datePicker,
-                        'calendar-event-form-input'
-                      )}
-                      disabled={formData.allDay} // Disable if allDay is checked
-                      min={formatDateTimeForInput(formData.startTime)} // Ensure end time is after start time
-                    />
-                    <Calendar className={styles.datePickerIcon} />
-                  </div>
+                  <Input
+                    type="datetime-local"
+                    id="endTime"
+                    name="endTime"
+                    value={formatDateTimeForInput(formData.endTime)}
+                    onChange={handleDateTimeChange}
+                    className="w-full"
+                    disabled={formData.allDay} // Disable if allDay is checked
+                    min={formatDateTimeForInput(formData.startTime)} // Ensure end time is after start time
+                  />
                   {errors.endTime && (
                     <div className={styles.fieldError}>
                       <AlertCircle className="h-3 w-3 inline mr-1" />
@@ -458,25 +429,18 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <div className={styles.fieldGroup}>
                 <label 
                   htmlFor="location" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
+                  className="form-label"
                 >
                   Location
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="text"
                     id="location"
                     name="location"
                     value={formData.location || ''}
                     onChange={handleChange}
-                    className={cn(
-                      styles.input,
-                      'calendar-event-form-input',
-                      'pl-8'
-                    )}
+                    className="w-full pl-8"
                     placeholder="Enter location (optional)"
                   />
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
@@ -487,22 +451,16 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <div className={styles.fieldGroup}>
                 <label 
                   htmlFor="description" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
+                  className="form-label"
                 >
                   Description
                 </label>
-                <textarea
+                <Textarea
                   id="description"
                   name="description"
                   value={formData.description || ''}
                   onChange={handleChange}
-                  className={cn(
-                    styles.textarea,
-                    'calendar-event-form-textarea'
-                  )}
+                  className="w-full min-h-[100px]"
                   placeholder="Enter event description (optional)"
                 />
               </div>
@@ -511,26 +469,23 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <div className={styles.fieldGroup}>
                 <label 
                   htmlFor="color" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
+                  className="form-label"
                 >
                   Color
                 </label>
-                <div className={styles.colorPickerContainer}>
+                <div className="flex items-center space-x-2">
                   <div 
-                    className={styles.colorPickerPreview}
+                    className="h-6 w-6 rounded-full border border-gray-300 dark:border-gray-700"
                     style={{ backgroundColor: formData.color || '#14b8a6' }}
                   />
-                  <div className={styles.colorPicker}>
+                  <div className="w-8 h-8 overflow-hidden rounded-md border border-gray-300 dark:border-gray-700">
                     <input
                       type="color"
                       id="color"
                       name="color"
                       value={formData.color || '#14b8a6'}
                       onChange={handleColorChange}
-                      className={styles.colorPickerInput}
+                      className="w-10 h-10 cursor-pointer opacity-0 transform -translate-x-1 -translate-y-1"
                     />
                   </div>
                   <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
@@ -558,43 +513,67 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               />
             </div>
             
-            {/* Reminder section */}
-            <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>Reminder</h3>
-              
-              <div className={styles.reminderContainer}>
-                <label 
-                  htmlFor="reminderTime" 
-                  className={cn(
-                    styles.fieldLabel,
-                    'calendar-event-form-label'
-                  )}
-                >
-                  <Bell className="h-4 w-4 inline mr-1.5 text-gray-500 dark:text-gray-400" />
-                  Remind me
-                </label>
-                <select
-                  id="reminderTime"
-                  name="reminderTime"
-                  value={formData.reminderTime?.toString() || ''}
-                  onChange={handleReminderTimeChange}
-                  className={cn(
-                    styles.reminderSelect,
-                    'calendar-event-form-select'
-                  )}
-                >
-                  <option value="">No reminder</option>
-                  <option value="0">At time of event</option>
-                  <option value="5">5 minutes before</option>
-                  <option value="10">10 minutes before</option>
-                  <option value="15">15 minutes before</option>
-                  <option value="30">30 minutes before</option>
-                  <option value="60">1 hour before</option>
-                  <option value="120">2 hours before</option>
-                  <option value="1440">1 day before</option>
-                </select>
+              {/* Reminder section */}
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Reminder</h3>
+                
+                <div className="space-y-2">
+                  <label 
+                    htmlFor="reminderTime" 
+                    className="form-label flex items-center"
+                  >
+                    <Bell className="h-4 w-4 mr-1.5 text-gray-500 dark:text-gray-400" />
+                    Remind me
+                  </label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                      >
+                        {formData.reminderTime === undefined ? 'No reminder' :
+                         formData.reminderTime === 0 ? 'At time of event' :
+                         formData.reminderTime === 5 ? '5 minutes before' :
+                         formData.reminderTime === 10 ? '10 minutes before' :
+                         formData.reminderTime === 15 ? '15 minutes before' :
+                         formData.reminderTime === 30 ? '30 minutes before' :
+                         formData.reminderTime === 60 ? '1 hour before' :
+                         formData.reminderTime === 120 ? '2 hours before' :
+                         formData.reminderTime === 1440 ? '1 day before' : 'Custom'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        No reminder
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '0' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        At time of event
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '5' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        5 minutes before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '10' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        10 minutes before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '15' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        15 minutes before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '30' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        30 minutes before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '60' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        1 hour before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '120' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        2 hours before
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '1440' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                        1 day before
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
             
             {/* People section */}
             <div className={styles.section}>
@@ -602,26 +581,18 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               
               {/* Babies */}
               <div className={styles.fieldGroup}>
-                <label className={cn(
-                  styles.fieldLabel,
-                  'calendar-event-form-label'
-                )}>
+                <label className="form-label">
                   Babies
                 </label>
-                <div className={styles.multiSelectContainer}>
+                <div className="space-y-2">
                   {babies.map(baby => (
-                    <div key={baby.id} className={styles.checkboxContainer}>
-                      <input
-                        type="checkbox"
+                    <div key={baby.id} className="flex items-center space-x-2">
+                      <Checkbox
                         id={`baby-${baby.id}`}
                         checked={formData.babyIds.includes(baby.id)}
-                        onChange={() => handleBabyChange(baby.id)}
-                        className={cn(
-                          styles.checkbox,
-                          'calendar-event-form-checkbox'
-                        )}
+                        onCheckedChange={() => handleBabyChange(baby.id)}
                       />
-                      <label htmlFor={`baby-${baby.id}`} className={styles.checkboxLabel}>
+                      <label htmlFor={`baby-${baby.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {baby.firstName} {baby.lastName}
                       </label>
                     </div>
@@ -637,26 +608,18 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               
               {/* Caretakers */}
               <div className={styles.fieldGroup}>
-                <label className={cn(
-                  styles.fieldLabel,
-                  'calendar-event-form-label'
-                )}>
+                <label className="form-label">
                   Caretakers
                 </label>
-                <div className={styles.multiSelectContainer}>
+                <div className="space-y-2">
                   {caretakers.map(caretaker => (
-                    <div key={caretaker.id} className={styles.checkboxContainer}>
-                      <input
-                        type="checkbox"
+                    <div key={caretaker.id} className="flex items-center space-x-2">
+                      <Checkbox
                         id={`caretaker-${caretaker.id}`}
                         checked={formData.caretakerIds.includes(caretaker.id)}
-                        onChange={() => handleCaretakerChange(caretaker.id)}
-                        className={cn(
-                          styles.checkbox,
-                          'calendar-event-form-checkbox'
-                        )}
+                        onCheckedChange={() => handleCaretakerChange(caretaker.id)}
                       />
-                      <label htmlFor={`caretaker-${caretaker.id}`} className={styles.checkboxLabel}>
+                      <label htmlFor={`caretaker-${caretaker.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {caretaker.name} {caretaker.type ? `(${caretaker.type})` : ''}
                       </label>
                     </div>
@@ -672,10 +635,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               
               {/* Contacts */}
               <div className={styles.fieldGroup}>
-                <label className={cn(
-                  styles.fieldLabel,
-                  'calendar-event-form-label'
-                )}>
+                <label className="form-label">
                   Contacts
                 </label>
                 <ContactSelector
@@ -691,60 +651,53 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               </div>
             </div>
             
-            {/* Form actions */}
-            <div className={styles.actionsContainer}>
-              <button
+          </div>
+        </FormPageContent>
+        
+        <FormPageFooter>
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            
+            {event && (
+              <Button
                 type="button"
-                onClick={handleClose}
-                className={styles.cancelButton}
-              >
-                Cancel
-              </button>
-              
-              {event && (
-                <button
-                  type="button"
-                  className={styles.deleteButton}
-                  onClick={() => {
-                    // This would be implemented to delete the event
-                    // For now, we'll just log to console
-                    console.log('Delete event', event.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-1.5" />
-                  Delete
-                </button>
-              )}
-              
-              <button
-                type="submit"
-                className={styles.saveButton}
+                variant="destructive"
+                onClick={() => {
+                  // This would be implemented to delete the event
+                  // For now, we'll just log to console
+                  console.log('Delete event', event.id);
+                }}
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Event'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-        
-        {/* Loading overlay */}
-        {isLoading && (
-          <div className={styles.loadingOverlay}>
-            <Loader2 className={cn(
-              styles.loadingSpinner,
-              'calendar-event-form-spinner'
-            )} />
+                <Trash2 className="h-4 w-4 mr-1.5" />
+                Delete
+              </Button>
+            )}
+            
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Event'
+              )}
+            </Button>
           </div>
-        )}
-      </div>
-    </div>
+        </FormPageFooter>
+      </form>
+    </FormPage>
   );
 };
 

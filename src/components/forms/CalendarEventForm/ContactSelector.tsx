@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { cn } from '@/src/lib/utils';
 import { calendarEventFormStyles as styles } from './calendar-event-form.styles';
 import { Contact } from '@/src/components/CalendarEvent/calendar-event.types';
-import { Check, X, Plus, Phone, Mail, AlertCircle } from 'lucide-react';
+import { Check, X, Plus, Phone, Mail } from 'lucide-react';
+import { Input } from '@/src/components/ui/input';
+import { Button } from '@/src/components/ui/button';
 
 interface ContactSelectorProps {
   contacts: Contact[];
@@ -63,15 +65,12 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
     <div className={styles.multiSelectContainer}>
       {/* Search input */}
       <div className="relative">
-        <input
+        <Input
           type="text"
           placeholder="Search contacts..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={cn(
-            styles.input,
-            'calendar-event-form-input'
-          )}
+          className="w-full"
         />
         {searchTerm && (
           <button
@@ -140,14 +139,16 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
         {/* Add new contact button */}
         {onAddNewContact && (
           <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onAddNewContact}
-              className="w-full flex items-center justify-center px-2 py-1 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-md"
+              className="w-full"
+              size="sm"
             >
               <Plus className="h-4 w-4 mr-1.5" />
               Add New Contact
-            </button>
+            </Button>
           </div>
         )}
       </div>
