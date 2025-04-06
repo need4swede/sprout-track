@@ -77,6 +77,24 @@ enum MeasurementType {
   TEMPERATURE
 }
 
+// New enum for calendar event types
+enum CalendarEventType {
+  APPOINTMENT
+  CARETAKER_SCHEDULE
+  REMINDER
+  CUSTOM
+}
+
+// New enum for recurrence patterns
+enum RecurrencePattern {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
 model Baby {
   id               String        @id @default(uuid())
   firstName        String
@@ -101,6 +119,7 @@ model Baby {
   playLogs         PlayLog[]
   bathLogs         BathLog[]
   measurements     Measurement[]
+  events           BabyEvent[]   // New relationship for calendar events
   
   @@index([birthDate])
   @@index([deletedAt])
@@ -129,6 +148,7 @@ model Caretaker {
   playLogs     PlayLog[]
   bathLogs     BathLog[]
   measurements Measurement[]
+  events       CaretakerEvent[] // New relationship for calendar events
   
   @@index([deletedAt])
 }
@@ -406,4 +426,98 @@ model Measurement {
   @@index([babyId])
   @@index([caretakerId])
   @@index([deletedAt])
+}
+
+// New model for contacts (doctors, teachers, etc.)
+model Contact {
+  id          String    @id @default(uuid())
+  name        String
+  role        String    // doctor, teacher, family member, etc.
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  // Relationships
+  events      ContactEvent[] // Events associated with this contact
+  
+  @@index([role])
+  @@index([deletedAt])
+}
+
+// New model for calendar events
+model CalendarEvent {
+  id                String           @id @default(uuid())
+  title             String
+  description       String?
+  startTime         DateTime
+  endTime           DateTime?
+  allDay            Boolean          @default(false)
+  type              CalendarEventType
+  location          String?
+  color             String?          // For custom color coding
+  
+  // Recurrence fields
+  recurring         Boolean          @default(false)
+  recurrencePattern RecurrencePattern? 
+  recurrenceEnd     DateTime?        // When the recurrence ends
+  customRecurrence  String?          // JSON string for custom recurrence rules
+  
+  // Notification fields
+  reminderTime      Int?             // Minutes before event to send reminder
+  notificationSent  Boolean          @default(false)
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+  
+  // Relationships - multiple babies and caretakers can be associated with an event
+  babies            BabyEvent[]
+  caretakers        CaretakerEvent[]
+  contacts          ContactEvent[]   // Many-to-many with contacts
+  
+  @@index([startTime])
+  @@index([endTime])
+  @@index([type])
+  @@index([recurring])
+  @@index([deletedAt])
+}
+
+// Junction table for many-to-many relationship between babies and events
+model BabyEvent {
+  baby        Baby          @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  babyId      String
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String
+  
+  @@id([babyId, eventId])
+  @@index([babyId])
+  @@index([eventId])
+}
+
+// Junction table for many-to-many relationship between caretakers and events
+model CaretakerEvent {
+  caretaker   Caretaker     @relation(fields: [caretakerId], references: [id], onDelete: Cascade)
+  caretakerId String
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String
+  
+  @@id([caretakerId, eventId])
+  @@index([caretakerId])
+  @@index([eventId])
+}
+
+// Junction table for many-to-many relationship between contacts and events
+model ContactEvent {
+  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId   String
+  event       CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String
+  
+  @@id([contactId, eventId])
+  @@index([contactId])
+  @@index([eventId])
 }

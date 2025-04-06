@@ -1,0 +1,33 @@
+/* Calendar Event Form CSS */
+/* Most styles are now handled by the shared UI components */
+
+/* Custom scrollbar for multi-select lists */
+.calendar-event-form-multi-select::-webkit-scrollbar {
+  width: 6px;
+}
+
+.calendar-event-form-multi-select::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-event-form-multi-select::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gray-400 with opacity */
+  border-radius: 3px;
+}
+
+html.dark .calendar-event-form-multi-select::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5); /* gray-600 with opacity */
+}
+
+/* Form label styling */
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151; /* gray-700 */
+}
+
+html.dark .form-label {
+  color: #d1d5db; /* gray-300 */
+}

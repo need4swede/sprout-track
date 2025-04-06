@@ -36,11 +36,16 @@ html.dark .calendar-days > div.today {
 /* Responsive styles for mobile */
 @media (max-width: 640px) {
   .calendar-days > div {
-    min-height: 50px !important;
+    min-height: 40px !important;
+    height: auto !important;
   }
   
   .calendar-weekdays > div {
-    padding: 0.5rem 0 !important;
+    padding: 0.25rem 0 !important;
+  }
+  
+  .calendar-days {
+    grid-template-rows: repeat(var(--calendar-row-count, 6), minmax(40px, 1fr)) !important;
   }
 }
 
@@ -59,19 +64,20 @@ html.dark .calendar-days > div.today {
   min-height: 0; /* This is important for flex children to respect parent's height */
 }
 
-/* Ensure calendar days fill available space */
-.calendar-days {
-  flex: 1;
-  display: grid;
-  grid-template-rows: repeat(6, 1fr); /* Always 6 rows for consistency */
-  min-height: 0; /* This is important for grid to respect parent's height */
-}
-
-/* Make sure the calendar grid's inner div takes full height */
+/* Ensure the calendar grid fills the available space */
 .calendar-grid > div {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* Ensure calendar days fill available space */
+.calendar-days {
+  flex: 1;
+  display: grid;
+  grid-template-rows: repeat(var(--calendar-row-count, 6), 1fr); /* Dynamic rows based on month */
+  min-height: 0; /* This is important for grid to respect parent's height */
+  height: 100%; /* Ensure it takes full height */
 }
 
 /* Ensure each day cell expands properly */
