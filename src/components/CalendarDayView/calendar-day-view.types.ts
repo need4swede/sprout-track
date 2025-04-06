@@ -39,6 +39,11 @@ export interface CalendarDayViewProps {
    * Handler for when the form page is closed
    */
   onClose?: () => void;
+  
+  /**
+   * Whether the day view modal is open
+   */
+  isOpen: boolean;
 }
 
 /**

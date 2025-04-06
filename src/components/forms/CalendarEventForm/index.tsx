@@ -5,7 +5,7 @@ import { Baby, Caretaker, Contact } from '@/src/components/CalendarEvent/calenda
 import { calendarEventFormStyles as styles } from './calendar-event-form.styles';
 import { CalendarEventType, RecurrencePattern } from '@prisma/client';
 import { format } from 'date-fns'; // Import date-fns for formatting
-import RecurrenceSelector from './RecurrenceSelector';
+// import RecurrenceSelector from './RecurrenceSelector'; // Commented out - functionality not fully implemented yet
 import ContactSelector from './ContactSelector';
 import { MapPin, AlertCircle, Bell, Loader2, Trash2 } from 'lucide-react';
 import { FormPage, FormPageContent, FormPageFooter } from '@/src/components/ui/form-page';
@@ -155,6 +155,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     setFormData(prev => ({ ...prev, color: e.target.value }));
   };
   
+  // Recurrence handlers - commented out as functionality is not fully implemented yet
+  /*
   // Handle recurring change
   const handleRecurringChange = (recurring: boolean) => {
     setFormData(prev => ({ 
@@ -184,7 +186,10 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       setErrors(prev => ({ ...prev, recurrenceEnd: undefined }));
     }
   };
+  */
   
+  // Reminder handler - commented out as functionality is not fully implemented yet
+  /*
   // Handle reminder time change
   const handleReminderTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
@@ -193,6 +198,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       reminderTime: value ? parseInt(value, 10) : undefined 
     }));
   };
+  */
   
   // Handle baby selection change
   const handleBabyChange = (babyId: string) => {
@@ -219,6 +225,60 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
   // Handle contact selection change
   const handleContactsChange = (contactIds: string[]) => {
     setFormData(prev => ({ ...prev, contactIds }));
+  };
+  
+  // Local state for contacts to ensure updates are reflected
+  const [localContacts, setLocalContacts] = useState<Contact[]>(contacts);
+  
+  // Update local contacts when props change
+  useEffect(() => {
+    setLocalContacts(contacts);
+  }, [contacts]);
+  
+  // Handle adding a new contact
+  const handleAddContact = (newContact: Contact) => {
+    console.log('Add new contact:', newContact);
+    
+    // Add the new contact to our local contacts list
+    setLocalContacts(prev => {
+      // Check if the contact already exists
+      if (!prev.some(c => c.id === newContact.id)) {
+        return [...prev, newContact];
+      }
+      return prev;
+    });
+    
+    // Select the new contact
+    setFormData(prev => ({
+      ...prev,
+      contactIds: [...prev.contactIds, newContact.id]
+    }));
+  };
+  
+  // Handle editing a contact
+  const handleEditContact = (updatedContact: Contact) => {
+    console.log('Edit contact:', updatedContact);
+    
+    // Update the contact in our local contacts list
+    setLocalContacts(prev => 
+      prev.map(c => c.id === updatedContact.id ? updatedContact : c)
+    );
+  };
+  
+  // Handle deleting a contact
+  const handleDeleteContact = (contactId: string) => {
+    console.log('Delete contact:', contactId);
+    
+    // Remove the contact from our local contacts list
+    setLocalContacts(prev => prev.filter(c => c.id !== contactId));
+    
+    // Remove the contact from the selected contacts if it's selected
+    if (formData.contactIds.includes(contactId)) {
+      setFormData(prev => ({
+        ...prev,
+        contactIds: prev.contactIds.filter(id => id !== contactId)
+      }));
+    }
   };
   
   // Format Date object into "yyyy-MM-dd'T'HH:mm" for datetime-local input
@@ -262,6 +322,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       newErrors.endTime = 'End time must be after start time';
     }
     
+    // Recurrence validation - commented out as functionality is not fully implemented yet
+    /*
     // Validate recurrence pattern if recurring
     if (formData.recurring && !formData.recurrencePattern) {
       newErrors.recurrencePattern = 'Recurrence pattern is required for recurring events';
@@ -276,6 +338,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
         newErrors.recurrenceEnd = 'Recurrence end date must be in the future';
       }
     }
+    */
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -520,7 +583,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               </div>
             </div>
             
-            {/* Recurrence section */}
+            {/* Recurrence section - commented out as functionality is not fully implemented yet */}
+            {/* 
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>Recurrence</h3>
               
@@ -537,68 +601,71 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 }}
               />
             </div>
+            */}
             
-              {/* Reminder section */}
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Reminder</h3>
-                
-                <div className="space-y-2">
-                  <label 
-                    htmlFor="reminderTime" 
-                    className="form-label flex items-center"
-                  >
-                    <Bell className="h-4 w-4 mr-1.5 text-gray-500 dark:text-gray-400" />
-                    Remind me
-                  </label>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between"
-                      >
-                        {formData.reminderTime === undefined ? 'No reminder' :
-                         formData.reminderTime === 0 ? 'At time of event' :
-                         formData.reminderTime === 5 ? '5 minutes before' :
-                         formData.reminderTime === 10 ? '10 minutes before' :
-                         formData.reminderTime === 15 ? '15 minutes before' :
-                         formData.reminderTime === 30 ? '30 minutes before' :
-                         formData.reminderTime === 60 ? '1 hour before' :
-                         formData.reminderTime === 120 ? '2 hours before' :
-                         formData.reminderTime === 1440 ? '1 day before' : 'Custom'}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        No reminder
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '0' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        At time of event
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '5' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        5 minutes before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '10' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        10 minutes before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '15' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        15 minutes before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '30' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        30 minutes before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '60' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        1 hour before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '120' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        2 hours before
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '1440' } } as React.ChangeEvent<HTMLSelectElement>)}>
-                        1 day before
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+            {/* Reminder section - commented out as functionality is not fully implemented yet */}
+            {/*
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Reminder</h3>
+              
+              <div className="space-y-2">
+                <label 
+                  htmlFor="reminderTime" 
+                  className="form-label flex items-center"
+                >
+                  <Bell className="h-4 w-4 mr-1.5 text-gray-500 dark:text-gray-400" />
+                  Remind me
+                </label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      {formData.reminderTime === undefined ? 'No reminder' :
+                       formData.reminderTime === 0 ? 'At time of event' :
+                       formData.reminderTime === 5 ? '5 minutes before' :
+                       formData.reminderTime === 10 ? '10 minutes before' :
+                       formData.reminderTime === 15 ? '15 minutes before' :
+                       formData.reminderTime === 30 ? '30 minutes before' :
+                       formData.reminderTime === 60 ? '1 hour before' :
+                       formData.reminderTime === 120 ? '2 hours before' :
+                       formData.reminderTime === 1440 ? '1 day before' : 'Custom'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      No reminder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '0' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      At time of event
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '5' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      5 minutes before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '10' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      10 minutes before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '15' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      15 minutes before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '30' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      30 minutes before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '60' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      1 hour before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '120' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      2 hours before
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleReminderTimeChange({ target: { value: '1440' } } as React.ChangeEvent<HTMLSelectElement>)}>
+                      1 day before
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+            </div>
+            */}
             
             {/* People section */}
             <div className={styles.section}>
@@ -698,14 +765,12 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                   Contacts
                 </label>
                 <ContactSelector
-                  contacts={contacts}
+                  contacts={localContacts}
                   selectedContactIds={formData.contactIds}
                   onContactsChange={handleContactsChange}
-                  onAddNewContact={() => {
-                    // This would be implemented to open a contact form
-                    // For now, we'll just log to console
-                    console.log('Add new contact');
-                  }}
+                  onAddNewContact={handleAddContact}
+                  onEditContact={handleEditContact}
+                  onDeleteContact={handleDeleteContact}
                 />
               </div>
             </div>
@@ -728,10 +793,33 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
               <Button
                 type="button"
                 variant="destructive"
-                onClick={() => {
-                  // This would be implemented to delete the event
-                  // For now, we'll just log to console
-                  console.log('Delete event', event.id);
+                onClick={async () => {
+                  if (!event.id) return;
+                  
+                  try {
+                    // Delete the event
+                    const response = await fetch(`/api/calendar-event?id=${event.id}`, {
+                      method: 'DELETE',
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                      // Close the form
+                      onClose();
+                      
+                      // Call onSave with a special flag to indicate deletion
+                      // This will trigger a refresh in the parent components
+                      onSave({
+                        ...event,
+                        _deleted: true // Special flag to indicate deletion
+                      });
+                    } else {
+                      console.error('Error deleting event:', data.error);
+                    }
+                  } catch (error) {
+                    console.error('Error deleting event:', error);
+                  }
                 }}
                 disabled={isLoading}
               >

@@ -1,6 +1,4 @@
 import { CalendarEventData } from '@/src/components/CalendarEvent/calendar-event.types';
-import { Baby, Caretaker, Contact } from '@/src/components/CalendarEvent/calendar-event.types';
-import { CalendarEventFormData } from '@/src/components/forms/CalendarEventForm/calendar-event-form.types';
 
 /**
  * Type definitions for the Calendar component
@@ -79,29 +77,4 @@ export interface CalendarState {
    * Whether events are currently loading (Optional)
    */
   isLoadingEvents?: boolean;
-  
-  /**
-   * Whether the event form is visible
-   */
-  showEventForm: boolean;
-  
-  /**
-   * The currently selected event for editing
-   */
-  selectedEvent: CalendarEventFormData | undefined;
-  
-  /**
-   * Available babies for event assignment
-   */
-  babies: Baby[];
-  
-  /**
-   * Available caretakers for event assignment
-   */
-  caretakers: Caretaker[];
-  
-  /**
-   * Available contacts for event assignment
-   */
-  contacts: Contact[];
 }

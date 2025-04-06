@@ -81,6 +81,9 @@ export interface CalendarEventFormData {
   babyIds: string[];
   caretakerIds: string[];
   contactIds: string[];
+  
+  // Special flag for deletion
+  _deleted?: boolean;
 }
 
 /**

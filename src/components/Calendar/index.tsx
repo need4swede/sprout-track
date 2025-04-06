@@ -5,10 +5,8 @@ import { Button } from '@/src/components/ui/button';
 import { Card } from '@/src/components/ui/card';
 import { cn } from '@/src/lib/utils';
 import CalendarDayView from '@/src/components/CalendarDayView';
-import CalendarEventForm from '@/src/components/forms/CalendarEventForm';
 import { CalendarProps, CalendarState } from './calendar.types';
 import { calendarStyles as styles } from './calendar.styles';
-import { CalendarEventFormData } from '@/src/components/forms/CalendarEventForm/calendar-event-form.types';
 import './calendar.css';
 
 /**
@@ -29,13 +27,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
     currentDate: new Date(2025, 3, 1), // April 1, 2025 (months are 0-indexed)
     selectedDate: null,
     calendarDays: [],
-    events: [],
-    // isLoadingEvents removed
-    showEventForm: false,
-    selectedEvent: undefined,
-    babies: [],
-    caretakers: [],
-    contacts: []
+    events: []
   });
   
   // Destructure state for easier access
@@ -43,13 +35,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
     currentDate,
     selectedDate,
     calendarDays,
-    events,
-    // isLoadingEvents removed
-    showEventForm,
-    selectedEvent,
-    babies,
-    caretakers,
-    contacts
+    events
   } = state;
   
   // State update helpers
@@ -57,52 +43,8 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
     setState(prevState => ({ ...prevState, ...updates }));
   };
 
-  /**
-   * Fetch babies, caretakers, and contacts for the event form
-   */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch babies
-        const babiesResponse = await fetch('/api/baby');
-        const babiesData = await babiesResponse.json();
-        
-        // Fetch caretakers
-        const caretakersResponse = await fetch('/api/caretaker');
-        const caretakersData = await caretakersResponse.json();
-        
-        // Fetch contacts
-        const contactsResponse = await fetch('/api/contact');
-        const contactsData = await contactsResponse.json();
-        
-        // Update state with fetched data
-        updateState({
-          babies: babiesData.success 
-            ? babiesData.data.map((baby: any) => ({
-                id: baby.id,
-                firstName: baby.firstName,
-                lastName: baby.lastName,
-                inactive: baby.inactive
-              }))
-            : [],
-          caretakers: caretakersData.success 
-            ? caretakersData.data.map((caretaker: any) => ({
-                id: caretaker.id,
-                name: caretaker.name,
-                type: caretaker.type
-              }))
-            : [],
-          contacts: contactsData.success ? contactsData.data : []
-        });
-        
-        console.log("Fetched babies:", babiesData.success ? babiesData.data : []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // We no longer need to fetch babies, caretakers, and contacts here
+  // as they are now handled by CalendarDayView
 
   /**
    * Function to get all days in a month for the calendar
@@ -208,6 +150,15 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
       console.error('Error fetching events:', error);
     }
   };
+  
+  // Create a ref to store the fetchEvents function
+  // This allows us to call the latest version of fetchEvents from event handlers
+  const fetchEventsRef = React.useRef(fetchEvents);
+  
+  // Update the ref whenever fetchEvents changes
+  React.useEffect(() => {
+    fetchEventsRef.current = fetchEvents;
+  }, [fetchEvents]);
 
   /**
    * Fetch events when the baby or month changes
@@ -335,80 +286,21 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   };
 
   const handleEventClick = (event: any) => {
-    // Convert event to form data format
-    const formData: CalendarEventFormData = {
-      id: event.id,
-      title: event.title,
-      description: event.description || '',
-      startTime: new Date(event.startTime),
-      endTime: event.endTime ? new Date(event.endTime) : undefined,
-      allDay: event.allDay,
-      type: event.type,
-      location: event.location || '',
-      color: event.color || '',
-      recurring: event.recurring,
-      recurrencePattern: event.recurrencePattern,
-      recurrenceEnd: event.recurrenceEnd ? new Date(event.recurrenceEnd) : undefined,
-      customRecurrence: event.customRecurrence,
-      reminderTime: event.reminderTime,
-      babyIds: event.babies.map((baby: any) => baby.id),
-      caretakerIds: event.caretakers.map((caretaker: any) => caretaker.id),
-      contactIds: event.contacts.map((contact: any) => contact.id),
-    };
-    
-    updateState({
-      selectedEvent: formData,
-      showEventForm: true
-    });
+    // This is now handled by CalendarDayView
+    // Just pass the event through
   };
 
   const handleAddEvent = (date: Date) => {
+    // Update the selected date
     updateState({
-      selectedEvent: undefined,
-      showEventForm: true,
-      // Ensure the selected date is updated to match the date passed from CalendarDayView
       selectedDate: date
     });
+    
+    // Refresh events after an event is added, edited, or deleted
+    fetchEventsRef.current();
   };
 
-  const handleSaveEvent = async (eventData: CalendarEventFormData) => {
-    try {
-      const method = eventData.id ? 'PUT' : 'POST';
-      const url = eventData.id ? `/api/calendar-event?id=${eventData.id}` : '/api/calendar-event';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...eventData,
-          startTime: eventData.startTime.toISOString(),
-          endTime: eventData.endTime?.toISOString(),
-          recurrenceEnd: eventData.recurrenceEnd?.toISOString(),
-          timezone: userTimezone,
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        // Close form and refresh events
-        updateState({ showEventForm: false });
-        
-        // Refresh all events for the month (this is sufficient)
-        fetchEvents();
-      } else {
-        console.error('Error saving event:', data.error);
-      }
-    } catch (error) {
-      console.error('Error saving event:', error);
-    }
-  };
-  
-  const handleCloseEventForm = () => {
-    updateState({ showEventForm: false });
-  };
+  // These functions are now handled by CalendarDayView
 
   /**
    * Get day cell class based on date
@@ -564,22 +456,16 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
           </div>
         </Card>
         
-        {/* Day view (only shown when a date is selected) - positioned absolutely to overlay the calendar */}
-        {selectedDate && (
-          <div className="fixed inset-0 md:absolute md:inset-0">
-            <CalendarDayView
-              date={selectedDate}
-              // Pass only events for the selected day
-              events={getEventsForDay(selectedDate)} 
-              onEventClick={handleEventClick}
-              onAddEvent={handleAddEvent}
-              // Apply the slide-in animation class
-              className="calendar-day-view-slide-in"
-              // Add onClose handler to clear the selected date
-              onClose={() => updateState({ selectedDate: null })}
-            />
-          </div>
-        )}
+        {/* Day view as a modal */}
+        <CalendarDayView
+          date={selectedDate || new Date()}
+          events={selectedDate ? getEventsForDay(selectedDate) : []}
+          onEventClick={handleEventClick}
+          onAddEvent={handleAddEvent}
+          className="calendar-day-view-slide-in"
+          onClose={() => updateState({ selectedDate: null })}
+          isOpen={selectedDate !== null}
+        />
       </div>
       
       {/* Add event button (only shown on mobile when no date is selected) */}
@@ -594,17 +480,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
         </div>
       )}
       
-      {/* Event form */}
-      <CalendarEventForm
-        isOpen={showEventForm}
-        onClose={handleCloseEventForm}
-        event={selectedEvent}
-        onSave={handleSaveEvent}
-        initialDate={selectedDate || undefined}
-        babies={babies}
-        caretakers={caretakers}
-        contacts={contacts}
-      />
+      {/* Event form is now handled by CalendarDayView */}
     </div>
   );
 }
