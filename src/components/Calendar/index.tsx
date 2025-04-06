@@ -566,7 +566,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
         
         {/* Day view (only shown when a date is selected) - positioned absolutely to overlay the calendar */}
         {selectedDate && (
-          <div className="fixed inset-0 z-[50] md:absolute md:inset-0">
+          <div className="fixed inset-0 md:absolute md:inset-0">
             <CalendarDayView
               date={selectedDate}
               // Pass only events for the selected day
