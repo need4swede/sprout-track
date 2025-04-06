@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/src/lib/utils';
 import { CalendarEventFormProps, CalendarEventFormData, CalendarEventFormErrors } from './calendar-event-form.types';
+import { Baby, Caretaker, Contact } from '@/src/components/CalendarEvent/calendar-event.types';
 import { calendarEventFormStyles as styles } from './calendar-event-form.styles';
 import { CalendarEventType, RecurrencePattern } from '@prisma/client';
 import { format } from 'date-fns'; // Import date-fns for formatting
@@ -37,10 +38,14 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
   contacts,
   isLoading = false,
 }) => {
-  // Initialize form data
-  const [formData, setFormData] = useState<CalendarEventFormData>(() => {
-    if (event) {
-      return { ...event };
+  // Helper function to get initial form data
+  const getInitialFormData = (
+    eventData: CalendarEventFormData | undefined, 
+    initialDate: Date | undefined, 
+    babies: Baby[]
+  ): CalendarEventFormData => {
+    if (eventData) {
+      return { ...eventData };
     }
     
     // Default values for new event
@@ -71,35 +76,29 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       caretakerIds: [],
       contactIds: [],
     };
+  };
+  
+  // Initialize form data
+  const [formData, setFormData] = useState<CalendarEventFormData>(() => {
+    return getInitialFormData(event, initialDate, babies);
   });
   
-  // Update form data when initialDate changes and we're creating a new event
+  // Update form data when event or initialDate changes
   useEffect(() => {
-    if (!event && initialDate) {
-      // Set default start time to nearest half hour
-      const startTime = new Date(initialDate);
-      startTime.setMinutes(Math.ceil(startTime.getMinutes() / 30) * 30);
-      startTime.setSeconds(0);
-      startTime.setMilliseconds(0);
-      
-      // Set default end time to 1 hour after start time
-      const endTime = new Date(startTime);
-      endTime.setHours(endTime.getHours() + 1);
-      
-      // If there's only one active baby, ensure it's selected
-      const activeBabies = babies.filter(baby => baby.inactive !== true);
-      const defaultBabyIds = activeBabies.length === 1 
-        ? [activeBabies[0].id] 
-        : formData.babyIds;
-      
-      setFormData(prev => ({
-        ...prev,
-        startTime,
-        endTime,
-        babyIds: defaultBabyIds
-      }));
+    // If event is provided, use it (editing an existing event)
+    if (event) {
+      setFormData({ ...event });
+    } 
+    // If no event but initialDate is provided, create a completely new event with that date
+    else if (initialDate) {
+      // Create a completely new form data object for a new event
+      setFormData(getInitialFormData(undefined, initialDate, babies));
     }
-  }, [initialDate, event, babies]);
+    // If no event and no initialDate, reset to default form with current date
+    else if (!event && !initialDate) {
+      setFormData(getInitialFormData(undefined, new Date(), babies));
+    }
+  }, [event, initialDate, babies]);
   
   // Ensure baby is selected when editing an existing event
   useEffect(() => {
