@@ -354,7 +354,9 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   const handleAddEvent = (date: Date) => {
     updateState({
       selectedEvent: undefined,
-      showEventForm: true
+      showEventForm: true,
+      // Ensure the selected date is updated to match the date passed from CalendarDayView
+      selectedDate: date
     });
   };
 

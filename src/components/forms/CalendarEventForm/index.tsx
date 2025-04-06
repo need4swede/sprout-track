@@ -58,6 +58,27 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     };
   });
   
+  // Update form data when initialDate changes and we're creating a new event
+  useEffect(() => {
+    if (!event && initialDate) {
+      // Set default start time to nearest half hour
+      const startTime = new Date(initialDate);
+      startTime.setMinutes(Math.ceil(startTime.getMinutes() / 30) * 30);
+      startTime.setSeconds(0);
+      startTime.setMilliseconds(0);
+      
+      // Set default end time to 1 hour after start time
+      const endTime = new Date(startTime);
+      endTime.setHours(endTime.getHours() + 1);
+      
+      setFormData(prev => ({
+        ...prev,
+        startTime,
+        endTime
+      }));
+    }
+  }, [initialDate, event]);
+  
   // Form validation errors
   const [errors, setErrors] = useState<CalendarEventFormErrors>({});
   
