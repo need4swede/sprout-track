@@ -186,7 +186,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
       
       <div className={cn(
         styles.content,
-        'calendar-day-view-content'
+        'calendar-day-view-content h-full overflow-y-auto'
       )}>
         <div className="calendar-day-view">
           {/* Morning events */}

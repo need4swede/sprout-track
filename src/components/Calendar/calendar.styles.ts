@@ -10,7 +10,7 @@ export const calendarStyles = {
   container: "relative z-0 flex flex-col h-full",
   
   // Header
-  header: "flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-t-md",
+  header: "flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white border-t border-gray-200 dark:border-gray-700",
   headerTitle: "text-lg font-semibold",
   headerButton: "text-white hover:bg-teal-500/20",
   todayButton: "text-xs text-white/80 hover:text-white hover:bg-teal-500/20 py-0 h-6",

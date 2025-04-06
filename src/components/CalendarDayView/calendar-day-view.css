@@ -44,6 +44,18 @@ html.dark .calendar-day-view-content::-webkit-scrollbar-thumb {
   background-color: rgba(75, 85, 99, 0.5); /* gray-600 with opacity */
 }
 
+/* Ensure content area takes up available space */
+.calendar-day-view-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.calendar-day-view {
+  flex: 1;
+}
+
 /* Loading spinner animation */
 @keyframes calendar-day-view-spin {
   to {
@@ -58,14 +70,20 @@ html.dark .calendar-day-view-content::-webkit-scrollbar-thumb {
 /* Responsive styles */
 @media (max-width: 640px) {
   .calendar-day-view-header {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
   
   .calendar-day-view-content {
-    padding: 0.75rem;
+    padding: 0.5rem;
+    max-height: calc(100vh - 350px); /* Adjust based on calendar height */
   }
   
   .calendar-day-view-add-button-container {
-    padding: 0.75rem;
+    padding: 0.5rem;
+  }
+  
+  .calendar-day-view-container {
+    height: auto;
+    max-height: 100%;
   }
 }

@@ -7,14 +7,14 @@
 
 export const calendarDayViewStyles = {
   // Container styles
-  container: "flex flex-col h-full overflow-hidden bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm",
+  container: "flex flex-col h-full overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm w-full",
   
   // Header styles
   header: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-teal-600 to-teal-700 text-white",
   headerTitle: "text-lg font-semibold",
   
   // Content container
-  content: "flex-1 overflow-y-auto p-4",
+  content: "flex-1 overflow-y-auto p-4 min-h-0",
   
   // Loading state
   loadingContainer: "flex items-center justify-center h-full",
@@ -33,7 +33,7 @@ export const calendarDayViewStyles = {
   eventsList: "space-y-3",
   
   // Add event button
-  addButtonContainer: "sticky bottom-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700",
+  addButtonContainer: "p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700",
   addButton: "w-full flex items-center justify-center py-2 px-4 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium shadow-sm hover:shadow-md transition-shadow duration-200",
   addButtonIcon: "h-5 w-5 mr-2",
 } as const;

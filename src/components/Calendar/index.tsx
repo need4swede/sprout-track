@@ -106,8 +106,9 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
 
   /**
    * Function to get all days in a month for the calendar
+   * and calculate the number of rows needed
    */
-  const getDaysInMonth = (year: number, month: number): Date[] => {
+  const getDaysInMonth = (year: number, month: number): { days: Date[], rowCount: number } => {
     const date = new Date(year, month, 1);
     const days: Date[] = [];
     
@@ -133,8 +134,14 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
       days.push(new Date(year, month + 1, i));
     }
     
-    return days;
+    // Calculate the number of rows needed (total days / 7)
+    const rowCount = Math.ceil(days.length / 7);
+    
+    return { days, rowCount };
   };
+
+  // Track the number of rows needed for the calendar grid
+  const [calendarRowCount, setCalendarRowCount] = useState(6);
 
   /**
    * Update calendar days when the current date changes
@@ -142,8 +149,9 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   useEffect(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const days = getDaysInMonth(year, month);
+    const { days, rowCount } = getDaysInMonth(year, month);
     updateState({ calendarDays: days });
+    setCalendarRowCount(rowCount);
   }, [currentDate]);
 
   /**
@@ -522,10 +530,10 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
       </div>
       
       {/* Main content area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-white dark:bg-gray-800" style={{ minHeight: `${calendarRowCount * 60}px` }}>
         {/* Calendar Grid */}
         <Card className={`flex-1 overflow-hidden border-0 rounded-t-none calendar-grid ${selectedDate ? 'hidden md:flex' : 'flex'} md:flex-col`}>
-          <div className="h-full overflow-y-auto flex flex-col">
+          <div className="h-full flex flex-col">
             {/* Day names header */}
             <div className="grid grid-cols-7 text-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 calendar-weekdays">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
@@ -536,7 +544,10 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
             </div>
             
             {/* Calendar days */}
-            <div className="grid grid-cols-7 h-[calc(100%-32px)] calendar-days">
+            <div 
+              className="grid grid-cols-7 h-[calc(100%-32px)] calendar-days"
+              style={{ '--calendar-row-count': calendarRowCount } as React.CSSProperties}
+            >
               {calendarDays.map((date, index) => (
                 <div 
                   key={index} 
@@ -554,9 +565,8 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
         </Card>
         
         {/* Day view (only shown when a date is selected) */}
-        {/* Day view (only shown when a date is selected) */}
         {selectedDate && (
-          <div className={`flex-1 ml-0 md:ml-4 ${selectedDate ? 'flex' : 'hidden md:flex'} flex-col`}>
+          <div className={`flex-1 mt-0 md:mt-0 md:ml-4 ${selectedDate ? 'flex' : 'hidden md:flex'} flex-col`}>
             <CalendarDayView
               date={selectedDate}
               // Pass only events for the selected day
