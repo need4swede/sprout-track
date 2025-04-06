@@ -3,7 +3,14 @@ import { cn } from '@/src/lib/utils';
 import { CalendarDayViewProps, EventGroups } from './calendar-day-view.types';
 import { calendarDayViewStyles as styles } from './calendar-day-view.styles';
 import { CalendarEventItem } from '../CalendarEventItem';
-import { Loader2, Calendar, Sun, Coffee, Moon, PlusCircle, CalendarClock } from 'lucide-react';
+import { Loader2, Calendar, Sun, Coffee, Moon, PlusCircle, CalendarClock, X } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
+import { 
+  FormPage, 
+  FormPageContent, 
+  FormPageHeader, 
+  FormPageFooter 
+} from '@/src/components/ui/form-page';
 import './calendar-day-view.css';
 
 /**
@@ -11,6 +18,7 @@ import './calendar-day-view.css';
  * 
  * Displays events for a selected day, grouped by time of day (morning, afternoon, evening).
  * Includes an "Add Event" button and handles loading and empty states.
+ * Uses FormPage component for consistent layout with the rest of the app.
  * 
  * @param date - The selected date to display events for
  * @param events - Array of events for the selected date
@@ -18,6 +26,7 @@ import './calendar-day-view.css';
  * @param onAddEvent - Optional handler for when the add event button is clicked
  * @param isLoading - Whether the component is in a loading state
  * @param className - Additional CSS classes
+ * @param onClose - Optional handler for when the form page is closed
  */
 export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   date,
@@ -26,6 +35,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   onAddEvent,
   isLoading = false,
   className,
+  onClose,
 }) => {
   // Format date for display
   const formattedDate = useMemo(() => {
@@ -90,198 +100,143 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     }
   };
   
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className={cn(
-        styles.container,
-        'calendar-day-view-container',
-        className
-      )}>
-        <div className={cn(
-          styles.header,
-          'calendar-day-view-header'
-        )}>
-          <h2 className={styles.headerTitle}>{formattedDate}</h2>
-        </div>
-        
-        <div className={cn(
-          styles.loadingContainer,
-          'calendar-day-view'
-        )}>
-          <Loader2 className={cn(
-            styles.loadingSpinner,
-            'calendar-day-view-spinner'
-          )} />
-        </div>
-      </div>
-    );
-  }
+  // Handle close button click
+  const handleClose = () => {
+    // Call the onClose prop if provided
+    if (onClose) {
+      onClose();
+    }
+  };
   
-  // Render empty state
-  if (events.length === 0) {
+  // Render content based on loading and events state
+  const renderContent = () => {
+    // Loading state
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 text-teal-500 dark:text-teal-400 animate-spin" />
+        </div>
+      );
+    }
+    
+    // Empty state
+    if (events.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+          <CalendarClock className="h-12 w-12 text-gray-400 dark:text-gray-500 mb-2" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            No events scheduled for this day
+          </p>
+        </div>
+      );
+    }
+    
+    // Events state - grouped by time of day
     return (
-      <div className={cn(
-        styles.container,
-        'calendar-day-view-container',
-        className
-      )}>
-        <div className={cn(
-          styles.header,
-          'calendar-day-view-header'
-        )}>
-          <h2 className={styles.headerTitle}>{formattedDate}</h2>
-        </div>
-        
-        <div className={cn(
-          styles.content,
-          'calendar-day-view-content'
-        )}>
-          <div className={cn(
-            styles.emptyContainer,
-            'calendar-day-view'
-          )}>
-            <CalendarClock className={styles.emptyIcon} />
-            <p className={cn(
-              styles.emptyText,
-              'calendar-day-view-empty-text'
-            )}>
-              No events scheduled for this day
-            </p>
+      <div className="calendar-day-view">
+        {/* Morning events */}
+        {groupedEvents.morning.length > 0 && (
+          <div className={styles.eventGroup}>
+            <div className={styles.eventGroupHeader}>
+              <Sun className={styles.eventGroupIcon} />
+              <h3 className={cn(
+                styles.eventGroupTitle,
+                'calendar-day-view-group-title'
+              )}>
+                Morning
+              </h3>
+            </div>
+            
+            <div className={styles.eventsList}>
+              {groupedEvents.morning.map(event => (
+                <CalendarEventItem
+                  key={event.id}
+                  event={event}
+                  onClick={onEventClick}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         
-        {onAddEvent && (
-          <div className={cn(
-            styles.addButtonContainer,
-            'calendar-day-view-add-button-container'
-          )}>
-            <button
-              className={styles.addButton}
-              onClick={handleAddEvent}
-              aria-label="Add event"
-            >
-              <PlusCircle className={styles.addButtonIcon} />
-              Add Event
-            </button>
+        {/* Afternoon events */}
+        {groupedEvents.afternoon.length > 0 && (
+          <div className={styles.eventGroup}>
+            <div className={styles.eventGroupHeader}>
+              <Coffee className={styles.eventGroupIcon} />
+              <h3 className={cn(
+                styles.eventGroupTitle,
+                'calendar-day-view-group-title'
+              )}>
+                Afternoon
+              </h3>
+            </div>
+            
+            <div className={styles.eventsList}>
+              {groupedEvents.afternoon.map(event => (
+                <CalendarEventItem
+                  key={event.id}
+                  event={event}
+                  onClick={onEventClick}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Evening events */}
+        {groupedEvents.evening.length > 0 && (
+          <div className={styles.eventGroup}>
+            <div className={styles.eventGroupHeader}>
+              <Moon className={styles.eventGroupIcon} />
+              <h3 className={cn(
+                styles.eventGroupTitle,
+                'calendar-day-view-group-title'
+              )}>
+                Evening
+              </h3>
+            </div>
+            
+            <div className={styles.eventsList}>
+              {groupedEvents.evening.map(event => (
+                <CalendarEventItem
+                  key={event.id}
+                  event={event}
+                  onClick={onEventClick}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
     );
-  }
+  };
   
-  // Render events grouped by time of day
+  // Use FormPage component to render the calendar day view
   return (
-    <div className={cn(
-      styles.container,
-      'calendar-day-view-container',
-      className
-    )}>
-      <div className={cn(
-        styles.header,
-        'calendar-day-view-header'
-      )}>
-        <h2 className={styles.headerTitle}>{formattedDate}</h2>
-      </div>
+    <FormPage
+      isOpen={true}
+      onClose={handleClose}
+      title={formattedDate}
+      className={cn('calendar-day-view-slide-in', className)}
+    >
+      <FormPageContent className="calendar-day-view-content">
+        {renderContent()}
+      </FormPageContent>
       
-      <div className={cn(
-        styles.content,
-        'calendar-day-view-content h-full overflow-y-auto'
-      )}>
-        <div className="calendar-day-view">
-          {/* Morning events */}
-          {groupedEvents.morning.length > 0 && (
-            <div className={styles.eventGroup}>
-              <div className={styles.eventGroupHeader}>
-                <Sun className={styles.eventGroupIcon} />
-                <h3 className={cn(
-                  styles.eventGroupTitle,
-                  'calendar-day-view-group-title'
-                )}>
-                  Morning
-                </h3>
-              </div>
-              
-              <div className={styles.eventsList}>
-                {groupedEvents.morning.map(event => (
-                  <CalendarEventItem
-                    key={event.id}
-                    event={event}
-                    onClick={onEventClick}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Afternoon events */}
-          {groupedEvents.afternoon.length > 0 && (
-            <div className={styles.eventGroup}>
-              <div className={styles.eventGroupHeader}>
-                <Coffee className={styles.eventGroupIcon} />
-                <h3 className={cn(
-                  styles.eventGroupTitle,
-                  'calendar-day-view-group-title'
-                )}>
-                  Afternoon
-                </h3>
-              </div>
-              
-              <div className={styles.eventsList}>
-                {groupedEvents.afternoon.map(event => (
-                  <CalendarEventItem
-                    key={event.id}
-                    event={event}
-                    onClick={onEventClick}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Evening events */}
-          {groupedEvents.evening.length > 0 && (
-            <div className={styles.eventGroup}>
-              <div className={styles.eventGroupHeader}>
-                <Moon className={styles.eventGroupIcon} />
-                <h3 className={cn(
-                  styles.eventGroupTitle,
-                  'calendar-day-view-group-title'
-                )}>
-                  Evening
-                </h3>
-              </div>
-              
-              <div className={styles.eventsList}>
-                {groupedEvents.evening.map(event => (
-                  <CalendarEventItem
-                    key={event.id}
-                    event={event}
-                    onClick={onEventClick}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {onAddEvent && (
-        <div className={cn(
-          styles.addButtonContainer,
-          'calendar-day-view-add-button-container'
-        )}>
-          <button
-            className={styles.addButton}
-            onClick={handleAddEvent}
-            aria-label="Add event"
-          >
-            <PlusCircle className={styles.addButtonIcon} />
+      <FormPageFooter>
+        <Button variant="outline" onClick={handleClose}>
+          Close
+        </Button>
+        
+        {onAddEvent && (
+          <Button onClick={handleAddEvent}>
+            <PlusCircle className="h-4 w-4 mr-2" />
             Add Event
-          </button>
-        </div>
-      )}
-    </div>
+          </Button>
+        )}
+      </FormPageFooter>
+    </FormPage>
   );
 };
 

@@ -34,6 +34,11 @@ export interface CalendarDayViewProps {
    * Additional CSS classes to apply
    */
   className?: string;
+  
+  /**
+   * Handler for when the form page is closed
+   */
+  onClose?: () => void;
 }
 
 /**

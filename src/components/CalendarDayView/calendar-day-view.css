@@ -12,6 +12,25 @@
 
 .calendar-day-view-slide-in {
   animation: slide-in-right 0.3s ease-out forwards;
+  height: 100%;
+  width: 100%;
+}
+
+/* Make the FormPage container take up the full height and width of its parent */
+.calendar-day-view-slide-in .form-page-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  inset: 0;
+}
+
+/* On mobile, make it full screen */
+@media (max-width: 768px) {
+  .calendar-day-view-slide-in .form-page-container {
+    position: fixed;
+  }
 }
 
 /* Dark mode overrides for CalendarDayView component */

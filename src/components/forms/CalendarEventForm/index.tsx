@@ -301,6 +301,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       onClose={onClose}
       title={event ? 'Edit Event' : 'Add Event'}
       description="Schedule and manage calendar events"
+      className="calendar-event-form-container"
     >
       <form onSubmit={handleSubmit} className="h-full flex flex-col">
         <FormPageContent className="overflow-y-auto">

@@ -495,7 +495,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   };
 
   return (
-    <div className="relative z-0 flex flex-col h-full calendar-container">
+    <div className="relative flex flex-col h-full calendar-container">
       {/* Calendar Header */}
       <div className="flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white border-t border-gray-200 dark:border-gray-700 calendar-header">
         <Button
@@ -532,7 +532,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
       {/* Main content area */}
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-white dark:bg-gray-800" style={{ minHeight: `${calendarRowCount * 60}px` }}>
         {/* Calendar Grid */}
-        <Card className={`flex-1 overflow-hidden border-0 rounded-t-none calendar-grid ${selectedDate ? 'hidden md:flex' : 'flex'} md:flex-col`}>
+        <Card className="flex-1 overflow-hidden border-0 rounded-t-none calendar-grid flex md:flex-col">
           <div className="h-full flex flex-col">
             {/* Day names header */}
             <div className="grid grid-cols-7 text-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 calendar-weekdays">
@@ -564,9 +564,9 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
           </div>
         </Card>
         
-        {/* Day view (only shown when a date is selected) */}
+        {/* Day view (only shown when a date is selected) - positioned absolutely to overlay the calendar */}
         {selectedDate && (
-          <div className={`flex-1 mt-0 md:mt-0 ${selectedDate ? 'flex' : 'hidden md:flex'} flex-col`}>
+          <div className="fixed inset-0 z-[50] md:absolute md:inset-0">
             <CalendarDayView
               date={selectedDate}
               // Pass only events for the selected day
@@ -575,7 +575,8 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
               onAddEvent={handleAddEvent}
               // Apply the slide-in animation class
               className="calendar-day-view-slide-in"
-              // isLoading removed as it's no longer needed
+              // Add onClose handler to clear the selected date
+              onClose={() => updateState({ selectedDate: null })}
             />
           </div>
         )}
