@@ -114,7 +114,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
-    {sortable && <GripVertical className={cn(styles.dragHandle, "dropdown-menu-icon")} />}
+    {sortable && <GripVertical className={cn(styles.dragHandle, "dropdown-menu-icon", "dropdown-menu-drag-handle")} />}
   </DropdownMenuPrimitive.CheckboxItem>
 ))
 DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName

@@ -29,10 +29,6 @@ html.dark .form-page-close-button:hover {
   background-color: #374151 !important; /* gray-700 */
 }
 
-html.dark .form-page-content {
-  /* No specific overrides needed for content container */
-}
-
 html.dark .form-page-footer {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */

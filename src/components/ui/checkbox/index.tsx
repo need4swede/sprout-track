@@ -54,14 +54,15 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         <div
           className={cn(
             checkboxVariants({ variant, size }),
-            checked ? "" : "bg-white dark:bg-gray-800",
+            checked ? "" : "bg-white",
             className,
-            "checkbox"
+            "checkbox",
+            `checkbox-${variant || 'default'}`
           )}
           data-state={checked ? "checked" : "unchecked"}
           onClick={() => onCheckedChange?.(!checked)}
         >
-          {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-800 checkbox-check" />}
+          {checked && <Check className="h-3.5 w-3.5 text-white checkbox-check" />}
         </div>
       </div>
     );

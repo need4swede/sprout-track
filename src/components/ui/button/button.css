@@ -22,3 +22,21 @@ html.dark .button-dark-ghost:hover {
 html.dark .button-dark-link {
   color: #5eead4; /* teal-300 */
 }
+
+/* Additional dark mode styles from button.styles.ts */
+html.dark .button-dark-secondary {
+  background-image: linear-gradient(to right, #1f2937, #111827); /* dark:from-slate-800 dark:to-slate-900 */
+}
+
+html.dark .button-dark-ghost {
+  color: #d1d5db; /* dark:text-gray-300 */
+}
+
+html.dark .button-dark-ghost:hover {
+  background-color: rgba(13, 148, 136, 0.2); /* dark:hover:bg-teal-900/20 */
+  color: #5eead4; /* dark:hover:text-teal-300 */
+}
+
+html.dark .button-dark-link {
+  color: #2dd4bf; /* dark:text-teal-400 */
+}

@@ -142,7 +142,7 @@ export function FormPage({
           formPageStyles.container,
           isOpen ? formPageStyles.containerOpen : formPageStyles.containerClosed,
           className,
-          "form-page-container dark:bg-gray-800 dark:border-gray-700"
+          "form-page-container"
         )}
         role="dialog"
         aria-modal="true"

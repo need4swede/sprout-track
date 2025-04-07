@@ -22,11 +22,11 @@ export const buttonVariants = cva(
         outline:
           "border-2 border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-teal-700",
         secondary:
-          "bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 dark:from-slate-800 dark:to-slate-900",
+          "bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         ghost: 
-          "hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/20 dark:text-gray-300 dark:hover:text-teal-300",
+          "hover:bg-teal-50 hover:text-teal-700",
         link: 
-          "text-teal-600 dark:text-teal-400 underline-offset-4 hover:underline",
+          "text-teal-600 underline-offset-4 hover:underline",
         success:
           "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         info:

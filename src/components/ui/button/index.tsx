@@ -34,7 +34,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Add dark mode specific classes based on variant
     const darkModeClass = variant === 'outline' ? 'button-dark-outline' : 
                           variant === 'ghost' ? 'button-dark-ghost' : 
-                          variant === 'link' ? 'button-dark-link' : '';
+                          variant === 'link' ? 'button-dark-link' : 
+                          variant === 'secondary' ? 'button-dark-secondary' : '';
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
