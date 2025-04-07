@@ -52,6 +52,7 @@ export function TimeEntry({
   const [isDragging, setIsDragging] = useState(false);
   const [exactMinute, setExactMinute] = useState<number | null>(null);
   const isDraggingRef = useRef(false);
+  const [previousAngle, setPreviousAngle] = useState<number | null>(null);
   
   // Check if a time is valid based on min/max constraints
   const isTimeValid = useCallback((date: Date): boolean => {
@@ -92,6 +93,8 @@ export function TimeEntry({
         e.preventDefault();
         setIsDragging(true);
         isDraggingRef.current = true;
+        // Initialize previous angle with current angle when starting to drag
+        setPreviousAngle(null);
       }
     };
     
@@ -107,6 +110,11 @@ export function TimeEntry({
       // Calculate angle from center to mouse position
       let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
       if (angle < 0) angle += 360;
+      
+      // Store the angle for next comparison
+      if (previousAngle === null) {
+        setPreviousAngle(angle);
+      }
       
       const baseDate = value instanceof Date && !isNaN(value.getTime()) ? new Date(value) : new Date();
       
@@ -148,6 +156,9 @@ export function TimeEntry({
       if (isDraggingRef.current) {
         setIsDragging(false);
         isDraggingRef.current = false;
+        
+        // Reset previous angle when done dragging
+        setPreviousAngle(null);
         
         // Clear exact minute after a short delay to allow the UI to update
         setTimeout(() => {
@@ -504,7 +515,9 @@ export function TimeEntry({
                cursor: 'grab',
                // Use the background color defined in styles directly if possible, else fallback
                backgroundColor: styles.clockHand.includes('bg-emerald-600') ? '#059669' : '#10b981', // Example fallback logic, adjust as needed based on actual styles
-               zIndex: 20, // Ensure hand is above other elements
+               zIndex: 20, // Ensure hand is above other elements,
+               // Use a very short transition during dragging for smoothness while preventing unwanted rotation
+               transition: isDragging ? 'transform 0.05s linear' : 'transform 0.2s ease'
              }}
              onMouseDown={(e) => {
                e.preventDefault();
@@ -543,7 +556,8 @@ export function TimeEntry({
                  transform: 'translate(-50%, -50%)',
                  zIndex: 25,
                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                 transition: 'all 0.1s ease',
+                 // Use a very short transition during dragging for smoothness while preventing unwanted rotation
+                 transition: isDragging ? 'all 0.05s linear' : 'all 0.2s ease',
                  cursor: 'grab',
                }}
                onMouseDown={(e) => {
