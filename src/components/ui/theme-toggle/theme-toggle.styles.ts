@@ -5,16 +5,13 @@ import { cva } from "class-variance-authority";
  * Defines all visual variations of the theme toggle component
  *
  * This uses TailwindCSS classes for styling and follows the project's design system
+ * Light mode styles are defined here, dark mode equivalents in theme-toggle.css
  */
 export const themeToggleStyles = {
-  // Main button
-  button: "flex items-center px-3 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 rounded-lg",
+  // Main button - light mode styling
+  button: "flex items-center px-3 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 rounded-lg w-full",
   
-  // Icon container
-  iconContainer: "mr-2 h-4 w-4",
-  
-  // Text label
-  label: "text-xs font-medium"
+  // Theme icon styles are defined in CSS for better control of the circle indicator
 };
 
 /**
@@ -27,6 +24,7 @@ export const themeToggleVariants = cva(
       theme: {
         light: "",
         dark: "",
+        system: "",
       },
     },
     defaultVariants: {

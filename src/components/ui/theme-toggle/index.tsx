@@ -4,7 +4,6 @@ import React from 'react';
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
 import { cn } from '@/src/lib/utils';
-import { Checkbox } from '@/src/components/ui/checkbox';
 import { themeToggleStyles } from './theme-toggle.styles';
 import { ThemeToggleProps } from './theme-toggle.types';
 import './theme-toggle.css';
@@ -12,56 +11,80 @@ import './theme-toggle.css';
 /**
  * ThemeToggle component
  * 
- * A component that allows toggling between light and dark themes
- * and provides an option to use system theme preference
+ * A component that allows cycling between light, dark, and system themes
+ * with visual indication of the current active theme
  */
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
   className,
   ...props
 }) => {
   const { theme, toggleTheme, useSystemTheme, toggleUseSystemTheme } = useTheme();
-  const isLightMode = theme === 'light';
+  
+  // Function to cycle between light, dark, and system modes
+  const cycleTheme = () => {
+    if (useSystemTheme) {
+      // If currently using system, switch to light
+      toggleUseSystemTheme();
+      // Ensure we're in light mode
+      if (theme === 'dark') {
+        toggleTheme();
+      }
+    } else if (theme === 'light') {
+      // If light, switch to dark
+      toggleTheme();
+    } else {
+      // If dark, switch to system
+      toggleUseSystemTheme();
+    }
+  };
+
+  // Determine the next theme in the cycle for the button text
+  const getNextTheme = () => {
+    if (useSystemTheme) return 'light';
+    if (theme === 'light') return 'dark';
+    return 'system';
+  };
+
+  // Get the appropriate icon and label for the current theme
+  const getCurrentThemeIcon = () => {
+    if (useSystemTheme) return <Monitor size={16} />;
+    return theme === 'light' ? <Sun size={16} /> : <Moon size={16} />;
+  };
+
+  const getCurrentThemeLabel = () => {
+    if (useSystemTheme) return 'System';
+    return theme === 'light' ? 'Light' : 'Dark';
+  };
 
   return (
     <div className="theme-toggle-container">
       <div className="theme-toggle-row">
-      <button
-          onClick={toggleTheme}
+        <button
+          onClick={cycleTheme}
           className={cn(
             themeToggleStyles.button,
             "theme-toggle-button",
-            useSystemTheme && "theme-toggle-button-disabled",
             className
           )}
-          aria-label={`Switch to ${isLightMode ? 'dark' : 'light'} mode`}
-          title={`Switch to ${isLightMode ? 'dark' : 'light'} mode`}
-          disabled={useSystemTheme}
+          aria-label={`Switch to ${getNextTheme()} mode`}
+          title={`Switch to ${getNextTheme()} mode`}
           {...props}
         >
-          <span className={themeToggleStyles.iconContainer}>
-            {isLightMode ? <Moon size={16} /> : <Sun size={16} />}
+          <span className="theme-icon-container">
+            <span className={cn(
+              "theme-icon",
+              useSystemTheme && "active-system",
+              !useSystemTheme && theme === 'light' && "active-light",
+              !useSystemTheme && theme === 'dark' && "active-dark"
+            )}>
+              {getCurrentThemeIcon()}
+            </span>
           </span>
-          <span className={themeToggleStyles.label}>
-            {isLightMode ? 'Dark' : 'Light'}
+          <span className="theme-info">
+            <span className="current-theme">{getCurrentThemeLabel()}</span>
+            <span className="next-theme">Switch to {getNextTheme()}</span>
           </span>
         </button>
-        
-        <div className="system-theme-toggle">
-          <label className="system-toggle-label">
-            <span className="system-theme-label">
-              <Monitor size={14} className="system-theme-icon" />
-              System
-            </span>
-            <Checkbox
-              checked={useSystemTheme}
-              onCheckedChange={toggleUseSystemTheme}
-              id="system-theme-toggle"
-              variant="primary"
-              size="sm"
-              className="system-theme-checkbox"
-            />
-          </label>
-        </div>
       </div>
     </div>
   );
