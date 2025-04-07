@@ -536,10 +536,14 @@ export function TimeEntry({
                  alignItems: 'center',
                  justifyContent: 'center',
                  fontWeight: 'bold',
-                 transform: `translate(-50%, -50%) rotate(${getHandAngle()}deg) translate(100px) rotate(${-getHandAngle()}deg)`,
+                 // Position the selection bubble at the same distance from center as clock numbers
+                 // and follow the same positioning logic as the clock hand
+                 left: `calc(50% + ${Math.cos((getHandAngle() - 270) * (Math.PI / 180)) * 100}px)`,
+                 top: `calc(50% + ${Math.sin((getHandAngle() - 270) * (Math.PI / 180)) * 100}px)`,
+                 transform: 'translate(-50%, -50%)',
                  zIndex: 25,
                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                 transition: 'transform 0.1s ease',
+                 transition: 'all 0.1s ease',
                  cursor: 'grab',
                }}
                onMouseDown={(e) => {
