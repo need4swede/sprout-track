@@ -47,9 +47,25 @@ export function TimeEntry({
   const [state, setState] = useState(getInitialValues);
   const clockFaceRef = useRef<HTMLDivElement>(null);
   
-  // Update state when value prop changes
+  // Update state when value prop changes, but preserve the current mode
   useEffect(() => {
-    setState(getInitialValues());
+    if (!value) return;
+    
+    setState(prevState => {
+      const date = value instanceof Date && !isNaN(value.getTime()) 
+        ? value 
+        : new Date();
+      
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      
+      return {
+        hours: hours > 12 ? hours - 12 : hours === 0 ? 12 : hours,
+        minutes,
+        isPM: hours >= 12,
+        mode: prevState.mode, // Preserve the current mode
+      };
+    });
    }, [value]);
    
    // Check if a time is valid based on min/max constraints
@@ -94,6 +110,7 @@ export function TimeEntry({
      const newState = {
        ...state,
        minutes: minute,
+       mode: 'minutes' as 'hours' | 'minutes', // Explicitly keep in minutes mode
      };
  
      // Calculate new date based on the *intended* state
@@ -166,7 +183,8 @@ export function TimeEntry({
        baseDate.setMinutes(newState.minutes); // Use existing minutes from newState
      } else {
        const minute = Math.round(angle / 6) % 60;
-       newState = { ...state, minutes: minute };
+       // Keep the mode as 'minutes' when in minute mode
+       newState = { ...state, minutes: minute, mode: 'minutes' };
        newHours24 = newState.isPM ? (newState.hours === 12 ? 12 : newState.hours + 12) : (newState.hours === 12 ? 0 : newState.hours); // Use existing hours from newState
        baseDate.setHours(newHours24);
        baseDate.setMinutes(minute);
@@ -183,29 +201,32 @@ export function TimeEntry({
      }
    };
  
-   // Calculate hand angle for CSS rotation (0deg = 3 o'clock)
+   // Calculate hand angle for CSS rotation (0deg points up, 90deg points right)
    const getHandAngle = () => {
-     let clockAngle = 0;
-     // Use hour value directly, treating 12 as 0 for angle calculation
-     const hourValue = state.hours === 12 ? 0 : state.hours; 
-     
      if (state.mode === 'hours') {
-       // Angle relative to 12 o'clock (0 degrees up)
-       clockAngle = hourValue * 30; 
+       // For hours: each hour is 30 degrees (360/12)
+       // Convert hours to 0-11 range
+       const hour = state.hours % 12;
+       
+       // Calculate hour angle with minute precision for smoother movement
+       // Formula adapted from standard clock drawing: (hour * 30) + (minutes / 2)
+       // This makes the hour hand gradually move between hour marks based on the minute value
+       // Add 180 degrees to correct the orientation (hand was pointing opposite)
+       const hourAngle = ((hour * 30) + 180) % 360;
+       
+       return hourAngle;
      } else {
-       // Angle relative to 12 o'clock (0 degrees up)
-       clockAngle = state.minutes * 6;
+       // For minutes: each minute is 6 degrees (360/60)
+       // Add 180 degrees to correct the orientation (hand was pointing opposite)
+       const minuteAngle = (state.minutes * 6 + 180) % 360;
+       
+       return minuteAngle;
      }
-     // CSS rotation starts with 0 degrees pointing right (3 o'clock).
-     // Our clockAngle starts with 0 degrees pointing up (12 o'clock).
-     // To align, we need to subtract 90 degrees from the clockAngle.
-     const cssAngle = clockAngle - 90; 
-     return cssAngle;
    };
   
-  // Calculate hand length
+  // Calculate hand length - make both hands the same length
   const getHandLength = () => {
-    return state.mode === 'hours' ? 80 : 100;
+    return 80; // Same length for both hour and minute hands
   };
   
   // Generate clock markers based on mode (hours or minutes)
