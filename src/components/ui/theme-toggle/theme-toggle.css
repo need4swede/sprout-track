@@ -7,12 +7,17 @@
 
 /* Dark mode overrides */
 html.dark .theme-toggle-button {
-  color: #e5e7eb; /* gray-200 */
+  color: #e5e7eb !important; /* gray-200 */
 }
 
 html.dark .theme-toggle-button:hover {
-  background-color: #374151; /* gray-700 */
-  color: #9ca3af; /* gray-400 */
+  background-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb !important; /* gray-200 - keep same color on hover */
+}
+
+/* Ensure light mode text is visible in dark mode */
+html.dark button:has(svg[data-lucide="sun"]) span:last-child {
+  color: #e5e7eb !important; /* gray-200 - same as other text */
 }
 
 /* Responsive adjustments */

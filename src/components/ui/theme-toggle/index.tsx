@@ -4,29 +4,40 @@ import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
 import { cn } from '@/src/lib/utils';
+import { themeToggleStyles } from './theme-toggle.styles';
+import { ThemeToggleProps } from './theme-toggle.types';
 import './theme-toggle.css';
 
-interface ThemeToggleProps {
-  className?: string;
-}
-
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
+/**
+ * ThemeToggle component
+ * 
+ * A button that toggles between light and dark themes
+ */
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
+  className,
+  ...props
+}) => {
   const { theme, toggleTheme } = useTheme();
+  const isLightMode = theme === 'light';
 
   return (
     <button
       onClick={toggleTheme}
       className={cn(
-        "flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-700 dark:hover:text-gray-300 transition-colors duration-200 rounded-lg mb-2",
+        themeToggleStyles.button,
+        "theme-toggle-button",
         className
       )}
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      aria-label={`Switch to ${isLightMode ? 'dark' : 'light'} mode`}
+      title={`Switch to ${isLightMode ? 'dark' : 'light'} mode`}
+      {...props}
     >
-      <span className="mr-3 h-5 w-5">
-        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+      <span className={themeToggleStyles.iconContainer}>
+        {isLightMode ? <Moon size={20} /> : <Sun size={20} />}
       </span>
-      <span className="text-sm">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+      <span className={themeToggleStyles.label}>
+        {isLightMode ? 'Dark Mode' : 'Light Mode'}
+      </span>
     </button>
   );
 };

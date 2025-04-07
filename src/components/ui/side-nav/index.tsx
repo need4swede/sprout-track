@@ -229,10 +229,8 @@ export const SideNav: React.FC<SideNavProps> = ({
 
         {/* Footer with Theme Toggle, Settings and Logout */}
         <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
-          {/* Theme Toggle Component - only shown when system is not in dark mode */}
-          {!isSystemDarkMode && (
-            <ThemeToggle className="mb-2" />
-          )}
+          {/* Theme Toggle Component */}
+          <ThemeToggle className="mb-2" />
           
           {/* Settings Button - only shown for admins */}
           {isAdmin && (

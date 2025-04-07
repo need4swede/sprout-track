@@ -1,8 +1,4 @@
-/* 
-  Dark mode styles are now handled by Tailwind's dark: variants 
-  in side-nav.styles.ts, driven by the ThemeProvider context.
-  Removed manual html.dark overrides and !important flags to prevent conflicts.
-*/
+/* Dark mode overrides for SideNav component */
 html.dark .side-nav {
   background-color: #4b5563; /* gray-600 */
   color: #e5e7eb; /* gray-200 */
