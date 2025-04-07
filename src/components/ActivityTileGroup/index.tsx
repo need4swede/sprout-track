@@ -622,7 +622,7 @@ export function ActivityTileGroup({
   };
 
   return (
-    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 dark:bg-gray-800 p-2 gap-1 activity-tile-group">
+    <div className="flex overflow-x-auto border-0 no-scrollbar snap-x snap-mandatory relative bg-gray-50 p-2 gap-1 activity-tile-group">
       {/* Render activity tiles based on order and visibility */}
       {activityOrder.map(activity => renderActivityTile(activity))}
 
@@ -656,7 +656,7 @@ export function ActivityTileGroup({
             {activityOrder.map((activity, index) => (
                 <div
                 key={`order-${activity}`} 
-                className={`flex items-center px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : ''} activity-dropdown-item`}
+                className={`flex items-center px-2 py-2 hover:bg-gray-50 hover-background rounded-md my-1 ${draggedActivity === activity ? 'opacity-50 bg-gray-100 draggable-background' : ''} ${draggedActivity && draggedActivity !== activity ? 'hover:bg-emerald-50 hover-emerald' : ''} activity-dropdown-item`}
                 draggable="true"
                 onDragStart={(e) => {
                   // Original onDragStart logic
@@ -669,7 +669,7 @@ export function ActivityTileGroup({
                   // Add a delay to make sure the drag effect is visible
                   setTimeout(() => {
                     if (element) {
-                      element.classList.add('opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                      element.classList.add('opacity-50', 'bg-gray-100', 'draggable-background');
                     }
                   }, 0); 
                 }}
@@ -678,7 +678,7 @@ export function ActivityTileGroup({
                   setDraggedActivity(null);
                   // Remove all highlights (including dark mode)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                    el.classList.remove('bg-emerald-50', 'draggable-highlight', 'opacity-50', 'bg-gray-100', 'draggable-background');
                   });
                 }}
                 onDragOver={(e) => {
@@ -686,17 +686,17 @@ export function ActivityTileGroup({
                   e.stopPropagation();
                   e.dataTransfer.dropEffect = 'move';
                   if (draggedActivity && draggedActivity !== activity) {
-                    e.currentTarget.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
+                    e.currentTarget.classList.add('bg-emerald-50', 'draggable-highlight');
                   }
                 }}
                 onDragLeave={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
+                  e.currentTarget.classList.remove('bg-emerald-50', 'draggable-highlight');
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  e.currentTarget.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
+                  e.currentTarget.classList.remove('bg-emerald-50', 'draggable-highlight');
                   
                   const droppedActivity = e.dataTransfer.getData('text/plain') as ActivityType;
                   
@@ -749,13 +749,13 @@ export function ActivityTileGroup({
                   // Remove highlight from all items (including dark mode)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
                     if (el !== e.currentTarget) {
-                      el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
+                      el.classList.remove('bg-emerald-50', 'draggable-highlight');
                     }
                   });
                   
                   // Add highlight to the element under touch (including dark mode)
                   if (touchedElement) {
-                    touchedElement.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
+                    touchedElement.classList.add('bg-emerald-50', 'draggable-highlight');
                   }
                 }}
                 onTouchEnd={(e) => {
@@ -769,7 +769,7 @@ export function ActivityTileGroup({
                   if (!draggedActivity || draggedActivity !== activity) {
                      // If not dragging this item, reset highlights and state just in case
                      document.querySelectorAll('[draggable="true"]').forEach(el => {
-                       el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                       el.classList.remove('bg-emerald-50', 'draggable-highlight', 'opacity-50', 'bg-gray-100', 'draggable-background');
                      });
                      if (draggedActivity === activity) setDraggedActivity(null); // Reset if it was this item briefly
                      return; 
@@ -809,7 +809,7 @@ export function ActivityTileGroup({
                   
                   // Remove all highlights (including self if needed)
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                    el.classList.remove('bg-emerald-50', 'draggable-highlight', 'opacity-50', 'bg-gray-100', 'draggable-background');
                   });
                   
                   setDraggedActivity(null); // End drag state
@@ -823,7 +823,7 @@ export function ActivityTileGroup({
                   
                   // Remove all highlights
                   document.querySelectorAll('[draggable="true"]').forEach(el => {
-                    el.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20', 'opacity-50', 'bg-gray-100', 'dark:bg-gray-700');
+                    el.classList.remove('bg-emerald-50', 'draggable-highlight', 'opacity-50', 'bg-gray-100', 'draggable-background');
                   });
                   
                   setDraggedActivity(null);
@@ -831,7 +831,7 @@ export function ActivityTileGroup({
                 data-key={`order-${activity}`}
               >
                 <button 
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing mr-2 activity-dropdown-item-drag-button"
+                  className="p-1 rounded-full hover:bg-gray-100 hover-background cursor-grab active:cursor-grabbing mr-2 activity-dropdown-item-drag-button"
                   onMouseDown={(e) => {
                     // Prevent dropdown from closing when starting drag
                     e.stopPropagation();
@@ -839,7 +839,7 @@ export function ActivityTileGroup({
                   aria-label={`Drag to reorder ${activityDisplayNames[activity]}`}
                   title="Drag to reorder"
                 >
-                  <ArrowDownUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <ArrowDownUp className="h-4 w-4 text-gray-500 icon-text" />
                 </button>
                 <DropdownMenuCheckboxItem
                   checked={visibleActivities.has(activity)}

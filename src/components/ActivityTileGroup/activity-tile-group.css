@@ -1,6 +1,6 @@
 /* Dark mode overrides for ActivityTileGroup component */
 html.dark .activity-tile-group {
-  background-color: #1f2937 !important; /* gray-800 */
+  background-color: #1f2937 !important; /* dark:bg-gray-800 */
 }
 
 html.dark .activity-dropdown-item {
@@ -8,7 +8,7 @@ html.dark .activity-dropdown-item {
 }
 
 html.dark .activity-dropdown-item:hover {
-  background-color: #374151 !important; /* gray-700 */
+  background-color: #374151 !important; /* dark:hover:bg-gray-700 */
 }
 
 html.dark .activity-dropdown-item-drag-button {
@@ -17,4 +17,29 @@ html.dark .activity-dropdown-item-drag-button {
 
 html.dark .activity-dropdown-item-drag-button:hover {
   background-color: #4b5563 !important; /* gray-600 */
+}
+
+/* Draggable item highlight in dark mode */
+html.dark .draggable-highlight {
+  background-color: rgba(6, 78, 59, 0.2) !important; /* dark:bg-emerald-900/20 */
+}
+
+/* Hover background for buttons in dark mode */
+html.dark .hover-background:hover {
+  background-color: #374151 !important; /* dark:hover:bg-gray-700 */
+}
+
+/* Text color for icons in dark mode */
+html.dark .icon-text {
+  color: #9ca3af !important; /* dark:text-gray-400 */
+}
+
+/* Background color for draggable items in dark mode */
+html.dark .draggable-background {
+  background-color: #374151 !important; /* dark:bg-gray-700 */
+}
+
+/* Hover styles for draggable items in dark mode */
+html.dark .hover-emerald {
+  background-color: rgba(6, 78, 59, 0.2) !important; /* dark:hover:bg-emerald-900/20 */
 }

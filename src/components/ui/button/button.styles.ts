@@ -20,7 +20,7 @@ export const buttonVariants = cva(
         destructive:
           "bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5",
         outline:
-          "border-2 border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-teal-300 dark:hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 text-teal-700 dark:text-teal-300",
+          "border-2 border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-teal-700",
         secondary:
           "bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 dark:from-slate-800 dark:to-slate-900",
         ghost: 
