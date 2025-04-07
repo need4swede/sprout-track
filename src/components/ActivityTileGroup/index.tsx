@@ -651,7 +651,12 @@ export function ActivityTileGroup({
             </button>
           </DropdownMenuTrigger>
           {/* Apply scrolling directly to DropdownMenuContent */}
-          <DropdownMenuContent align="end" className="max-h-[80vh] overflow-y-auto p-1"> 
+          <DropdownMenuContent 
+            align="end" 
+            className="max-h-[80vh] overflow-y-auto p-1"
+            avoidCollisions={true}
+            collisionPadding={10}
+          > 
             {/* Combined Visibility and Reordering Options */}
             {activityOrder.map((activity, index) => (
                 <div
