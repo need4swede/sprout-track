@@ -131,7 +131,7 @@ const TimelineActivityList = ({
     <>
       {/* Scrollable Content */}
       <div 
-        className="flex-1 overflow-y-auto relative bg-white dark:bg-gray-800 timeline-activity-scroll-container" 
+        className="flex-1 overflow-y-auto relative bg-white timeline-activity-scroll-container" 
         ref={contentRef}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -167,7 +167,7 @@ const TimelineActivityList = ({
       )}
         
         {/* Activity List */}
-        <div className="divide-y divide-gray-100 dark:divide-gray-700 min-h-full bg-white dark:bg-gray-800 relative timeline-activity-list">
+        <div className="divide-y divide-gray-100 min-h-full bg-white relative timeline-activity-list">
           {activities.length > 0 ? (
             <AnimatePresence>
               {filteredActivities.map((activity, index) => {
@@ -176,7 +176,7 @@ const TimelineActivityList = ({
                 return (
                   <motion.div
                     key={activity.id}
-                    className="group hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer timeline-activity-item"
+                    className="group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer timeline-activity-item"
                     onClick={() => onActivitySelect(activity)}
                     initial={{ opacity: 0, y: -50, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -194,10 +194,10 @@ const TimelineActivityList = ({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 text-xs">
-                          <span className={`inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-600/20 timeline-activity-type`}>
+                          <span className={`inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 timeline-activity-type`}>
                             {description.type}
                           </span>
-                          <span className="text-gray-900 dark:text-gray-200 timeline-activity-details">{description.details}</span>
+                          <span className="text-gray-900 timeline-activity-details">{description.details}</span>
                         </div>
                       </div>
                     </div>
@@ -211,8 +211,8 @@ const TimelineActivityList = ({
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
                   <BabyIcon className="h-8 w-8 text-indigo-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-1 timeline-empty-state">No activities recorded</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 timeline-empty-description">
+                <h3 className="text-lg font-medium text-gray-900 mb-1 timeline-empty-state">No activities recorded</h3>
+                <p className="text-sm text-gray-500 timeline-empty-description">
                   Activities will appear here once you start tracking
                 </p>
               </div>
@@ -226,7 +226,7 @@ const TimelineActivityList = ({
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-1 timeline-empty-state">Loading activities...</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-1 timeline-empty-state">Loading activities...</h3>
             </div>
           </div>
         )}

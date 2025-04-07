@@ -7,10 +7,10 @@
 
 export const dailyStatsStyles = {
   // Container styles
-  container: "rounded-lg border border-gray-200 bg-white shadow-sm",
+  container: "border border-gray-200 bg-white shadow-sm",
   
   // Header styles
-  header: "flex items-center p-3 border-b border-gray-200 daily-stats-header",
+  header: "flex items-center justify-between p-3 border-b border-gray-200 daily-stats-header",
   
   // Date display
   date: "text-sm font-medium text-gray-700",
@@ -21,8 +21,9 @@ export const dailyStatsStyles = {
   // Empty and loading states
   empty: "col-span-2 md:col-span-5 py-4 text-center text-gray-500 daily-stats-empty",
   
-  // Toggle button
-  toggle: "text-gray-500 hover:text-gray-700 ml-auto daily-stats-toggle",
+  // Toggle button and title
+  toggle: "text-gray-500 hover:text-gray-700 daily-stats-toggle",
+  title: "font-medium text-gray-500 daily-stats-title",
   
   // Stats ticker
   ticker: {

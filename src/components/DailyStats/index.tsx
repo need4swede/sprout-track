@@ -269,7 +269,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
         className={cn(dailyStatsStyles.header, "cursor-pointer")}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className={dailyStatsStyles.date}>Daily Stats</h3>
+        <h3 className={dailyStatsStyles.title}>Daily Stats</h3>
         
         {!isExpanded && !isLoading && activities.length > 0 && (
           <StatsTicker 
