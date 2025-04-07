@@ -40,7 +40,7 @@ The Security component provides authentication functionality for the Baby Tracke
 
 ### Lockout Protection
 
-- After 3 failed authentication attempts, the system implements a 5-minute lockout
+- After 3 failed authentication attempts, the system implements a 5-minute lockout that is IP based
 - During lockout, authentication attempts are disabled
 - A countdown timer shows the remaining lockout time
 
