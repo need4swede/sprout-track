@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { BathLogResponse } from '@/app/api/types';
 import { Button } from '@/src/components/ui/button';
-import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
 import { Checkbox } from '@/src/components/ui/checkbox';
 import { Label } from '@/src/components/ui/label';
+import { DateTimePicker } from '@/src/components/ui/date-time-picker';
 import {
   FormPage, 
   FormPageContent, 
@@ -32,8 +32,21 @@ export default function BathForm({
   onSuccess,
 }: BathFormProps) {
   const { formatDate, toUTCString } = useTimezone();
+  const [selectedDateTime, setSelectedDateTime] = useState<Date>(() => {
+    try {
+      // Try to parse the initialTime
+      const date = new Date(initialTime);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return new Date(); // Fallback to current date if invalid
+      }
+      return date;
+    } catch (error) {
+      console.error('Error parsing initialTime:', error);
+      return new Date(); // Fallback to current date
+    }
+  });
   const [formData, setFormData] = useState({
-    time: initialTime,
     soapUsed: false,
     shampooUsed: false,
     notes: '',
@@ -41,37 +54,35 @@ export default function BathForm({
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Format date string to be compatible with datetime-local input
-  const formatDateForInput = (dateStr: string) => {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
-    
-    // Format as YYYY-MM-DDThh:mm in local time
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   useEffect(() => {
     if (isOpen && !isInitialized) {
       if (activity) {
         // Editing mode - populate with activity data
+        try {
+          const activityDate = new Date(activity.time);
+          // Check if the date is valid
+          if (!isNaN(activityDate.getTime())) {
+            setSelectedDateTime(activityDate);
+          }
+        } catch (error) {
+          console.error('Error parsing activity time:', error);
+        }
         setFormData({
-          time: formatDateForInput(activity.time),
           soapUsed: activity.soapUsed || false,
           shampooUsed: activity.shampooUsed || false,
           notes: activity.notes || '',
         });
       } else {
         // New entry mode - set the time
-        setFormData(prev => ({
-          ...prev,
-          time: formatDateForInput(initialTime)
-        }));
+        try {
+          const initialDate = new Date(initialTime);
+          // Check if the date is valid
+          if (!isNaN(initialDate.getTime())) {
+            setSelectedDateTime(initialDate);
+          }
+        } catch (error) {
+          console.error('Error parsing initialTime:', error);
+        }
       }
       
       // Mark as initialized
@@ -81,6 +92,11 @@ export default function BathForm({
       setIsInitialized(false);
     }
   }, [isOpen, initialTime, activity, isInitialized]);
+
+  // Handle date/time change
+  const handleDateTimeChange = (date: Date) => {
+    setSelectedDateTime(date);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -103,10 +119,9 @@ export default function BathForm({
     
     try {
       // Convert local time to UTC ISO string
-      const localDate = new Date(formData.time);
-      const utcTimeString = toUTCString(localDate);
+      const utcTimeString = toUTCString(selectedDateTime);
       
-      console.log('Original time (local):', formData.time);
+      console.log('Original time (local):', selectedDateTime.toISOString());
       console.log('Converted time (UTC):', utcTimeString);
       
       const payload = {
@@ -156,16 +171,14 @@ export default function BathForm({
       <form onSubmit={handleSubmit}>
         <FormPageContent>
           <div className="space-y-4">
-            {/* Time Input */}
+            {/* Date/Time Input */}
             <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                id="time"
-                name="time"
-                type="datetime-local"
-                value={formData.time}
-                onChange={handleInputChange}
-                required
+              <Label>Date & Time</Label>
+              <DateTimePicker
+                value={selectedDateTime}
+                onChange={handleDateTimeChange}
+                disabled={loading}
+                placeholder="Select bath time..."
               />
             </div>
             

@@ -17,8 +17,9 @@ import './calendar.css';
  * 
  * @param selectedBabyId - The ID of the currently selected baby
  * @param userTimezone - The user's timezone for date calculations
+ * @param onDateSelect - Optional callback when a date is selected
  */
-export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
+export function Calendar({ selectedBabyId, userTimezone, onDateSelect }: CalendarProps) {
   const { theme } = useTheme();
   
   // Component state
@@ -283,6 +284,11 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
    */
   const handleDayClick = (date: Date) => {
     updateState({ selectedDate: date });
+    
+    // Call the onDateSelect callback if provided
+    if (onDateSelect) {
+      onDateSelect(date);
+    }
   };
 
   const handleEventClick = (event: any) => {

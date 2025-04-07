@@ -17,6 +17,11 @@ export interface CalendarProps {
    * The user's timezone for date calculations
    */
   userTimezone: string;
+  
+  /**
+   * Optional callback when a date is selected
+   */
+  onDateSelect?: (date: Date | null) => void;
 }
 
 /**
