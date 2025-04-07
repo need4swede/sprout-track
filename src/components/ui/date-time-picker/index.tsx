@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import './date-time-picker.css';
 import { Calendar } from '@/src/components/ui/calendar';
 import { TimeEntry } from '@/src/components/ui/time-entry';
 import { Input } from '@/src/components/ui/input';
@@ -120,19 +121,19 @@ export function DateTimePicker({
             disabled={disabled}
             readOnly
           />
-          <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4 date-time-picker-calendar-icon" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 z-[100] border-gray-200 shadow-lg" align="start">
+      <PopoverContent className="w-auto p-0 z-[100] border-gray-200 shadow-lg date-time-picker-popover" align="start">
         <div className="flex flex-col">
           {/* View toggle */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 date-time-picker-toggle-container">
             <Button
               variant="ghost"
               className={`flex-1 rounded-none transition-all duration-300 ${
                 view === 'date' 
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
-                  : 'hover:bg-gray-100'
+                  ? 'date-time-picker-toggle-button-active' 
+                  : 'hover:bg-gray-100 date-time-picker-toggle-button-inactive'
               }`}
               onClick={() => setView('date')}
             >
@@ -143,8 +144,8 @@ export function DateTimePicker({
               variant="ghost"
               className={`flex-1 rounded-none transition-all duration-300 ${
                 view === 'time' 
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
-                  : 'hover:bg-gray-100'
+                  ? 'date-time-picker-toggle-button-active' 
+                  : 'hover:bg-gray-100 date-time-picker-toggle-button-inactive'
               }`}
               onClick={() => setView('time')}
             >
@@ -177,12 +178,12 @@ export function DateTimePicker({
           )}
           
           {/* Footer with done button */}
-          <div className="flex justify-end p-3 border-t border-gray-200">
+          <div className="flex justify-end p-3 border-t border-gray-200 date-time-picker-footer">
             <Button
               variant="default"
               size="sm"
               onClick={() => setOpen(false)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white transition-colors duration-300"
+              className="text-white transition-colors duration-300 date-time-picker-done-button"
             >
               Done
             </Button>

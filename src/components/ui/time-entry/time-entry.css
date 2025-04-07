@@ -5,28 +5,30 @@ html.dark .time-entry-container {
 }
 
 html.dark .time-entry-header {
-  background-color: #065f46 !important; /* emerald-800 */
+  background-image: linear-gradient(to right, #0d9488, #065f46) !important; /* teal-700 to emerald-800 */
 }
 
 html.dark .time-entry-clock-face {
   background-color: #374151 !important; /* gray-700 */
 }
 
-html.dark .time-entry-hour-marker {
+html.dark .time-entry-hour-marker,
+html.dark .time-entry-minute-marker {
   color: #e5e7eb !important; /* gray-200 */
 }
 
-html.dark .time-entry-hour-marker-selected {
-  background-color: #059669 !important; /* emerald-600 */
+html.dark .time-entry-hour-marker-selected,
+html.dark .time-entry-minute-marker-selected {
+  background-color: #0d9488 !important; /* teal-700 */
   color: #f9fafb !important; /* gray-50 */
 }
 
 html.dark .time-entry-clock-hand {
-  background-color: #10b981 !important; /* emerald-500 */
+  background-color: #14b8a6 !important; /* teal-500 */
 }
 
 html.dark .time-entry-clock-center {
-  background-color: #10b981 !important; /* emerald-500 */
+  background-color: #14b8a6 !important; /* teal-500 */
 }
 
 html.dark .time-entry-footer {
@@ -39,7 +41,7 @@ html.dark .time-entry-cancel-button {
 }
 
 html.dark .time-entry-ok-button {
-  background-color: #059669 !important; /* emerald-600 */
+  background-image: linear-gradient(to right, #0d9488, #059669) !important; /* teal-700 to emerald-600 */
 }
 
 /* Clock face styles */
@@ -61,7 +63,7 @@ html.dark .time-entry-ok-button {
 
 .time-entry-hour-marker:hover:not(.time-entry-hour-marker-selected),
 .time-entry-minute-marker:hover:not(.time-entry-minute-marker-selected) {
-  background-color: rgba(16, 185, 129, 0.1); /* emerald-500 with opacity */
+  background-color: rgba(20, 184, 166, 0.1); /* teal-500 with opacity */
 }
 
 .time-entry-minute-tick-marker {
@@ -70,7 +72,7 @@ html.dark .time-entry-ok-button {
 }
 
 .time-entry-minute-tick-marker:hover:not(.time-entry-minute-tick-marker-selected) {
-  background-color: rgba(16, 185, 129, 0.5); /* emerald-500 with opacity */
+  background-color: rgba(20, 184, 166, 0.5); /* teal-500 with opacity */
 }
 
 /* AM/PM toggle styles */
@@ -80,7 +82,7 @@ html.dark .time-entry-ok-button {
 }
 
 .time-entry-ampm-button:hover:not(.time-entry-ampm-button-selected) {
-  color: rgba(16, 185, 129, 0.8); /* emerald-500 with opacity */
+  color: rgba(20, 184, 166, 0.8); /* teal-500 with opacity */
 }
 
 /* Footer button styles */

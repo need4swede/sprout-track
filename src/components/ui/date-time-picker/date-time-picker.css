@@ -1,0 +1,53 @@
+/* Dark mode overrides for DateTimePicker component */
+html.dark .date-time-picker-container {
+  color: #e5e7eb !important; /* gray-200 */
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+html.dark .date-time-picker-popover {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .date-time-picker-toggle-container {
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .date-time-picker-toggle-button-inactive:hover {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .date-time-picker-toggle-button-active {
+  background-image: linear-gradient(to right, #0d9488, #065f46) !important; /* teal-700 to emerald-800 */
+}
+
+html.dark .date-time-picker-footer {
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .date-time-picker-done-button {
+  background-image: linear-gradient(to right, #0d9488, #065f46) !important; /* teal-700 to emerald-800 */
+}
+
+html.dark .date-time-picker-calendar-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+/* Light mode styles */
+.date-time-picker-toggle-button-active {
+  background-image: linear-gradient(to right, #0d9488, #059669); /* teal-700 to emerald-600 */
+  color: white;
+}
+
+.date-time-picker-done-button {
+  background-image: linear-gradient(to right, #0d9488, #059669); /* teal-700 to emerald-600 */
+  color: white;
+}
+
+.date-time-picker-toggle-button-active:hover {
+  background-image: linear-gradient(to right, #0f766e, #047857); /* teal-800 to emerald-700 */
+}
+
+.date-time-picker-done-button:hover {
+  background-image: linear-gradient(to right, #0f766e, #047857); /* teal-800 to emerald-700 */
+}

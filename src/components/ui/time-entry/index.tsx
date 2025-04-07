@@ -407,7 +407,9 @@ export function TimeEntry({
             key={minute}
             className={cn(
               styles.minuteMarker,
-              'time-entry-minute-marker'
+              'time-entry-minute-marker',
+              state.minutes === minute && styles.minuteMarkerSelected,
+              state.minutes === minute && 'time-entry-minute-marker-selected'
             )}
             style={{
               transform: `translate(${x}px, ${y}px)`,
@@ -514,7 +516,7 @@ export function TimeEntry({
                width: '4px', // Make hand slightly thicker for visibility
                cursor: 'grab',
                // Use the background color defined in styles directly if possible, else fallback
-               backgroundColor: styles.clockHand.includes('bg-emerald-600') ? '#059669' : '#10b981', // Example fallback logic, adjust as needed based on actual styles
+               backgroundColor: styles.clockHand.includes('bg-teal-600') ? '#0d9488' : '#14b8a6', // Updated to teal colors
                zIndex: 20, // Ensure hand is above other elements,
                // Use a very short transition during dragging for smoothness while preventing unwanted rotation
                transition: isDragging ? 'transform 0.05s linear' : 'transform 0.2s ease'
@@ -543,7 +545,7 @@ export function TimeEntry({
                  width: '36px',
                  height: '36px',
                  borderRadius: '50%',
-                 backgroundColor: styles.clockHand.includes('bg-emerald-600') ? '#059669' : '#10b981',
+                 backgroundColor: styles.clockHand.includes('bg-teal-600') ? '#0d9488' : '#14b8a6',
                  color: 'white',
                  display: 'flex',
                  alignItems: 'center',
