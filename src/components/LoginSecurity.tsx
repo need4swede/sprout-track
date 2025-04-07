@@ -7,6 +7,7 @@ import { Input } from '@/src/components/ui/input';
 import { X } from 'lucide-react';
 import { useTheme } from '@/src/context/theme';
 import './login-security.css';
+import { ApiResponse } from '@/app/api/types';
 
 interface LoginSecurityProps {
   onUnlock: (caretakerId?: string) => void;
@@ -22,31 +23,30 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
   const [hasCaretakers, setHasCaretakers] = useState(false);
   const [activeInput, setActiveInput] = useState<'loginId' | 'pin'>('loginId');
 
-  // Reset form when component mounts
+  // Reset form when component mounts and check for server-side IP lockout
   useEffect(() => {
     setPin('');
     setLoginId('');
     setError('');
     
-    // Load stored attempts and lockout time
-    const storedLockoutTime = localStorage.getItem('lockoutTime');
-    const storedAttempts = localStorage.getItem('attempts');
-
-    // Handle lockout state
-    if (storedLockoutTime) {
-      const lockoutEnd = parseInt(storedLockoutTime);
-      if (Date.now() < lockoutEnd) {
-        setLockoutTime(lockoutEnd);
-      } else {
-        localStorage.removeItem('lockoutTime');
-        localStorage.removeItem('attempts');
-        setAttempts(0);
+    // Check for server-side IP lockout
+    const checkIpLockout = async () => {
+      try {
+        const response = await fetch('/api/auth/ip-lockout');
+        const data = await response.json() as ApiResponse<{ locked: boolean; remainingTime: number }>;
+        
+        if (data.success && data.data && data.data.locked) {
+          const remainingTime = data.data.remainingTime || 300000; // Default to 5 minutes if not provided
+          const remainingMinutes = Math.ceil(remainingTime / 60000);
+          setLockoutTime(Date.now() + remainingTime);
+          setError(`Too many failed attempts. Please try again in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`);
+        }
+      } catch (error) {
+        console.error('Error checking IP lockout:', error);
       }
-    }
-
-    if (storedAttempts) {
-      setAttempts(parseInt(storedAttempts));
-    }
+    };
+    
+    checkIpLockout();
   }, []);
 
   // Update lockout timer
@@ -149,6 +149,18 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
     }
 
     try {
+      // Check for server-side IP lockout first
+      const ipCheckResponse = await fetch('/api/auth/ip-lockout');
+      const ipCheckData = await ipCheckResponse.json() as ApiResponse<{ locked: boolean; remainingTime: number }>;
+      
+      if (ipCheckData.success && ipCheckData.data && ipCheckData.data.locked) {
+        const remainingTime = ipCheckData.data.remainingTime || 300000; // Default to 5 minutes if not provided
+        const remainingMinutes = Math.ceil(remainingTime / 60000);
+        setLockoutTime(Date.now() + remainingTime);
+        setError(`Too many failed attempts. Please try again in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`);
+        return;
+      }
+      
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
@@ -167,27 +179,38 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
         localStorage.setItem('unlockTime', Date.now().toString());
         localStorage.setItem('caretakerId', data.data.id);
         localStorage.setItem('authToken', data.data.token);
-        localStorage.removeItem('attempts');
-        setAttempts(0);
+        
+        // Get the AUTH_LIFE and IDLE_TIME values for client-side timeout checks
+        const authLifeResponse = await fetch('/api/settings/auth-life');
+        const authLifeData = await authLifeResponse.json();
+        if (authLifeData.success) {
+          localStorage.setItem('authLifeSeconds', authLifeData.data.toString());
+        }
+        
+        // Get the IDLE_TIME value
+        const idleTimeResponse = await fetch('/api/settings/idle-time');
+        const idleTimeData = await idleTimeResponse.json();
+        if (idleTimeData.success) {
+          localStorage.setItem('idleTimeSeconds', idleTimeData.data.toString());
+        }
         
         // Call the onUnlock callback
         onUnlock(data.data.id);
       } else {
-        // Failed authentication attempt
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        localStorage.setItem('attempts', newAttempts.toString());
-
-        // After 3 failed attempts, lock out for 5 minutes
-        if (newAttempts >= 3) {
-          const lockoutEnd = Date.now() + 5 * 60 * 1000; // 5 minutes
-          setLockoutTime(lockoutEnd);
-          localStorage.setItem('lockoutTime', lockoutEnd.toString());
-          setError('Too many attempts. Try again in 5 minutes.');
-        } else {
-          setError(`Invalid credentials (${3 - newAttempts} attempts remaining)`);
-        }
+        // Failed authentication attempt - the server will handle counting attempts
+        setError('Invalid credentials');
         setPin('');
+        
+        // Check if we're now locked out
+        const lockoutCheckResponse = await fetch('/api/auth/ip-lockout');
+        const lockoutCheckData = await lockoutCheckResponse.json() as ApiResponse<{ locked: boolean; remainingTime: number }>;
+        
+        if (lockoutCheckData.success && lockoutCheckData.data && lockoutCheckData.data.locked) {
+          const remainingTime = lockoutCheckData.data.remainingTime || 300000; // Default to 5 minutes if not provided
+          const remainingMinutes = Math.ceil(remainingTime / 60000);
+          setLockoutTime(Date.now() + remainingTime);
+          setError(`Too many failed attempts. Please try again in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`);
+        }
       }
     } catch (error) {
       console.error('Authentication error:', error);

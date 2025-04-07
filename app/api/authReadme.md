@@ -163,11 +163,15 @@ Authentication errors return appropriate HTTP status codes:
    - Limited expiration: 30 minutes
 
 2. **Session Management**:
-   - Sessions expire after 30 minutes of inactivity
-   - Users are automatically logged out after the session expires
+   - Two separate timeout mechanisms are implemented:
+     1. **Token Expiration**: JWT tokens expire after a period defined by the AUTH_LIFE environment variable
+     2. **Idle Timeout**: Users are logged out after a period of inactivity defined by the IDLE_TIME environment variable
+   - Both values are stored in seconds and can be configured in the .env file
+   - The system automatically logs users out when either the token expires or the idle timeout is reached
 
 3. **Lockout Protection**:
-   - Three failed login attempts trigger a 5-minute lockout
+   - Three failed login attempts trigger a server-side IP-based 5-minute lockout
+   - This prevents automated attacks from bypassing client-side lockout mechanisms
 
 ## Best Practices
 

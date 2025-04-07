@@ -2,13 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse } from '../types';
 import jwt from 'jsonwebtoken';
+import { checkIpLockout, recordFailedAttempt, resetFailedAttempts } from './ip-lockout/route';
 
 // Secret key for JWT signing - in production, use environment variable
 const JWT_SECRET = process.env.JWT_SECRET || 'baby-tracker-jwt-secret';
+// Token expiration time in seconds (default to 12 hours if not specified)
+const TOKEN_EXPIRATION = parseInt(process.env.AUTH_LIFE || '1800', 10);
 
 // Authentication endpoint for caretakers or system PIN
 export async function POST(req: NextRequest) {
   try {
+    // Get the client IP
+    const ip = req.headers.get('x-forwarded-for') || 
+               req.headers.get('x-real-ip') || 
+               'unknown';
+    
+    // Check if the IP is locked out
+    const { locked, remainingTime } = checkIpLockout(ip);
+    if (locked) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: `You have been locked out due to too many failed attempts. Please try again in ${Math.ceil(remainingTime / 60000)} minutes.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const { loginId, securityPin } = await req.json();
 
     if (!securityPin) {
@@ -43,7 +63,7 @@ export async function POST(req: NextRequest) {
             role: 'ADMIN',
           },
           JWT_SECRET,
-          { expiresIn: '8h' } // Token expires in 8 hours
+          { expiresIn: `${TOKEN_EXPIRATION}s` } // Token expires based on AUTH_LIFE env variable
         );
         
         // Create response with token
@@ -71,9 +91,12 @@ export async function POST(req: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 8 * 60 * 60, // 8 hours
+          maxAge: TOKEN_EXPIRATION, // Use AUTH_LIFE env variable
           path: '/',
         });
+        
+        // Reset failed attempts on successful login
+        resetFailedAttempts(ip);
         
         return response;
       }
@@ -98,7 +121,7 @@ export async function POST(req: NextRequest) {
             role: (caretaker as any).role || 'USER',
           },
           JWT_SECRET,
-          { expiresIn: '8h' } // Token expires in 8 hours
+          { expiresIn: `${TOKEN_EXPIRATION}s` } // Token expires based on AUTH_LIFE env variable
         );
         
         // Create response with token
@@ -127,15 +150,21 @@ export async function POST(req: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 8 * 60 * 60, // 8 hours
+          maxAge: TOKEN_EXPIRATION, // Use AUTH_LIFE env variable
           path: '/',
         });
+        
+        // Reset failed attempts on successful login
+        resetFailedAttempts(ip);
         
         return response;
       }
     }
     
     // If we get here, authentication failed
+    // Record the failed attempt
+    recordFailedAttempt(ip);
+    
     return NextResponse.json<ApiResponse<null>>(
       {
         success: false,

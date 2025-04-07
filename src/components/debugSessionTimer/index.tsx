@@ -34,14 +34,16 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
   // State for token expiration and idle time
   const [tokenExpiration, setTokenExpiration] = useState<Date | null>(null);
   const [idleTime, setIdleTime] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState<Position>({ x: 20, y: 20 });
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [authLifeSeconds, setAuthLifeSeconds] = useState<number | null>(null);
+  const [idleTimeSeconds, setIdleTimeSeconds] = useState<number | null>(null);
   
   // Refs
   const timerRef = useRef<HTMLDivElement>(null);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
+  const positionRef = useRef<Position>({ x: 20, y: 20 });
+  const isDraggingRef = useRef(false);
+  const dragOffsetRef = useRef<Position>({ x: 0, y: 0 });
 
   /**
    * Formats the time remaining until token expiration
@@ -113,56 +115,6 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
     setIdleTime(0);
   };
 
-  /**
-   * Handles mouse down events for dragging
-   * 
-   * @param e - The mouse event
-   */
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('drag-handle')) {
-      setIsDragging(true);
-      
-      // Calculate the offset from the mouse position to the top-left corner of the element
-      if (timerRef.current) {
-        const rect = timerRef.current.getBoundingClientRect();
-        setDragOffset({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-      }
-    }
-  };
-
-  /**
-   * Handles mouse move events for dragging
-   * 
-   * @param e - The mouse event
-   */
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging && timerRef.current) {
-      // Calculate new position based on mouse position and drag offset
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
-      
-      // Ensure the element stays within the viewport
-      const rect = timerRef.current.getBoundingClientRect();
-      const maxX = window.innerWidth - rect.width;
-      const maxY = window.innerHeight - rect.height;
-      
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
-    }
-  };
-
-  /**
-   * Handles mouse up events to stop dragging
-   */
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-  
   // Fetch settings to check if debug timer is enabled
   const fetchSettings = async () => {
     try {
@@ -182,12 +134,48 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
     setIsInitialized(true);
   };
   
-  // Effect for fetching settings
+  // Effect for fetching settings, auth life, and idle time
   useEffect(() => {
     fetchSettings();
+    
+    // Get AUTH_LIFE from localStorage if available
+    const storedAuthLife = localStorage.getItem('authLifeSeconds');
+    if (storedAuthLife) {
+      setAuthLifeSeconds(parseInt(storedAuthLife, 10));
+    } else {
+      // Fetch from API if not in localStorage
+      fetch('/api/settings/auth-life')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            setAuthLifeSeconds(data.data);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching AUTH_LIFE:', error);
+        });
+    }
+    
+    // Get IDLE_TIME from localStorage if available
+    const storedIdleTime = localStorage.getItem('idleTimeSeconds');
+    if (storedIdleTime) {
+      setIdleTimeSeconds(parseInt(storedIdleTime, 10));
+    } else {
+      // Fetch from API if not in localStorage
+      fetch('/api/settings/idle-time')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            setIdleTimeSeconds(data.data);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching IDLE_TIME:', error);
+        });
+    }
   }, []);
   
-  // Initialize and set up event listeners
+  // Initialize and set up event listeners for token and idle time
   useEffect(() => {
     // If not initialized yet or not enabled, don't set up listeners
     if (!isInitialized || !isEnabled) {
@@ -218,18 +206,6 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
       window.addEventListener(event, handleUserActivity);
     });
 
-    // Set up event listeners for dragging
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    // Position the timer in the bottom right corner initially
-    if (typeof window !== 'undefined') {
-      setPosition({
-        x: window.innerWidth - 220,
-        y: window.innerHeight - 120
-      });
-    }
-
     // Clean up
     return () => {
       clearInterval(tokenInterval);
@@ -238,32 +214,131 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
         window.removeEventListener(event, handleUserActivity);
       });
       
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      
       if (idleTimerRef.current) {
         clearInterval(idleTimerRef.current);
       }
     };
   }, [isInitialized, isEnabled]);
 
-  // Don't render anything if not visible, not initialized, or not enabled
-  if (!isVisible || !isInitialized || !isEnabled) {
+  // Set up dragging functionality
+  useEffect(() => {
+    // Position the timer in the bottom right corner initially
+    if (typeof window !== 'undefined') {
+      positionRef.current = {
+        x: window.innerWidth - 240,
+        y: window.innerHeight - 160
+      };
+      
+      // Force a re-render to apply the initial position
+      if (timerRef.current) {
+        timerRef.current.style.left = `${positionRef.current.x}px`;
+        timerRef.current.style.top = `${positionRef.current.y}px`;
+      }
+    }
+    
+    // Handle mouse down event to start dragging
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only start dragging if the click is on the header
+      if (e.target instanceof HTMLElement && 
+          (e.target.classList.contains('drag-handle') || 
+           e.target.closest('.drag-handle'))) {
+        
+        isDraggingRef.current = true;
+        
+        // Calculate the offset from the mouse position to the top-left corner of the element
+        if (timerRef.current) {
+          const rect = timerRef.current.getBoundingClientRect();
+          dragOffsetRef.current = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+          };
+          
+          // Change cursor to grabbing
+          timerRef.current.style.cursor = 'grabbing';
+          if (e.target.classList.contains('drag-handle')) {
+            e.target.style.cursor = 'grabbing';
+          }
+        }
+        
+        // Prevent text selection during drag
+        e.preventDefault();
+      }
+    };
+    
+    // Handle mouse move event to update position during dragging
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingRef.current && timerRef.current) {
+        // Calculate new position based on mouse position and drag offset
+        const newX = e.clientX - dragOffsetRef.current.x;
+        const newY = e.clientY - dragOffsetRef.current.y;
+        
+        // Ensure the element stays within the viewport
+        const rect = timerRef.current.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
+        positionRef.current = {
+          x: Math.max(0, Math.min(newX, maxX)),
+          y: Math.max(0, Math.min(newY, maxY))
+        };
+        
+        // Apply the new position directly to the element
+        timerRef.current.style.left = `${positionRef.current.x}px`;
+        timerRef.current.style.top = `${positionRef.current.y}px`;
+      }
+    };
+    
+    // Handle mouse up event to stop dragging
+    const handleMouseUp = () => {
+      if (isDraggingRef.current && timerRef.current) {
+        isDraggingRef.current = false;
+        
+        // Change cursor back to grab
+        timerRef.current.style.cursor = 'default';
+        const dragHandle = timerRef.current.querySelector('.drag-handle');
+        if (dragHandle instanceof HTMLElement) {
+          dragHandle.style.cursor = 'grab';
+        }
+      }
+    };
+    
+    // Add event listeners
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []); // Empty dependency array to ensure this only runs once
+
+  // In development mode, always show the timer
+  const showInDevelopment = process.env.NODE_ENV === 'development';
+  
+  // Don't render anything if not visible or not enabled (unless in development mode)
+  if (!isVisible || (!isEnabled && !showInDevelopment)) {
     return null;
   }
 
   return (
     <div 
       ref={timerRef}
-      className={debugTimerContainer(isDragging, position.x, position.y)}
+      className={debugTimerContainer(isDraggingRef.current, positionRef.current.x, positionRef.current.y)}
       style={{ 
-        left: `${position.x}px`, 
-        top: `${position.y}px`
+        position: 'fixed',
+        zIndex: 9999,
+        left: `${positionRef.current.x}px`, 
+        top: `${positionRef.current.y}px`
       }}
-      onMouseDown={handleMouseDown}
     >
-      <div className={debugTimerHeader()}>
-        <div className="drag-handle">Debug Session Timer</div>
+      <div 
+        className={`${debugTimerHeader()} drag-handle`}
+        style={{ cursor: 'grab' }}
+      >
+        <div>Debug Session Timer</div>
         <button 
           className={debugTimerCloseButton()} 
           onClick={() => setIsVisible(false)}
@@ -277,9 +352,21 @@ const DebugSessionTimer: React.FC<DebugSessionTimerProps> = () => {
           <span className={debugTimerLabel()}>JWT Expires:</span>
           <span className={debugTimerValue()}>{formatTimeRemaining(tokenExpiration)}</span>
         </div>
-        <div className={debugTimerRow(true)}>
+        <div className={debugTimerRow()}>
           <span className={debugTimerLabel()}>Idle Time:</span>
           <span className={debugTimerValue()}>{formatIdleTime(idleTime)}</span>
+        </div>
+        <div className={debugTimerRow()}>
+          <span className={debugTimerLabel()}>Auth Life:</span>
+          <span className={debugTimerValue()}>
+            {authLifeSeconds ? `${Math.floor(authLifeSeconds / 3600)}h ${Math.floor((authLifeSeconds % 3600) / 60)}m` : 'Unknown'}
+          </span>
+        </div>
+        <div className={debugTimerRow(true)}>
+          <span className={debugTimerLabel()}>Idle Timeout:</span>
+          <span className={debugTimerValue()}>
+            {idleTimeSeconds ? `${Math.floor(idleTimeSeconds / 3600)}h ${Math.floor((idleTimeSeconds % 3600) / 60)}m` : 'Unknown'}
+          </span>
         </div>
       </div>
     </div>

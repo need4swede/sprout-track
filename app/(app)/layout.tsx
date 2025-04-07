@@ -229,17 +229,39 @@ function AppContent({ children }: { children: React.ReactNode }) {
       const authToken = localStorage.getItem('authToken');
       const unlockTime = localStorage.getItem('unlockTime');
       
-      // If not authenticated or session expired, redirect to login
+      // If not authenticated, redirect to login
       if (!authToken || !unlockTime) {
         router.push('/login');
-      } else {
-        // Check if session has expired (30 minutes of inactivity)
-        const lastActivity = parseInt(unlockTime);
-        if (Date.now() - lastActivity > 30* 60 * 1000) {
-          // Session expired, redirect to login
-          console.log('Session expired due to inactivity, logging out...');
+        return;
+      }
+      
+      // Check if JWT token has expired
+      try {
+        // JWT tokens are in format: header.payload.signature
+        // We need the payload part (index 1)
+        const payload = authToken.split('.')[1];
+        // The payload is base64 encoded, so we need to decode it
+        const decodedPayload = JSON.parse(atob(payload));
+        
+        // Check if token has expired
+        if (decodedPayload.exp && decodedPayload.exp * 1000 < Date.now()) {
+          console.log('JWT token has expired, logging out...');
           handleLogout();
+          return;
         }
+      } catch (error) {
+        console.error('Error parsing JWT token:', error);
+        handleLogout();
+        return;
+      }
+      
+      // Check for idle timeout (separate from token expiration)
+      const lastActivity = parseInt(unlockTime);
+      const idleTimeSeconds = parseInt(localStorage.getItem('idleTimeSeconds') || '1800', 10);
+      if (Date.now() - lastActivity > idleTimeSeconds * 1000) {
+        // Session expired due to inactivity, redirect to login
+        console.log('Session expired due to inactivity, logging out...');
+        handleLogout();
       }
     };
     
