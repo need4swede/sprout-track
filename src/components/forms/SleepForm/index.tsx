@@ -5,6 +5,8 @@ import { SleepType, SleepQuality } from '@prisma/client';
 import { SleepLogResponse } from '@/app/api/types';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
+import { Label } from '@/src/components/ui/label';
+import { DateTimePicker } from '@/src/components/ui/date-time-picker';
 import {
   Select,
   SelectContent,
@@ -41,9 +43,22 @@ export default function SleepForm({
   onSuccess,
 }: SleepFormProps) {
   const { formatDate, calculateDurationMinutes, toUTCString } = useTimezone();
+  const [startDateTime, setStartDateTime] = useState<Date>(() => {
+    try {
+      // Try to parse the initialTime
+      const date = new Date(initialTime);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return new Date(); // Fallback to current date if invalid
+      }
+      return date;
+    } catch (error) {
+      console.error('Error parsing initialTime:', error);
+      return new Date(); // Fallback to current date
+    }
+  });
+  const [endDateTime, setEndDateTime] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
-    startTime: initialTime,
-    endTime: '',
     type: '' as SleepType | '',
     location: '',
     quality: '' as SleepQuality | '',
@@ -51,28 +66,29 @@ export default function SleepForm({
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Format date string to be compatible with datetime-local input
-  const formatDateForInput = (dateStr: string) => {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
-    
-    // Format as YYYY-MM-DDThh:mm in local time
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   useEffect(() => {
     if (isOpen && !isInitialized) {
       if (activity) {
         // Editing mode - populate with activity data
+        try {
+          const startDate = new Date(activity.startTime);
+          if (!isNaN(startDate.getTime())) {
+            setStartDateTime(startDate);
+          }
+          
+          if (activity.endTime) {
+            const endDate = new Date(activity.endTime);
+            if (!isNaN(endDate.getTime())) {
+              setEndDateTime(endDate);
+            }
+          } else {
+            setEndDateTime(null);
+          }
+        } catch (error) {
+          console.error('Error parsing activity times:', error);
+        }
+        
         setFormData({
-          startTime: formatDateForInput(activity.startTime),
-          endTime: activity.endTime ? formatDateForInput(activity.endTime) : '',
           type: activity.type,
           location: activity.location || '',
           quality: activity.quality || '',
@@ -100,14 +116,26 @@ export default function SleepForm({
             // Find the most recent sleep record without an end time
             const currentSleep = data.data.find((log: SleepLogResponse) => !log.endTime);
             if (currentSleep) {
-                setFormData(prev => ({
-                  ...prev,
-                  startTime: formatDateForInput(currentSleep.startTime),
-                  endTime: formatDateForInput(initialTime),
-                  type: currentSleep.type,
-                  location: currentSleep.location || '',
-                  quality: 'GOOD', // Default to GOOD when ending sleep
-                }));
+              try {
+                const startDate = new Date(currentSleep.startTime);
+                if (!isNaN(startDate.getTime())) {
+                  setStartDateTime(startDate);
+                }
+                
+                const endDate = new Date(initialTime);
+                if (!isNaN(endDate.getTime())) {
+                  setEndDateTime(endDate);
+                }
+              } catch (error) {
+                console.error('Error parsing sleep times:', error);
+              }
+              
+              setFormData(prev => ({
+                ...prev,
+                type: currentSleep.type,
+                location: currentSleep.location || '',
+                quality: 'GOOD', // Default to GOOD when ending sleep
+              }));
             }
             
             // Mark as initialized
@@ -121,10 +149,23 @@ export default function SleepForm({
         fetchCurrentSleep();
       } else {
         // Starting new sleep
+        try {
+          const initialDate = new Date(initialTime);
+          if (!isNaN(initialDate.getTime())) {
+            setStartDateTime(initialDate);
+          }
+          
+          if (isSleeping) {
+            setEndDateTime(new Date(initialTime));
+          } else {
+            setEndDateTime(null);
+          }
+        } catch (error) {
+          console.error('Error parsing initialTime:', error);
+        }
+        
         setFormData(prev => ({
           ...prev,
-          startTime: formatDateForInput(initialTime),
-          endTime: isSleeping ? formatDateForInput(initialTime) : '',
           type: prev.type || 'NAP', // Default to NAP if not set
           location: prev.location,
           quality: isSleeping ? 'GOOD' : prev.quality,
@@ -136,9 +177,16 @@ export default function SleepForm({
     } else if (!isOpen) {
       // Reset initialization flag and form when modal closes
       setIsInitialized(false);
+      try {
+        const initialDate = new Date(initialTime);
+        if (!isNaN(initialDate.getTime())) {
+          setStartDateTime(initialDate);
+        }
+      } catch (error) {
+        console.error('Error parsing initialTime:', error);
+      }
+      setEndDateTime(null);
       setFormData({
-        startTime: initialTime,
-        endTime: '',
         type: '' as SleepType | '',
         location: '',
         quality: '' as SleepQuality | '',
@@ -146,12 +194,21 @@ export default function SleepForm({
     }
   }, [isOpen, initialTime, isSleeping, babyId, activity?.id, isInitialized]);
 
+  // Handle date/time changes
+  const handleStartDateTimeChange = (date: Date) => {
+    setStartDateTime(date);
+  };
+  
+  const handleEndDateTimeChange = (date: Date) => {
+    setEndDateTime(date);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!babyId) return;
 
     // Validate required fields
-    if (!formData.type || !formData.startTime || (isSleeping && !formData.endTime)) {
+    if (!formData.type || !startDateTime || (isSleeping && endDateTime === null)) {
       console.error('Required fields missing');
       return;
     }
@@ -160,20 +217,18 @@ export default function SleepForm({
 
     try {
       // Convert local times to UTC ISO strings using the timezone context
-      const localStartDate = new Date(formData.startTime);
-      const utcStartTime = toUTCString(localStartDate);
+      const utcStartTime = toUTCString(startDateTime);
       
       // Only convert end time if it exists
       let utcEndTime = null;
-      if (formData.endTime) {
-        const localEndDate = new Date(formData.endTime);
-        utcEndTime = toUTCString(localEndDate);
+      if (endDateTime) {
+        utcEndTime = toUTCString(endDateTime);
       }
       
-      console.log('Original start time (local):', formData.startTime);
+      console.log('Original start time (local):', startDateTime.toISOString());
       console.log('Converted start time (UTC):', utcStartTime);
-      if (utcEndTime) {
-        console.log('Original end time (local):', formData.endTime);
+      if (utcEndTime && endDateTime) {
+        console.log('Original end time (local):', endDateTime.toISOString());
         console.log('Converted end time (UTC):', utcEndTime);
       }
       
@@ -269,9 +324,16 @@ export default function SleepForm({
       onSuccess?.();
       
       // Reset form data
+      try {
+        const initialDate = new Date(initialTime);
+        if (!isNaN(initialDate.getTime())) {
+          setStartDateTime(initialDate);
+        }
+      } catch (error) {
+        console.error('Error parsing initialTime:', error);
+      }
+      setEndDateTime(null);
       setFormData({
-        startTime: initialTime,
-        endTime: '',
         type: '' as SleepType | '',
         location: '',
         quality: '' as SleepQuality | '',
@@ -301,32 +363,24 @@ export default function SleepForm({
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="form-label">Start Time</label>
-                <Input
-                  type="datetime-local"
-                  value={formData.startTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, startTime: e.target.value })
-                  }
+                <Label>Start Time</Label>
+                <DateTimePicker
+                  value={startDateTime}
+                  onChange={handleStartDateTimeChange}
                   className="w-full"
-                  required
-                  tabIndex={-1}
                   disabled={(isSleeping && !isEditMode) || loading} // Only disabled when ending sleep and not editing
+                  placeholder="Select start time..."
                 />
               </div>
               {(isSleeping || isEditMode) && (
                 <div>
-                  <label className="form-label">End Time</label>
-                  <Input
-                    type="datetime-local"
-                    value={formData.endTime || initialTime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, endTime: e.target.value })
-                    }
+                  <Label>End Time</Label>
+                  <DateTimePicker
+                    value={endDateTime ?? new Date()}
+                    onChange={handleEndDateTimeChange}
                     className="w-full"
-                    required={isSleeping}
-                    tabIndex={-1}
                     disabled={loading}
+                    placeholder="Select end time..."
                   />
                 </div>
               )}
@@ -372,7 +426,7 @@ export default function SleepForm({
                 </Select>
               </div>
             </div>
-            {(isSleeping || (isEditMode && formData.endTime)) && (
+            {(isSleeping || (isEditMode && endDateTime)) && (
               <div>
                 <label className="form-label">Sleep Quality</label>
                 <Select

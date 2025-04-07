@@ -11,12 +11,13 @@ import { cva } from "class-variance-authority"
  * @see https://cva.style/docs for more information on class-variance-authority
  */
 export const calendarVariants = cva(
-  "p-3 bg-white rounded-lg shadow-lg border border-gray-200",
+  "py-3 bg-white",
   {
     variants: {
       variant: {
-        default: "",
-        compact: "p-2 text-sm",
+        default: "rounded-lg shadow-lg border border-gray-200",
+        compact: "p-2 text-sm rounded-lg shadow-lg border border-gray-200",
+        "date-time-picker": "h-[360px] pt-6 pb-6 py-3",
       },
     },
     defaultVariants: {
@@ -35,6 +36,7 @@ export const calendarHeaderVariants = cva(
       variant: {
         default: "px-1",
         compact: "px-0.5",
+        "date-time-picker": "px-1",
       },
     },
     defaultVariants: {
@@ -53,6 +55,7 @@ export const calendarNavButtonVariants = cva(
       variant: {
         default: "p-2",
         compact: "p-1",
+        "date-time-picker": "p-2",
       },
     },
     defaultVariants: {
@@ -71,6 +74,7 @@ export const calendarMonthSelectVariants = cva(
       variant: {
         default: "text-base",
         compact: "text-sm",
+        "date-time-picker": "text-base",
       },
     },
     defaultVariants: {
@@ -89,6 +93,7 @@ export const calendarDayVariants = cva(
       variant: {
         default: "h-9 w-9",
         compact: "h-7 w-7 text-xs",
+        "date-time-picker": "h-10 w-9",
       },
       selected: {
         true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700",

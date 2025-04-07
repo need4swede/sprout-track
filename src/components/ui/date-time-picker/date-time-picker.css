@@ -4,6 +4,7 @@ html.dark .date-time-picker-container {
   background-color: #1f2937 !important; /* gray-800 */
 }
 
+html.dark .date-time-picker-dialog,
 html.dark .date-time-picker-popover {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */
@@ -33,21 +34,58 @@ html.dark .date-time-picker-calendar-icon {
   color: #9ca3af !important; /* gray-400 */
 }
 
-/* Light mode styles */
-.date-time-picker-toggle-button-active {
-  background-image: linear-gradient(to right, #0d9488, #059669); /* teal-700 to emerald-600 */
-  color: white;
+/* Fix for dialog corners in dark mode */
+html.dark [role="dialog"] > div,
+html.dark div[data-radix-dialog-content],
+html.dark .date-time-picker-dialog {
+  border-radius: 0 !important;
+  background-color: #1f2937 !important; /* gray-800 */
+  transform: none !important; /* Prevent transform that might cause blurry text */
 }
 
-.date-time-picker-done-button {
-  background-image: linear-gradient(to right, #0d9488, #059669); /* teal-700 to emerald-600 */
-  color: white;
+/* Fix text rendering in dark mode */
+html.dark .date-time-picker-dialog *,
+html.dark .date-time-picker-dialog button,
+html.dark .date-time-picker-dialog div {
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  transform: none !important; /* Prevent transforms that might cause blurry text */
+  backface-visibility: hidden !important; /* Help with text rendering */
+  perspective: 1000px !important; /* Help with text rendering */
 }
 
-.date-time-picker-toggle-button-active:hover {
-  background-image: linear-gradient(to right, #0f766e, #047857); /* teal-800 to emerald-700 */
+/* Ensure calendar maintains its original size in dark mode */
+html.dark .date-time-picker-dialog .react-calendar {
+  background-color: #1f2937 !important; /* gray-800 */
+  width: 350px !important;
+  min-width: 350px !important;
 }
 
-.date-time-picker-done-button:hover {
-  background-image: linear-gradient(to right, #0f766e, #047857); /* teal-800 to emerald-700 */
+/* Override any rounded corners in dark mode */
+html.dark .date-time-picker-dialog[data-state="open"],
+html.dark .date-time-picker-dialog[data-state="closed"],
+html.dark .date-time-picker-dialog > div {
+  border-radius: 0 !important;
+  overflow: hidden !important; /* Prevent scrolling */
+}
+
+/* Remove rounded edges from dialog overlay in dark mode */
+html.dark .dialog-overlay {
+  border-radius: 0 !important;
+}
+
+/* Special class for the scroll container in dark mode */
+html.dark .date-time-picker-scroll-container {
+  background-color: #1f2937 !important; /* gray-800 */
+  overflow: hidden !important; /* Prevent scrolling */
+}
+
+/* Fix for mobile view in dark mode */
+@media (max-width: 640px) {
+  html.dark .date-time-picker-dialog {
+    width: 350px !important; /* Fixed width */
+    max-width: calc(100vw - 16px) !important; /* Full width minus margins */
+    margin: 0 8px !important; /* Add margins on mobile */
+  }
 }
