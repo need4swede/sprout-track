@@ -46,6 +46,19 @@ export function TimeEntry({
   
   const [state, setState] = useState(getInitialValues);
   const clockFaceRef = useRef<HTMLDivElement>(null);
+  const handRef = useRef<HTMLDivElement>(null);
+  
+  // Dragging state
+  const [isDragging, setIsDragging] = useState(false);
+  const [exactMinute, setExactMinute] = useState<number | null>(null);
+  const isDraggingRef = useRef(false);
+  
+  // Check if a time is valid based on min/max constraints
+  const isTimeValid = useCallback((date: Date): boolean => {
+    if (minTime && date < minTime) return false;
+    if (maxTime && date > maxTime) return false;
+    return true;
+  }, [minTime, maxTime]);
   
   // Update state when value prop changes, but preserve the current mode
   useEffect(() => {
@@ -68,13 +81,118 @@ export function TimeEntry({
     });
    }, [value]);
    
-   // Check if a time is valid based on min/max constraints
-  const isTimeValid = useCallback((date: Date): boolean => {
-    if (minTime && date < minTime) return false;
-    if (maxTime && date > maxTime) return false;
-    return true;
-  }, [minTime, maxTime]);
-  
+   // Set up dragging functionality
+   useEffect(() => {
+    if (disabled || !clockFaceRef.current || !handRef.current) return;
+    
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only start dragging if the click is on the hand
+      if (e.target === handRef.current || 
+          (handRef.current && e.target instanceof Node && handRef.current.contains(e.target as Node))) {
+        e.preventDefault();
+        setIsDragging(true);
+        isDraggingRef.current = true;
+      }
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || !clockFaceRef.current) return;
+      
+      const rect = clockFaceRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const x = e.clientX - centerX;
+      const y = e.clientY - centerY;
+      
+      // Calculate angle from center to mouse position
+      let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
+      
+      const baseDate = value instanceof Date && !isNaN(value.getTime()) ? new Date(value) : new Date();
+      
+      if (state.mode === 'hours') {
+        // Convert angle to hour (each hour is 30 degrees)
+        let hour = Math.round(angle / 30);
+        if (hour === 0 || hour > 12) hour = 12;
+        
+        setState(prev => ({ ...prev, hours: hour }));
+        
+        const newHours24 = state.isPM
+          ? (hour === 12 ? 12 : hour + 12)
+          : (hour === 12 ? 0 : hour);
+        baseDate.setHours(newHours24);
+        baseDate.setMinutes(state.minutes);
+      } else {
+        // Convert angle to minute (each minute is 6 degrees)
+        const minute = Math.round(angle / 6) % 60;
+        
+        setState(prev => ({ ...prev, minutes: minute }));
+        setExactMinute(minute);
+        
+        const newHours24 = state.isPM
+          ? (state.hours === 12 ? 12 : state.hours + 12)
+          : (state.hours === 12 ? 0 : state.hours);
+        baseDate.setHours(newHours24);
+        baseDate.setMinutes(minute);
+      }
+      
+      baseDate.setSeconds(0);
+      baseDate.setMilliseconds(0);
+      
+      if (isTimeValid(baseDate)) {
+        onChange(baseDate);
+      }
+    };
+    
+    const handleMouseUp = () => {
+      if (isDraggingRef.current) {
+        setIsDragging(false);
+        isDraggingRef.current = false;
+        
+        // Clear exact minute after a short delay to allow the UI to update
+        setTimeout(() => {
+          setExactMinute(null);
+        }, 1000);
+      }
+    };
+    
+    // Convert touch events to mouse events
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        handleMouseMove(mouseEvent);
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      handleMouseUp();
+    };
+    
+    // Add mouse and touch event listeners
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchcancel', handleTouchEnd);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchcancel', handleTouchEnd);
+    };
+   }, [disabled, state.mode, state.isPM, state.hours, state.minutes, onChange, isTimeValid, value]);
+   
    // Handle hour selection
    const handleHourSelect = (hour: number) => {
      if (disabled) return;
@@ -82,7 +200,8 @@ export function TimeEntry({
      const newState = {
        ...state,
        hours: hour,
-       mode: 'minutes' as 'hours' | 'minutes',
+       // Keep the mode as 'hours' instead of switching to 'minutes'
+       mode: 'hours' as 'hours' | 'minutes',
      };
  
      // Calculate new date based on the *intended* state
@@ -177,7 +296,8 @@ export function TimeEntry({
      if (state.mode === 'hours') {
        let hour = Math.round(angle / 30);
        if (hour === 0 || hour > 12) hour = 12;
-       newState = { ...state, hours: hour, mode: 'minutes' };
+       // Keep the mode as 'hours' instead of switching to 'minutes'
+       newState = { ...state, hours: hour, mode: 'hours' };
        newHours24 = newState.isPM ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
        baseDate.setHours(newHours24);
        baseDate.setMinutes(newState.minutes); // Use existing minutes from newState
@@ -236,8 +356,6 @@ export function TimeEntry({
       const hours = Array.from({ length: 12 }, (_, i) => i + 1);
       return hours.map(hour => {
         const angle = ((hour % 12) * 30) - 90;
-        const isSelected = hour === state.hours;
-        
         // Calculate position on the clock face
         const radius = 100; // Distance from center (in pixels)
         const x = Math.cos(angle * (Math.PI / 180)) * radius;
@@ -248,9 +366,7 @@ export function TimeEntry({
             key={hour}
             className={cn(
               styles.hourMarker,
-              isSelected && styles.hourMarkerSelected,
-              'time-entry-hour-marker',
-              isSelected && 'time-entry-hour-marker-selected'
+              'time-entry-hour-marker'
             )}
             style={{
               transform: `translate(${x}px, ${y}px)`,
@@ -269,8 +385,6 @@ export function TimeEntry({
       for (let i = 0; i < 12; i++) {
         const minute = i * 5;
         const angle = (minute * 6) - 90; // 6 degrees per minute
-        // Select if the current minute is the closest 5-minute interval
-        const isSelected = Math.round(state.minutes / 5) * 5 % 60 === minute; 
         
         // Calculate position on the clock face
         const radius = 100; // Distance from center (in pixels)
@@ -282,9 +396,7 @@ export function TimeEntry({
             key={minute}
             className={cn(
               styles.minuteMarker,
-              isSelected && styles.minuteMarkerSelected,
-              'time-entry-minute-marker',
-              isSelected && 'time-entry-minute-marker-selected'
+              'time-entry-minute-marker'
             )}
             style={{
               transform: `translate(${x}px, ${y}px)`,
@@ -375,19 +487,75 @@ export function TimeEntry({
           
           {/* Clock hand */}
           <div 
-             className={cn(styles.clockHand, 'time-entry-clock-hand')}
+             ref={handRef}
+             className={cn(
+               styles.clockHand, 
+               'time-entry-clock-hand',
+               isDragging && 'cursor-grabbing'
+             )}
              style={{
                height: `${getHandLength()}px`, // Dynamic height based on mode
                transform: `translateX(-50%) rotate(${getHandAngle()}deg)`, // Use corrected angle calculation
-               transformOrigin: 'top center', // Rotate around the top center
+               transformOrigin: 'top center', // Rotate around the bottom center
                position: 'absolute',
-               top: '50%', // Position top edge at vertical center
+               bottom: '50%', // Position bottom edge at vertical center
                left: '50%', // Position left edge at horizontal center
-               width: '2px', // Make hand slightly thicker for visibility
+               width: '4px', // Make hand slightly thicker for visibility
+               cursor: 'grab',
                // Use the background color defined in styles directly if possible, else fallback
                backgroundColor: styles.clockHand.includes('bg-emerald-600') ? '#059669' : '#10b981', // Example fallback logic, adjust as needed based on actual styles
+               zIndex: 20, // Ensure hand is above other elements
+             }}
+             onMouseDown={(e) => {
+               e.preventDefault();
+               setIsDragging(true);
+               isDraggingRef.current = true;
+             }}
+             onTouchStart={(e) => {
+               e.preventDefault();
+               setIsDragging(true);
+               isDraggingRef.current = true;
              }}
            />
+           
+           {/* Selection circle at the same level as numbers */}
+           {(
+             <div
+               className={cn(
+                 'time-entry-selection-circle',
+                 isDragging && 'scale-110'
+               )}
+               style={{
+                 position: 'absolute',
+                 width: '36px',
+                 height: '36px',
+                 borderRadius: '50%',
+                 backgroundColor: styles.clockHand.includes('bg-emerald-600') ? '#059669' : '#10b981',
+                 color: 'white',
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 fontWeight: 'bold',
+                 transform: `translate(-50%, -50%) rotate(${getHandAngle()}deg) translate(100px) rotate(${-getHandAngle()}deg)`,
+                 zIndex: 25,
+                 boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                 transition: 'transform 0.1s ease',
+                 cursor: 'grab',
+               }}
+               onMouseDown={(e) => {
+                 e.preventDefault();
+                 setIsDragging(true);
+                 isDraggingRef.current = true;
+               }}
+               onTouchStart={(e) => {
+                 e.preventDefault();
+                 setIsDragging(true);
+                 isDraggingRef.current = true;
+               }}
+             >
+               {state.mode === 'hours' ? state.hours : exactMinute !== null ? exactMinute : state.minutes}
+             </div>
+           )}
           
           {/* Center dot */}
           <div className={cn(styles.clockCenter, 'time-entry-clock-center')} />
