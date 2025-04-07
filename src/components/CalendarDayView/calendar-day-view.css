@@ -52,8 +52,20 @@ html.dark .calendar-day-view-group-title {
   color: #d1d5db !important; /* gray-300 */
 }
 
+html.dark .calendar-day-view-group-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
 html.dark .calendar-day-view-empty-text {
   color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-day-view-empty-icon {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+html.dark .calendar-day-view-loader {
+  color: #2dd4bf !important; /* teal-400 */
 }
 
 html.dark .calendar-day-view-add-button-container {

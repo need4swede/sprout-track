@@ -1,32 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils, Bath } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
-import { ActivityType } from '../ui/activity-tile/activity-tile.types';
 import { Card } from '@/src/components/ui/card';
+import { cardStyles } from '@/src/components/ui/card/card.styles';
 import { useTheme } from '@/src/context/theme';
-import './daily-stats.css';
-import { cardStyles } from '../ui/card/card.styles';
 import { cn } from '@/src/lib/utils';
 
-interface DailyStatsProps {
-  activities: ActivityType[];
-  date: Date;
-  isLoading?: boolean;
-}
-
-interface StatItemProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
-
-interface StatsTickerProps {
-  stats: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-  }[];
-}
+// Import component-specific files
+import './daily-stats.css';
+import { dailyStatsStyles } from './daily-stats.styles';
+import { DailyStatsProps, StatItemProps, StatsTickerProps } from './daily-stats.types';
 
 const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
   const { theme } = useTheme();
@@ -54,20 +37,20 @@ const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
   const tickerContent = (
     <>
       {stats.map((stat, index) => (
-        <div key={index} className="inline-flex items-center mr-6">
-          <div className="mr-1">{stat.icon}</div>
-          <span className="text-xs text-gray-600 dark:text-gray-400 daily-stats-ticker-text">{stat.label}: </span>
-          <span className="text-xs font-medium ml-1 dark:text-gray-200 daily-stats-ticker-value">{stat.value}</span>
+        <div key={index} className={dailyStatsStyles.ticker.item}>
+          <div className={dailyStatsStyles.ticker.icon}>{stat.icon}</div>
+          <span className={dailyStatsStyles.ticker.label}>{stat.label}: </span>
+          <span className={dailyStatsStyles.ticker.value}>{stat.value}</span>
         </div>
       ))}
     </>
   );
 
   return (
-    <div className="relative overflow-hidden flex-1 mx-4">
+    <div className={dailyStatsStyles.ticker.container}>
       <div 
         ref={tickerRef}
-        className="whitespace-nowrap animate-marquee inline-block"
+        className={dailyStatsStyles.ticker.animation}
         style={{ 
           animationDuration: `${animationDuration}s`,
           animationTimingFunction: 'linear',
@@ -89,13 +72,13 @@ const StatsTicker: React.FC<StatsTickerProps> = ({ stats }) => {
 };
 
 const StatItem: React.FC<StatItemProps> = ({ icon, label, value }) => (
-  <div className="flex items-center gap-2">
-    <div className="flex-shrink-0 p-2 rounded-xl bg-gray-100 dark:bg-gray-600 daily-stats-item-bg">
+  <div className={dailyStatsStyles.statItem.container}>
+    <div className={dailyStatsStyles.statItem.iconContainer}>
       {icon}
     </div>
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 daily-stats-item-label">{label}</div>
-      <div className="text-sm font-medium dark:text-gray-200 daily-stats-item-value">{value}</div>
+      <div className={dailyStatsStyles.statItem.label}>{label}</div>
+      <div className={dailyStatsStyles.statItem.value}>{value}</div>
     </div>
   </div>
 );
@@ -281,12 +264,12 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   }, [activities, date]);
 
   return (
-    <Card className={cn(cardStyles.base2, 'overflow-hidden border-0 border-b border-gray-200 dark:border-gray-700')}>
+    <Card className={cn(dailyStatsStyles.container, 'overflow-hidden border-0 border-b border-gray-200')}>
       <div 
-        className={cn("flex items-center px-6 py-3 bg-gray-50 dark:bg-gray-600 cursor-pointer border-b border-transparent dark:border-gray-500", "daily-stats-header")}
+        className={cn(dailyStatsStyles.header, "cursor-pointer")}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="text-sm font-medium dark:text-gray-200">Daily Stats</h3>
+        <h3 className={dailyStatsStyles.date}>Daily Stats</h3>
         
         {!isExpanded && !isLoading && activities.length > 0 && (
           <StatsTicker 
@@ -305,19 +288,19 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
           />
         )}
         
-        <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 ml-auto">
+        <button className={dailyStatsStyles.toggle}>
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
       </div>
       
       {isExpanded && (
-        <div className={cn("grid grid-cols-2 gap-4 p-4 md:grid-cols-5", "dark:bg-gray-700", "daily-stats-content")}>
+        <div className={dailyStatsStyles.content}>
           {isLoading ? (
-            <div className={cn("col-span-2 md:col-span-5 py-4 text-center text-gray-500 dark:text-gray-400", "daily-stats-empty")}>
+            <div className={dailyStatsStyles.empty}>
               Loading daily statistics...
             </div>
           ) : activities.length === 0 ? (
-            <div className={cn("col-span-2 md:col-span-5 py-4 text-center text-gray-500 dark:text-gray-400", "daily-stats-empty")}>
+            <div className={dailyStatsStyles.empty}>
               No activities recorded for this day
             </div>
           ) : (

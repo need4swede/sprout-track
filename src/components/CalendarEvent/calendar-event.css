@@ -8,17 +8,44 @@ html.dark .calendar-event-container {
   border-color: #374151 !important; /* gray-700 */
 }
 
+html.dark .calendar-event-header {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
 html.dark .calendar-event-title {
   color: #f3f4f6 !important; /* gray-100 */
 }
 
-html.dark .calendar-event-time,
+html.dark .calendar-event-type {
+  background-color: rgba(13, 148, 136, 0.3) !important; /* teal-900/30 */
+  color: #5eead4 !important; /* teal-300 */
+}
+
+html.dark .calendar-event-icon {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .calendar-event-time {
+  color: #9ca3af !important; /* gray-400 */
+}
+
 html.dark .calendar-event-location {
   color: #9ca3af !important; /* gray-400 */
 }
 
+html.dark .calendar-event-people-list {
+  color: #d1d5db !important; /* gray-300 */
+}
+
 html.dark .calendar-event-description {
   color: #d1d5db !important; /* gray-300 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .calendar-event-actions {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important; /* gray-700 */
 }
 
 /* Enhance hover effects in dark mode */

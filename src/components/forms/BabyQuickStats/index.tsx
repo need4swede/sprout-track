@@ -16,6 +16,7 @@ import {
 } from './baby-quick-stats.styles';
 import FormPage, { FormPageContent, FormPageFooter } from '@/src/components/ui/form-page';
 import { Button } from '@/src/components/ui/button';
+import { Label } from '@/src/components/ui/label';
 import CardVisual from '@/src/components/reporting/CardVisual';
 import { Clock, Moon, Sun, Utensils, Droplet, Loader2 } from 'lucide-react';
 import { diaper } from '@lucide/lab';
@@ -443,7 +444,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
               {/* Time period selectors */}
               <div className={timePeriodSelectorContainer()}>
                 <div>
-                  <label className={timePeriodSelectorLabel()}>Main Period:</label>
+                  <Label className={timePeriodSelectorLabel()}>Main Period:</Label>
                   <div className={timePeriodButtonGroup()}>
                     {(['2day', '7day', '14day', '30day'] as TimePeriod[]).map((period) => (
                       <Button
@@ -459,7 +460,7 @@ export const BabyQuickStats: React.FC<BabyQuickStatsProps> = ({
                 </div>
                 
                 <div>
-                  <label className={timePeriodSelectorLabel()}>Compare Period:</label>
+                  <Label className={timePeriodSelectorLabel()}>Compare Period:</Label>
                   <div className={timePeriodButtonGroup()}>
                     {(['2day', '7day', '14day', '30day'] as TimePeriod[]).map((period) => (
                       <Button

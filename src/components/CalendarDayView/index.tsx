@@ -258,7 +258,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 text-teal-500 dark:text-teal-400 animate-spin" />
+          <Loader2 className="h-8 w-8 text-teal-500 calendar-day-view-loader animate-spin" />
         </div>
       );
     }
@@ -267,8 +267,8 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     if (events.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-6">
-          <CalendarClock className="h-12 w-12 text-gray-400 dark:text-gray-500 mb-2" />
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <CalendarClock className="h-12 w-12 text-gray-400 calendar-day-view-empty-icon mb-2" />
+          <p className="text-gray-500 calendar-day-view-empty-text text-sm">
             No events scheduled for this day
           </p>
         </div>

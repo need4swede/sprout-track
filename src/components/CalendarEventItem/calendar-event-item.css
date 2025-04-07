@@ -16,6 +16,50 @@ html.dark .calendar-event-item-details {
   color: #9ca3af !important; /* gray-400 */
 }
 
+/* Color indicators in dark mode */
+html.dark .calendar-event-item-indicator-appointment {
+  background-color: #2563eb !important; /* blue-600 */
+}
+
+html.dark .calendar-event-item-indicator-caretaker {
+  background-color: #16a34a !important; /* green-600 */
+}
+
+html.dark .calendar-event-item-indicator-reminder {
+  background-color: #d97706 !important; /* amber-600 */
+}
+
+html.dark .calendar-event-item-indicator-custom {
+  background-color: #9333ea !important; /* purple-600 */
+}
+
+/* Icons in dark mode */
+html.dark .calendar-event-item-icon-time,
+html.dark .calendar-event-item-icon-location {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+html.dark .calendar-event-item-icon-recurring {
+  color: #fbbf24 !important; /* amber-400 */
+}
+
+/* Badges in dark mode */
+html.dark .calendar-event-item-badge-baby {
+  background-color: #0d9488 !important; /* teal-600 */
+}
+
+html.dark .calendar-event-item-badge-caretaker {
+  background-color: #4f46e5 !important; /* indigo-600 */
+}
+
+html.dark .calendar-event-item-badge-contact {
+  background-color: #e11d48 !important; /* rose-600 */
+}
+
+html.dark .calendar-event-item-badge-count {
+  color: #9ca3af !important; /* gray-400 */
+}
+
 /* Enhance hover effects in dark mode */
 html.dark .calendar-event-item-container:hover {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

@@ -32,3 +32,11 @@ html.dark .daily-stats-item-value {
 html.dark .daily-stats-empty {
   color: #9ca3af !important; /* gray-400 */
 }
+
+html.dark .daily-stats-toggle {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .daily-stats-toggle:hover {
+  color: #e5e7eb !important; /* gray-200 */
+}
