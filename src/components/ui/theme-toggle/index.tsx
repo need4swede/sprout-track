@@ -23,12 +23,20 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   // Function to cycle between light, dark, and system modes
   const cycleTheme = () => {
     if (useSystemTheme) {
-      // If currently using system, switch to light
+      // If currently using system, always switch to explicit light mode
+      // regardless of the current system preference
       toggleUseSystemTheme();
-      // Ensure we're in light mode
-      if (theme === 'dark') {
-        toggleTheme();
-      }
+      
+      // Force light mode
+      localStorage.setItem('theme', 'light');
+      
+      // Update the DOM directly
+      document.documentElement.classList.remove('dark');
+      
+      // Force a re-render to update the UI
+      setTimeout(() => {
+        window.location.reload();
+      }, 50);
     } else if (theme === 'light') {
       // If light, switch to dark
       toggleTheme();
