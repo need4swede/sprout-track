@@ -172,6 +172,11 @@ Authentication errors return appropriate HTTP status codes:
 3. **Lockout Protection**:
    - Three failed login attempts trigger a server-side IP-based 5-minute lockout
    - This prevents automated attacks from bypassing client-side lockout mechanisms
+   - IP lockout functionality is implemented in `/app/api/utils/ip-lockout.ts` and provides:
+     - `checkIpLockout(ip)`: Checks if an IP is currently locked out
+     - `recordFailedAttempt(ip)`: Records a failed login attempt for an IP
+     - `resetFailedAttempts(ip)`: Resets failed attempts for an IP after successful login
+   - The lockout system is used in the authentication process to prevent brute force attacks
 
 ## Best Practices
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../db';
 import { ApiResponse } from '../types';
 import jwt from 'jsonwebtoken';
-import { checkIpLockout, recordFailedAttempt, resetFailedAttempts } from './ip-lockout/route';
+import { checkIpLockout, recordFailedAttempt, resetFailedAttempts } from '../utils/ip-lockout';
 
 // Secret key for JWT signing - in production, use environment variable
 const JWT_SECRET = process.env.JWT_SECRET || 'baby-tracker-jwt-secret';
