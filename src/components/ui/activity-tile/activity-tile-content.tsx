@@ -28,7 +28,7 @@ export function ActivityTileContent({
         <span className={cn(styles.content.typeLabel, "activity-tile-label")}>
           {displayTitle}
         </span>
-        <span className={cn(styles.content.description, "dark:text-gray-200 activity-tile-description")}>
+        <span className={cn(styles.content.description, "activity-tile-description")}>
           {displayDescription}
         </span>
       </div>

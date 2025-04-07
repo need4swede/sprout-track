@@ -55,7 +55,7 @@ export function ActivityTile({
             {icon || <ActivityTileIcon activity={activity} variant={variant} isButton={isButton} />}
           </div>
           {title && (
-            <span className="text-xs font-medium mt-1 text-center dark:text-gray-200 activity-tile-title">
+            <span className="text-xs font-medium mt-1 text-center activity-tile-title">
               {title}
             </span>
           )}

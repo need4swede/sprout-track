@@ -306,15 +306,15 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
    * Get day cell class based on date
    */
   const getDayClass = (date: Date): string => {
-    const baseClass = "flex flex-col h-full min-h-[60px] p-1 border border-gray-200 dark:border-gray-700 cursor-pointer";
+    const baseClass = "flex flex-col h-full min-h-[60px] p-1 border border-gray-200 cursor-pointer calendar-day";
     let className = baseClass;
     
     if (isToday(date)) {
-      className = cn(className, "bg-teal-50 dark:bg-teal-900/20 border-teal-300 dark:border-teal-700");
+      className = cn(className, "bg-teal-50 border-teal-300 calendar-day-today");
     } else if (!isCurrentMonth(date)) {
-      className = cn(className, "bg-gray-50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-600");
+      className = cn(className, "bg-gray-50 text-gray-400 calendar-day-other-month");
     } else {
-      className = cn(className, "dark:bg-gray-800/30");
+      className = cn(className, "calendar-day-current-month");
     }
     
     // Add selected state (compare using local date components)
@@ -322,7 +322,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
         date.getDate() === selectedDate.getDate() &&
         date.getMonth() === selectedDate.getMonth() &&
         date.getFullYear() === selectedDate.getFullYear()) {
-      className = cn(className, "ring-2 ring-teal-500 dark:ring-teal-400 ring-inset");
+      className = cn(className, "ring-2 ring-teal-500 ring-inset calendar-day-selected");
     }
     
     return className;
@@ -359,19 +359,19 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
           let bgColor = '';
           switch (event.type) {
             case 'APPOINTMENT':
-              bgColor = 'bg-blue-500 dark:bg-blue-400';
+              bgColor = 'bg-blue-500 calendar-indicator-appointment';
               break;
             case 'CARETAKER_SCHEDULE':
-              bgColor = 'bg-green-500 dark:bg-green-400';
+              bgColor = 'bg-green-500 calendar-indicator-caretaker';
               break;
             case 'REMINDER':
-              bgColor = 'bg-yellow-500 dark:bg-yellow-400';
+              bgColor = 'bg-yellow-500 calendar-indicator-reminder';
               break;
             case 'CUSTOM':
-              bgColor = 'bg-purple-500 dark:bg-purple-400';
+              bgColor = 'bg-purple-500 calendar-indicator-custom';
               break;
             default:
-              bgColor = 'bg-gray-500 dark:bg-gray-400';
+              bgColor = 'bg-gray-500 calendar-indicator-default';
           }
           
           return (
@@ -389,7 +389,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
   return (
     <div className="relative flex flex-col h-full calendar-container">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white border-t border-gray-200 dark:border-gray-700 calendar-header">
+      <div className="flex items-center justify-between p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white border-t border-gray-200 calendar-header">
         <Button
           variant="ghost"
           size="icon"
@@ -422,14 +422,14 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
       </div>
       
       {/* Main content area */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-white dark:bg-gray-800" style={{ minHeight: `${calendarRowCount * 60}px` }}>
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-white calendar-content" style={{ minHeight: `${calendarRowCount * 60}px` }}>
         {/* Calendar Grid */}
         <Card className="flex-1 overflow-hidden border-0 rounded-t-none calendar-grid flex md:flex-col">
           <div className="h-full flex flex-col">
             {/* Day names header */}
-            <div className="grid grid-cols-7 text-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 calendar-weekdays">
+            <div className="grid grid-cols-7 text-center bg-gray-100 border-b border-gray-200 calendar-weekdays">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                <div key={index} className="py-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <div key={index} className="py-2 text-xs font-medium text-gray-500 calendar-weekday">
                   {day}
                 </div>
               ))}
@@ -446,7 +446,7 @@ export function Calendar({ selectedBabyId, userTimezone }: CalendarProps) {
                   className={`${getDayClass(date)} cursor-pointer`}
                   onClick={() => handleDayClick(date)}
                 >
-                  <span className={`text-xs ${isToday(date) ? 'font-bold text-teal-700 dark:text-teal-300' : ''}`}>
+                  <span className={`text-xs ${isToday(date) ? 'font-bold text-teal-700 calendar-today-text' : ''}`}>
                     {date.getDate()}
                   </span>
                   {renderActivityIndicators(date)}
