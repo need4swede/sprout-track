@@ -8,13 +8,13 @@ import { cva } from "class-variance-authority";
  */
 export const themeToggleStyles = {
   // Main button
-  button: "flex items-center w-full px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 rounded-lg mb-2",
+  button: "flex items-center px-3 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 rounded-lg",
   
   // Icon container
-  iconContainer: "mr-3 h-5 w-5",
+  iconContainer: "mr-2 h-4 w-4",
   
   // Text label
-  label: "text-sm"
+  label: "text-xs font-medium"
 };
 
 /**
