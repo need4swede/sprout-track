@@ -13,7 +13,7 @@ export const timeEntryStyles = {
   
   // Header
   header: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-2 flex justify-center items-center",
-  timeDisplay: "text-3xl font-light tracking-wider",
+  timeDisplay: "text-4xl font-light tracking-wider",
   amPmDisplay: "text-lg ml-2 flex flex-col",
   
   // Clock face
