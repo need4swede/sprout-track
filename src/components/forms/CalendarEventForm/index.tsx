@@ -414,8 +414,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       description="Schedule and manage calendar events"
       className="calendar-event-form-container"
     >
-      <form onSubmit={handleSubmit} className="h-full flex-col">
-        <FormPageContent className="overflow-y-auto">
+  <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <FormPageContent className="flex-1">
           <div className="space-y-6 pb-20">
             {/* Event details section */}
             <div className={styles.section}>
