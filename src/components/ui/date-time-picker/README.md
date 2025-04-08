@@ -4,13 +4,16 @@ A modern, accessible date and time picker component for the Baby Tracker applica
 
 ## Features
 
-- Input field with formatted date/time display
-- Popover with tabbed interface for date and time selection
-- Calendar component for date selection
-- iOS-style time picker with touch/swipe controls
+- Two separate buttons for date and time selection
+- Calendar component for date selection in a popover
+- iOS-style time picker with touch/swipe controls in a popover
+- Automatic closing of date popover when a date is selected
+- Done button for time selection
+- Fixed dimensions for consistent UI (360px height, 350px width)
+- Bottom-aware positioning with margin
 - Keyboard accessibility
 - Dark mode support
-- Responsive design for mobile and desktop
+- Consistent styling regardless of screen size
 - Follows the project's design system
 
 ## Usage
@@ -28,7 +31,6 @@ function DateTimePickerExample() {
       <DateTimePicker 
         value={selectedDateTime} 
         onChange={setSelectedDateTime}
-        placeholder="Select appointment time..."
       />
     </div>
   );
@@ -49,32 +51,33 @@ Main component for selecting both date and time with a user-friendly interface.
 | `onChange` | `(date: Date) => void` | Callback function when date/time changes | Required |
 | `className` | `string \| undefined` | Optional class name for additional styling | `undefined` |
 | `disabled` | `boolean` | Whether the component is disabled | `false` |
-| `placeholder` | `string` | Placeholder text for the input | `"Select date and time..."` |
+| `placeholder` | `string` | Placeholder text (legacy, not used in current implementation) | `"Select date and time..."` |
 
 ## Visual Behavior
 
-- Displays an input field with the formatted date and time
-- Clicking the input opens a popover with tabs for date and time selection
-- Date tab shows a calendar for selecting the date
-- Time tab shows an iOS-style time picker with hours, minutes, and AM/PM columns
-- Selecting a date automatically switches to the time tab
-- "Done" button closes the popover and confirms the selection
+- Displays two buttons side by side, one for date and one for time
+- Each button shows an icon and the currently selected value
+- Clicking the date button opens a calendar popover
+- Clicking the time button opens a time picker popover
+- Selecting a date automatically closes the calendar popover
+- Time picker includes a "Done" button to confirm selection
+- Both popovers have fixed dimensions for consistent UI
+- Popovers are positioned with awareness of the bottom of the screen
 
 ## Implementation Details
 
 The component combines several UI components:
-1. Input component for displaying the selected date/time
-2. Popover component for the dropdown interface
+1. Button components for triggering the date and time popovers
+2. Popover components for displaying the selection interfaces
 3. Calendar component for date selection
 4. TimeEntry component for time selection with touch controls
-5. Button component for tab switching and confirmation
 
 The component handles:
 - Maintaining internal state for the selected date/time
-- Formatting the date for display in the input
-- Switching between date and time views
+- Formatting the date and time for display in the buttons
 - Preserving time when changing date and vice versa
 - Proper focus management for accessibility
+- Bottom-aware positioning of popovers
 
 ## Cross-Platform Considerations
 
@@ -82,7 +85,7 @@ This component is designed with cross-platform compatibility in mind:
 
 - Uses standard React patterns that can be adapted to React Native
 - Implements touch interactions that work on both mobile and desktop
-- Uses relative sizing that can be adapted to different screen sizes
+- Uses fixed sizing that can be adapted to different screen sizes
 - Handles time in a platform-agnostic way
 
 When converting to React Native, the Calendar and TimeEntry components would need to be implemented using React Native's components and gesture system, but the overall structure and logic would remain similar.

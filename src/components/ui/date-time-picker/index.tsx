@@ -1,50 +1,43 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './date-time-picker.css';
 import { Calendar } from '@/src/components/ui/calendar';
 import { TimeEntry } from '@/src/components/ui/time-entry';
-import { Input } from '@/src/components/ui/input';
 import { cn } from '@/src/lib/utils';
 import { format, isValid } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogTitle,
-} from '@/src/components/ui/dialog';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/src/components/ui/popover';
 
 // Import types and styles
 import { DateTimePickerProps } from './date-time-picker.types';
 import {
-  dateTimePickerDialogStyles,
-  dateTimePickerContentContainerStyles,
-  dateTimePickerContentStyles,
-  dateTimePickerToggleContainerStyles,
-  dateTimePickerViewContainerStyles,
+  dateTimePickerContainerStyles,
+  dateTimePickerButtonStyles,
+  dateTimePickerPopoverContentStyles,
   dateTimePickerCalendarContainerStyles,
   dateTimePickerTimeContainerStyles,
   dateTimePickerFooterStyles,
   dateTimePickerDoneButtonStyles,
-  dateTimePickerInputContainerStyles,
-  dateTimePickerCalendarIconStyles,
-  getToggleButtonStyles
 } from './date-time-picker.styles';
 
 /**
  * DateTimePicker Component
  * 
  * A component that combines the Calendar for date selection and TimeEntry for time selection,
- * triggered from an Input component.
+ * using two separate buttons with popovers.
  * 
  * Features:
- * - Input field with formatted date/time display
- * - Dialog with tabbed interface for date and time selection
- * - Calendar component for date selection
- * - TimeEntry component for time selection with touch controls
- * - Mobile responsive design with horizontal scrolling
+ * - Two buttons for date and time selection
+ * - Calendar component for date selection in a popover
+ * - TimeEntry component for time selection in a popover with a done button
+ * - Fixed dimensions for both popovers (360px height, 350px width)
+ * - Bottom-aware positioning with margin
  */
 export function DateTimePicker({
   value,
@@ -62,8 +55,10 @@ export function DateTimePicker({
     // Fallback to current date
     return new Date();
   });
-  const [open, setOpen] = useState(false);
-  const [view, setView] = useState<'date' | 'time'>('date');
+  
+  // State for popovers
+  const [dateOpen, setDateOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
   
   // Update the date when the value prop changes
   useEffect(() => {
@@ -86,8 +81,8 @@ export function DateTimePicker({
     setDate(updatedDate);
     onChange(updatedDate);
     
-    // Switch to time view after selecting a date
-    setView('time');
+    // Close the date popover when a date is selected
+    setDateOpen(false);
   };
   
   // Handle time change from TimeEntry
@@ -96,117 +91,105 @@ export function DateTimePicker({
     onChange(newDate);
   };
   
-  // Format the date for display in the input
+  // Format the date for display
   const formatDate = (date: Date | null): string => {
-    if (!date || !isValid(date)) return '';
+    if (!date || !isValid(date)) return 'Select date';
     try {
-      return format(date, 'PPp'); // e.g., "Apr 7, 2025, 1:55 PM"
+      return format(date, 'MMM d, yyyy'); // e.g., "Apr 7, 2025"
     } catch (error) {
       console.error('Error formatting date:', error);
-      return '';
+      return 'Select date';
     }
   };
   
-  // Toggle between date and time views
-  const toggleView = () => {
-    setView(view === 'date' ? 'time' : 'date');
+  // Format the time for display
+  const formatTime = (date: Date | null): string => {
+    if (!date || !isValid(date)) return 'Select time';
+    try {
+      return format(date, 'h:mm a'); // e.g., "1:55 PM"
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Select time';
+    }
   };
   
-
+  // Handle done button click for time selection
+  const handleTimeDone = () => {
+    setTimeOpen(false);
+  };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div className={dateTimePickerInputContainerStyles}>
-          <Input
-            value={date ? formatDate(date) : ''}
-            placeholder={placeholder}
-            className={cn("pr-10", className)}
+    <div className={cn(dateTimePickerContainerStyles, "date-time-picker-container", className)}>
+      {/* Date Button with Popover */}
+      <Popover open={dateOpen} onOpenChange={setDateOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(dateTimePickerButtonStyles, "date-time-picker-button")}
             disabled={disabled}
-            readOnly
-            onClick={() => setOpen(true)}
-          />
-          <CalendarIcon className={cn(dateTimePickerCalendarIconStyles, "date-time-picker-calendar-icon")} />
-        </div>
-      </DialogTrigger>
-      <DialogContent 
-        className={cn(dateTimePickerDialogStyles, "date-time-picker-dialog")}
-        hideClose={true}>
-        {/* Hidden title for accessibility */}
-        <DialogTitle className="sr-only">Date and Time Picker</DialogTitle>
-        <div className={dateTimePickerContentContainerStyles}>
-          <div className={dateTimePickerContentStyles}>
-            {/* View toggle */}
-            <div className={cn(dateTimePickerToggleContainerStyles, "date-time-picker-toggle-container")}>
-              <Button
-                variant="ghost"
-                className={cn(
-                  getToggleButtonStyles(view === 'date'),
-                  view === 'date' ? "date-time-picker-toggle-button-active" : "date-time-picker-toggle-button-inactive"
-                )}
-                onClick={() => setView('date')}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {isValid(date) ? format(date, 'MMM d, yyyy') : 'Date'}
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  getToggleButtonStyles(view === 'time'),
-                  view === 'time' ? "date-time-picker-toggle-button-active" : "date-time-picker-toggle-button-inactive"
-                )}
-                onClick={() => setView('time')}
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                {isValid(date) ? format(date, 'h:mm a') : 'Time'}
-              </Button>
-            </div>
-            
-            {/* Date view */}
-            {view === 'date' && (
-              <div className={dateTimePickerViewContainerStyles}>
-                <div className={dateTimePickerCalendarContainerStyles}>
-                  <Calendar
-                    selected={date}
-                    onSelect={handleDateSelect}
-                    isDateDisabled={disabled ? () => true : undefined}
-                    initialFocus
-                    variant="date-time-picker"
-                    className="mx-auto"
-                  />
-                </div>
-              </div>
-            )}
-            
-            {/* Time view */}
-            {view === 'time' && (
-              <div className={dateTimePickerViewContainerStyles}>
-                <div className={dateTimePickerTimeContainerStyles}>
-                  <TimeEntry
-                    value={date}
-                    onChange={handleTimeChange}
-                    disabled={disabled}
-                    className="mx-auto w-full"
-                  />
-                </div>
-              </div>
-            )}
-            
-            {/* Footer with done button */}
-            <div className={cn(dateTimePickerFooterStyles, "date-time-picker-footer")}>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setOpen(false)}
-                className={cn(dateTimePickerDoneButtonStyles, "date-time-picker-done-button")}
-              >
-                Done
-              </Button>
-            </div>
+          >
+            <CalendarIcon className="h-4 w-4 date-time-picker-calendar-icon" />
+            <span>{formatDate(date)}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className={cn(dateTimePickerPopoverContentStyles, "date-time-picker-popover")}
+          align="start"
+          sideOffset={4}
+        >
+          <div className={dateTimePickerCalendarContainerStyles}>
+            <Calendar
+              selected={date}
+              onSelect={handleDateSelect}
+              isDateDisabled={disabled ? () => true : undefined}
+              initialFocus
+              variant="date-time-picker"
+              className="mx-auto"
+            />
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </PopoverContent>
+      </Popover>
+      
+      {/* Time Button with Popover */}
+      <Popover open={timeOpen} onOpenChange={setTimeOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(dateTimePickerButtonStyles, "date-time-picker-button")}
+            disabled={disabled}
+          >
+            <Clock className="h-4 w-4 date-time-picker-clock-icon" />
+            <span>{formatTime(date)}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className={cn(dateTimePickerPopoverContentStyles, "date-time-picker-popover")}
+          align="start"
+          sideOffset={4}
+        >
+          <div className={dateTimePickerTimeContainerStyles}>
+            <TimeEntry
+              value={date}
+              onChange={handleTimeChange}
+              disabled={disabled}
+              className="mx-auto w-full"
+            />
+          </div>
+          
+          {/* Footer with done button */}
+          <div className={cn(dateTimePickerFooterStyles, "date-time-picker-footer")}>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleTimeDone}
+              className={cn(dateTimePickerDoneButtonStyles, "date-time-picker-done-button")}
+            >
+              Done
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 

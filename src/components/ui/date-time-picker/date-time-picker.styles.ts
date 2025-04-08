@@ -7,64 +7,31 @@ import { cn } from "@/src/lib/utils";
  * and its various sub-components.
  */
 
-// Dialog styles
-export const dateTimePickerDialogStyles = cn(
-  "w-auto p-0 z-[100] border-gray-200 shadow-lg",
-  "max-h-[90vh] overflow-y-auto",
-  "rounded-none", // Ensure no rounded corners
-  "w-[350px]" // Fixed width for all devices
+// Container styles
+export const dateTimePickerContainerStyles = cn(
+  "flex gap-2"
 );
 
-// Content container styles - removed scrolling to fix the horizontal scroll issue
-export const dateTimePickerContentContainerStyles = cn(
-  "date-time-picker-scroll-container",
-  "overflow-hidden" // Prevent any scrolling
+// Button styles
+export const dateTimePickerButtonStyles = cn(
+  "flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md shadow-sm",
+  "hover:bg-gray-50 transition-colors duration-200"
 );
 
-// Content styles
-export const dateTimePickerContentStyles = cn(
-  "flex flex-col",
-  "w-[350px]", // Fixed width to maintain calendar size
-  "min-h-[375px]", // Taller container to fit both views
-  "text-rendering-optimizeLegibility antialiased", // Fix text rendering
-  "transition-all duration-300" // Smooth transition when switching views
-);
-
-// Toggle container styles
-export const dateTimePickerToggleContainerStyles = cn(
-  "flex border-b border-gray-200"
-);
-
-// Toggle button base styles
-export const dateTimePickerToggleButtonBaseStyles = cn(
-  "flex-1 rounded-none transition-all duration-300"
-);
-
-// Toggle button active styles
-export const dateTimePickerToggleButtonActiveStyles = cn(
-  dateTimePickerToggleButtonBaseStyles,
-  "bg-gradient-to-r from-teal-700 to-emerald-600 text-white"
-);
-
-// Toggle button inactive styles
-export const dateTimePickerToggleButtonInactiveStyles = cn(
-  dateTimePickerToggleButtonBaseStyles,
-  "hover:bg-gray-100"
-);
-
-// View container styles
-export const dateTimePickerViewContainerStyles = cn(
-  "h-[328px]" // Fixed height without padding
+// Popover content styles
+export const dateTimePickerPopoverContentStyles = cn(
+  "w-[350px] p-0 z-[100] border-gray-200 shadow-lg",
+  "rounded-md overflow-hidden"
 );
 
 // Calendar container styles
 export const dateTimePickerCalendarContainerStyles = cn(
-  "h-full" // Stretch the component vertically to fill the entire space
+  "h-[360px] w-[350px]" // Fixed dimensions as required
 );
 
 // Time entry container styles
 export const dateTimePickerTimeContainerStyles = cn(
-  "h-[328px]" // Make the container take full width
+  "h-[360px] w-[350px]" // Fixed dimensions as required
 );
 
 // Footer styles
@@ -79,24 +46,12 @@ export const dateTimePickerDoneButtonStyles = cn(
   "hover:bg-gradient-to-r hover:from-teal-800 hover:to-emerald-700"
 );
 
-// Input container styles
+// Input container styles (keeping this for backward compatibility)
 export const dateTimePickerInputContainerStyles = cn(
   "relative cursor-pointer"
 );
 
-// Calendar icon styles
+// Calendar icon styles (keeping this for backward compatibility)
 export const dateTimePickerCalendarIconStyles = cn(
   "absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none"
 );
-
-/**
- * Helper function to get toggle button styles based on active state
- * 
- * @param isActive Whether the toggle button is active
- * @returns The appropriate class names for the toggle button
- */
-export function getToggleButtonStyles(isActive: boolean): string {
-  return isActive 
-    ? dateTimePickerToggleButtonActiveStyles
-    : dateTimePickerToggleButtonInactiveStyles;
-}
