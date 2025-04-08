@@ -7,6 +7,8 @@ import DiaperForm from '@/src/components/forms/DiaperForm';
 import NoteForm from '@/src/components/forms/NoteForm';
 import BathForm from '@/src/components/forms/BathForm';
 import PumpForm from '@/src/components/forms/PumpForm';
+import MilestoneForm from '@/src/components/forms/MilestoneForm';
+import MeasurementForm from '@/src/components/forms/MeasurementForm';
 import DailyStats from '@/src/components/DailyStats';
 import { ActivityType, FilterType, TimelineProps } from './types';
 import TimelineFilter from './TimelineFilter';
@@ -209,7 +211,8 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
   };
 
   const handleEdit = (activity: ActivityType, type: 'sleep' | 'feed' | 'diaper' | 'note' | 'bath' | 'pump' | 'milestone' | 'measurement') => {
-    setEditModalType(type as any); // Using 'as any' temporarily until we add milestone and measurement forms
+    setSelectedActivity(activity);
+    setEditModalType(type);
   };
 
   return (
@@ -345,6 +348,36 @@ const Timeline = ({ activities, onActivityDeleted }: TimelineProps) => {
                 (selectedActivity as unknown as PumpLogResponse) : 
                 undefined
             }
+            onSuccess={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+          />
+          <MilestoneForm
+            isOpen={editModalType === 'milestone'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'date' in selectedActivity && selectedActivity.date ? String(selectedActivity.date) : getActivityTime(selectedActivity)}
+            activity={'title' in selectedActivity && 'category' in selectedActivity ? selectedActivity : undefined}
+            onSuccess={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+              onActivityDeleted?.();
+            }}
+          />
+          <MeasurementForm
+            isOpen={editModalType === 'measurement'}
+            onClose={() => {
+              setEditModalType(null);
+              setSelectedActivity(null);
+            }}
+            babyId={selectedActivity.babyId}
+            initialTime={'date' in selectedActivity && selectedActivity.date ? String(selectedActivity.date) : getActivityTime(selectedActivity)}
+            activity={'value' in selectedActivity && 'unit' in selectedActivity ? selectedActivity : undefined}
             onSuccess={() => {
               setEditModalType(null);
               setSelectedActivity(null);
