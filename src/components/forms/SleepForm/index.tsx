@@ -361,30 +361,30 @@ export default function SleepForm({
       <form onSubmit={handleSubmit}>
         <FormPageContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
+            <div>
+              <Label>Start Time</Label>
+              <DateTimePicker
+                value={startDateTime}
+                onChange={handleStartDateTimeChange}
+                className="w-full"
+                disabled={(isSleeping && !isEditMode) || loading} // Only disabled when ending sleep and not editing
+                placeholder="Select start time..."
+              />
+            </div>
+            {(isSleeping || isEditMode) && (
               <div>
-                <Label>Start Time</Label>
+                <Label>End Time</Label>
                 <DateTimePicker
-                  value={startDateTime}
-                  onChange={handleStartDateTimeChange}
+                  value={endDateTime ?? new Date()}
+                  onChange={handleEndDateTimeChange}
                   className="w-full"
-                  disabled={(isSleeping && !isEditMode) || loading} // Only disabled when ending sleep and not editing
-                  placeholder="Select start time..."
+                  disabled={loading}
+                  placeholder="Select end time..."
                 />
               </div>
-              {(isSleeping || isEditMode) && (
-                <div>
-                  <Label>End Time</Label>
-                  <DateTimePicker
-                    value={endDateTime ?? new Date()}
-                    onChange={handleEndDateTimeChange}
-                    className="w-full"
-                    disabled={loading}
-                    placeholder="Select end time..."
-                  />
-                </div>
-              )}
-            </div>
+            )}
+          </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="form-label">Type</label>

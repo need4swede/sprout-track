@@ -24,6 +24,13 @@ html.dark .select-item:hover {
   color: #5eead4 !important; /* teal-300 */
 }
 
+/* Make focus state match hover state in dark mode */
+html.dark .select-item:focus {
+  background-color: #374151 !important; /* gray-700 - same as hover */
+  color: #5eead4 !important; /* teal-300 - same as hover */
+  outline: none !important;
+}
+
 html.dark .select-label {
   color: #9ca3af !important; /* gray-400 */
 }

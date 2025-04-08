@@ -6,7 +6,7 @@ export const selectStyles = {
   viewport: "p-2",
   viewportPopper: "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
   label: "px-2 py-1.5 text-sm font-semibold",
-  item: "relative flex w-full cursor-default select-none items-center rounded-lg py-2.5 pl-3 pr-8 text-sm outline-none transition-colors hover:bg-indigo-50 focus:bg-indigo-100 focus:text-indigo-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+  item: "relative flex w-full cursor-default select-none items-center rounded-lg py-2.5 pl-3 pr-8 text-sm outline-none transition-colors hover:bg-indigo-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   itemIndicatorWrapper: "absolute right-2 flex h-3.5 w-3.5 items-center justify-center",
   checkIcon: "h-4 w-4 text-indigo-600",
   chevronIcon: "h-4 w-4 text-indigo-600 opacity-70",
