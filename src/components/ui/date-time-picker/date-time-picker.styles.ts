@@ -54,7 +54,7 @@ export const dateTimePickerToggleButtonInactiveStyles = cn(
 
 // View container styles
 export const dateTimePickerViewContainerStyles = cn(
-  "h-[360px] bg-white" // Fixed height without padding
+  "h-[328px]" // Fixed height without padding
 );
 
 // Calendar container styles
@@ -64,7 +64,7 @@ export const dateTimePickerCalendarContainerStyles = cn(
 
 // Time entry container styles
 export const dateTimePickerTimeContainerStyles = cn(
-  "w-full" // Make the container take full width
+  "h-[328px]" // Make the container take full width
 );
 
 // Footer styles
