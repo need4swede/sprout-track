@@ -1,66 +1,50 @@
 /* Dark mode overrides for DateTimePicker component */
 html.dark .date-time-picker-container {
-  color: #e5e7eb !important; /* gray-200 */
-  background-color: transparent !important; /* transparent background */
+  color: #e5e7eb ; /* gray-200 */
+  background-color: transparent ; /* transparent background */
 }
 
 html.dark .date-time-picker-button {
-  color: #e5e7eb !important; /* gray-200 */
-  background-color: #1f2937 !important; /* gray-800 */
-  border-color: #374151 !important; /* gray-700 */
+  color: #e5e7eb ; /* gray-200 */
+  background-color: #1f2937 ; /* gray-800 */
+  border-color: #374151 ; /* gray-700 */
 }
 
 html.dark .date-time-picker-button:hover {
-  background-color: #374151 !important; /* gray-700 */
+  background-color: #374151 ; /* gray-700 */
 }
 
 html.dark .date-time-picker-popover {
-  background-color: #1f2937 !important; /* gray-800 */
-  border-color: #374151 !important; /* gray-700 */
+  background-color: #1f2937 ; /* gray-800 */
+  border-color: #374151 ; /* gray-700 */
 }
 
 html.dark .date-time-picker-footer {
-  border-color: #374151 !important; /* gray-700 */
+  border-color: #374151 ; /* gray-700 */
 }
 
 html.dark .date-time-picker-done-button {
-  background-image: linear-gradient(to right, #0d9488, #065f46) !important; /* teal-700 to emerald-800 */
+  background-image: linear-gradient(to right, #0d9488, #065f46) ; /* teal-700 to emerald-800 */
 }
 
 html.dark .date-time-picker-calendar-icon,
 html.dark .date-time-picker-clock-icon {
-  color: #9ca3af !important; /* gray-400 */
+  color: #9ca3af ; /* gray-400 */
 }
 
 /* Fix text rendering in dark mode */
 html.dark .date-time-picker-popover *,
 html.dark .date-time-picker-popover button,
 html.dark .date-time-picker-popover div {
-  text-rendering: optimizeLegibility !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  transform: none !important; /* Prevent transforms that might cause blurry text */
-  backface-visibility: hidden !important; /* Help with text rendering */
-  perspective: 1000px !important; /* Help with text rendering */
+  text-rendering: optimizeLegibility ;
+  -webkit-font-smoothing: antialiased ;
+  -moz-osx-font-smoothing: grayscale ;
+  transform: none ; /* Prevent transforms that might cause blurry text */
+  backface-visibility: hidden ; /* Help with text rendering */
+  perspective: 1000px ; /* Help with text rendering */
 }
 
 /* Ensure calendar maintains its original size in dark mode */
 html.dark .date-time-picker-popover .react-calendar {
-  background-color: #1f2937 !important; /* gray-800 */
-  width: 350px !important;
-  min-width: 350px !important;
-}
-
-/* Bottom margin for popovers */
-.date-time-picker-popover {
-  margin-bottom: 12px !important; /* 3 units of spacing */
-}
-
-/* Fix for mobile view in dark mode */
-@media (max-width: 640px) {
-  html.dark .date-time-picker-popover {
-    width: 350px !important; /* Fixed width */
-    max-width: calc(100vw - 16px) !important; /* Full width minus margins */
-    margin: 0 8px 12px 8px !important; /* Add margins on mobile */
-  }
+  background-color: #1f2937 ;
 }

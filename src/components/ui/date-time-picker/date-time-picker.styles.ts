@@ -20,18 +20,18 @@ export const dateTimePickerButtonStyles = cn(
 
 // Popover content styles
 export const dateTimePickerPopoverContentStyles = cn(
-  "w-[350px] p-0 z-[100] border-gray-200 shadow-lg",
+  "p-0 z-[100] border-gray-200 shadow-lg",
   "rounded-md overflow-hidden"
 );
 
 // Calendar container styles
 export const dateTimePickerCalendarContainerStyles = cn(
-  "h-[360px] w-[350px]" // Fixed dimensions as required
+  // "h-[360px] w-[350px]" // Fixed dimensions as required
 );
 
 // Time entry container styles
 export const dateTimePickerTimeContainerStyles = cn(
-  "h-[360px] w-[350px]" // Fixed dimensions as required
+ // "h-[360px] w-[350px]" // Fixed dimensions as required
 );
 
 // Footer styles

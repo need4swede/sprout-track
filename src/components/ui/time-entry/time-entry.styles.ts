@@ -12,8 +12,8 @@ export const timeEntryStyles = {
   container: "relative z-0 flex flex-col overflow-hidden bg-white rounded-md",
   
   // Header
-  header: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 flex justify-center items-center",
-  timeDisplay: "text-4xl font-light tracking-wider",
+  header: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-2 flex justify-center items-center",
+  timeDisplay: "text-3xl font-light tracking-wider",
   amPmDisplay: "text-lg ml-2 flex flex-col",
   
   // Clock face
