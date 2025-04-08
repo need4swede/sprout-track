@@ -31,8 +31,8 @@ export const calendarEventFormStyles = {
   checkboxLabel: "ml-2 block text-sm text-gray-700 dark:text-gray-300",
   
   // Date and time pickers
-  dateTimeContainer: "grid grid-cols-1 md:grid-cols-2 gap-4",
-  datePickerContainer: "relative",
+  dateTimeContainer: "md:space-x-4 space-y-4 md:space-y-0", // Changed from grid to flex
+  datePickerContainer: "relative w-full", // Added w-full
   datePicker: "w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-teal-500 dark:focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:focus:ring-teal-400",
   datePickerIcon: "absolute right-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500",
   

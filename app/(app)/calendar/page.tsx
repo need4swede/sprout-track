@@ -35,7 +35,7 @@ function CalendarPage() {
   }, []);
 
   return (
-    <div className="h-full relative isolate flex flex-col overflow-hidden">
+    <div className="h-full relative isolate overflow-hidden">
       {selectedBaby ? (
         <Calendar 
           selectedBabyId={selectedBaby.id} 

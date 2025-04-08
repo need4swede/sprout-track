@@ -11,6 +11,7 @@ import { MapPin, AlertCircle, Bell, Loader2, Trash2 } from 'lucide-react';
 import { FormPage, FormPageContent, FormPageFooter } from '@/src/components/ui/form-page';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
+import { DateTimePicker } from '@/src/components/ui/date-time-picker';
 import { Button } from '@/src/components/ui/button';
 import { Checkbox } from '@/src/components/ui/checkbox';
 import {
@@ -83,20 +84,51 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     return getInitialFormData(event, initialDate, babies);
   });
   
+  // State for DateTimePicker components
+  const [selectedStartDateTime, setSelectedStartDateTime] = useState<Date>(() => {
+    return formData.startTime || new Date();
+  });
+  
+  const [selectedEndDateTime, setSelectedEndDateTime] = useState<Date>(() => {
+    return formData.endTime || new Date(new Date().getTime() + 60 * 60 * 1000); // Default to 1 hour later
+  });
+  
   // Update form data when event or initialDate changes
   useEffect(() => {
     // If event is provided, use it (editing an existing event)
     if (event) {
       setFormData({ ...event });
+      if (event.startTime) {
+        setSelectedStartDateTime(event.startTime);
+      }
+      if (event.endTime) {
+        setSelectedEndDateTime(event.endTime);
+      }
     } 
     // If no event but initialDate is provided, create a completely new event with that date
     else if (initialDate) {
       // Create a completely new form data object for a new event
-      setFormData(getInitialFormData(undefined, initialDate, babies));
+      const newFormData = getInitialFormData(undefined, initialDate, babies);
+      setFormData(newFormData);
+      
+      if (newFormData.startTime) {
+        setSelectedStartDateTime(newFormData.startTime);
+      }
+      if (newFormData.endTime) {
+        setSelectedEndDateTime(newFormData.endTime);
+      }
     }
     // If no event and no initialDate, reset to default form with current date
     else if (!event && !initialDate) {
-      setFormData(getInitialFormData(undefined, new Date(), babies));
+      const newFormData = getInitialFormData(undefined, new Date(), babies);
+      setFormData(newFormData);
+      
+      if (newFormData.startTime) {
+        setSelectedStartDateTime(newFormData.startTime);
+      }
+      if (newFormData.endTime) {
+        setSelectedEndDateTime(newFormData.endTime);
+      }
     }
   }, [event, initialDate, babies]);
   
@@ -134,19 +166,35 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: checked }));
   }; // <-- Added missing closing brace
 
-  // Handle datetime-local input changes
-  const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    // The value from datetime-local is like "YYYY-MM-DDTHH:MM"
-    // Directly create a Date object from this value
-    const newDate = value ? new Date(value) : undefined;
-    
-    setFormData(prev => ({ ...prev, [name]: newDate }));
+  // Handle start date/time change with DateTimePicker
+  const handleStartDateTimeChange = (date: Date) => {
+    setSelectedStartDateTime(date);
+    setFormData(prev => ({ ...prev, startTime: date }));
     
     // Clear error for the field
-    if (errors[name as keyof CalendarEventFormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+    if (errors.startTime) {
+      setErrors(prev => ({ ...prev, startTime: undefined }));
+    }
+    
+    // If end time is before the new start time, update end time
+    if (formData.endTime && formData.endTime < date) {
+      // Set end time to 1 hour after start time
+      const newEndTime = new Date(date);
+      newEndTime.setHours(newEndTime.getHours() + 1);
+      
+      setSelectedEndDateTime(newEndTime);
+      setFormData(prev => ({ ...prev, endTime: newEndTime }));
+    }
+  };
+  
+  // Handle end date/time change with DateTimePicker
+  const handleEndDateTimeChange = (date: Date) => {
+    setSelectedEndDateTime(date);
+    setFormData(prev => ({ ...prev, endTime: date }));
+    
+    // Clear error for the field
+    if (errors.endTime) {
+      setErrors(prev => ({ ...prev, endTime: undefined }));
     }
   };
   
@@ -366,7 +414,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
       description="Schedule and manage calendar events"
       className="calendar-event-form-container"
     >
-      <form onSubmit={handleSubmit} className="h-full flex flex-col">
+      <form onSubmit={handleSubmit} className="h-full flex-col">
         <FormPageContent className="overflow-y-auto">
           <div className="space-y-6 pb-20">
             {/* Event details section */}
@@ -458,9 +506,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 </label>
               </div>
               
-              {/* Date and time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Start Date/Time */}
+              {/* Date and time - each on its own row */}
+              <div className="space-y-4">
+                {/* Start Date/Time - Full width */}
                 <div className={styles.fieldGroup}>
                   <label 
                     htmlFor="startTime" 
@@ -469,15 +517,15 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                     Start Time
                     <span className={styles.fieldRequired}>*</span>
                   </label>
-                  <Input
-                    type="datetime-local"
-                    id="startTime"
-                    name="startTime"
-                    value={formatDateTimeForInput(formData.startTime)}
-                    onChange={handleDateTimeChange}
-                    className="w-full"
-                    disabled={formData.allDay} // Disable if allDay is checked
-                  />
+                  <div className="grid w-full">
+                    <DateTimePicker
+                      className="flex-none"
+                      value={selectedStartDateTime}
+                      onChange={handleStartDateTimeChange}
+                      disabled={formData.allDay} // Disable if allDay is checked
+                      placeholder="Select start time..."
+                    />
+                  </div>
                   {errors.startTime && (
                     <div className={styles.fieldError}>
                       <AlertCircle className="h-3 w-3 inline mr-1" />
@@ -486,7 +534,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                   )}
                 </div>
                 
-                {/* End Date/Time */}
+                {/* End Date/Time - Full width */}
                 <div className={styles.fieldGroup}>
                   <label 
                     htmlFor="endTime" 
@@ -494,16 +542,15 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                   >
                     End Time
                   </label>
-                  <Input
-                    type="datetime-local"
-                    id="endTime"
-                    name="endTime"
-                    value={formatDateTimeForInput(formData.endTime)}
-                    onChange={handleDateTimeChange}
-                    className="w-full"
-                    disabled={formData.allDay} // Disable if allDay is checked
-                    min={formatDateTimeForInput(formData.startTime)} // Ensure end time is after start time
-                  />
+                  <div className="grid w-full">
+                    <DateTimePicker
+                      className="flex-none"
+                      value={selectedEndDateTime}
+                      onChange={handleEndDateTimeChange}
+                      disabled={formData.allDay} // Disable if allDay is checked
+                      placeholder="Select end time..."
+                    />
+                  </div>
                   {errors.endTime && (
                     <div className={styles.fieldError}>
                       <AlertCircle className="h-3 w-3 inline mr-1" />
