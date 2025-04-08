@@ -139,6 +139,7 @@ export const calendarDayNamesVariants = cva(
       variant: {
         default: "text-xs",
         compact: "text-xs",
+        "date-time-picker": "text-xs",
       },
     },
     defaultVariants: {
@@ -157,6 +158,7 @@ export const calendarDayNameVariants = cva(
       variant: {
         default: "py-1",
         compact: "py-0.5",
+        "date-time-picker": "py-1",
       },
     },
     defaultVariants: {
