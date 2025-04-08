@@ -56,6 +56,9 @@ export const getActivityTime = (activity: ActivityType): string => {
     }
     return String(activity.startTime);
   }
+  if ('date' in activity && activity.date) {
+    return String(activity.date);
+  }
   return new Date().toLocaleString();
 };
 
