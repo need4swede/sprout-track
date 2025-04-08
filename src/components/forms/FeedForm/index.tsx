@@ -289,8 +289,14 @@ export default function FeedForm({
     if (!babyId) return;
 
     // Validate required fields
-    if (!formData.type || !selectedDateTime) {
-      console.error('Required fields missing');
+    if (!formData.type) {
+      console.error('Required fields missing: type');
+      return;
+    }
+    
+    // Validate date time
+    if (!selectedDateTime || isNaN(selectedDateTime.getTime())) {
+      console.error('Required fields missing: valid date time');
       return;
     }
 
