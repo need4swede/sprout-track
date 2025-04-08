@@ -5,6 +5,7 @@ import { FeedType, BreastSide } from '@prisma/client';
 import { FeedLogResponse } from '@/app/api/types';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
+import { DateTimePicker } from '@/src/components/ui/date-time-picker';
 import {
   FormPage, 
   FormPageContent, 
@@ -39,6 +40,20 @@ export default function FeedForm({
 }: FeedFormProps) {
   const { formatDate, toUTCString } = useTimezone();
   const { theme } = useTheme();
+  const [selectedDateTime, setSelectedDateTime] = useState<Date>(() => {
+    try {
+      // Try to parse the initialTime
+      const date = new Date(initialTime);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return new Date(); // Fallback to current date if invalid
+      }
+      return date;
+    } catch (error) {
+      console.error('Error parsing initialTime:', error);
+      return new Date(); // Fallback to current date
+    }
+  });
   const [formData, setFormData] = useState({
     time: initialTime,
     type: '' as FeedType | '',
@@ -131,19 +146,20 @@ export default function FeedForm({
     }
   };
 
-  // Format date string to be compatible with datetime-local input
-  const formatDateForInput = (dateStr: string) => {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
+  // Handle date/time change
+  const handleDateTimeChange = (date: Date) => {
+    setSelectedDateTime(date);
     
-    // Format as YYYY-MM-DDThh:mm in local time
+    // Also update the time in formData for compatibility with existing code
+    // Format the date as ISO string for storage in formData
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    const formattedTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    setFormData(prev => ({ ...prev, time: formattedTime }));
   };
 
   useEffect(() => {
@@ -172,8 +188,28 @@ export default function FeedForm({
         feedDuration = activity.amount * 60;
       }
       
+      // Update the selected date time
+      try {
+        const activityDate = new Date(activity.time);
+        // Check if the date is valid
+        if (!isNaN(activityDate.getTime())) {
+          setSelectedDateTime(activityDate);
+        }
+      } catch (error) {
+        console.error('Error parsing activity time:', error);
+      }
+      
+      // Format the date for the time property
+      const date = new Date(activity.time);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const formattedTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+      
       setFormData({
-        time: formatDateForInput(initialTime),
+        time: formattedTime, // Add the time property
         type: activity.type,
         amount: activity.amount?.toString() || '',
         unit: activity.unitAbbr || 
@@ -188,10 +224,7 @@ export default function FeedForm({
       });
       } else {
         // New entry mode - set the time and fetch the last feed type
-        setFormData(prev => ({
-          ...prev,
-          time: formatDateForInput(initialTime)
-        }));
+        // The selectedDateTime is already set in the useState initialization
         
         // Fetch the last feed type to pre-populate the form
         fetchLastFeedType();
@@ -256,7 +289,7 @@ export default function FeedForm({
     if (!babyId) return;
 
     // Validate required fields
-    if (!formData.type || !formData.time) {
+    if (!formData.type || !selectedDateTime) {
       console.error('Required fields missing');
       return;
     }
@@ -296,6 +329,7 @@ export default function FeedForm({
       onSuccess?.();
       
       // Reset form data
+      setSelectedDateTime(new Date(initialTime));
       setFormData({
         time: initialTime,
         type: '' as FeedType | '',
@@ -342,9 +376,8 @@ export default function FeedForm({
                  formData.feedDuration;
       
       if (duration > 0) {
-        const timeDate = new Date(formData.time);
-        endTime = new Date(timeDate);
-        startTime = new Date(timeDate.getTime() - duration * 1000);
+        endTime = new Date(selectedDateTime);
+        startTime = new Date(selectedDateTime.getTime() - duration * 1000);
       }
     }
     
@@ -478,24 +511,21 @@ export default function FeedForm({
       <form onSubmit={handleSubmit} className="h-full flex flex-col">
         <FormPageContent className="overflow-y-auto">
           <div className="space-y-4 pb-20">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="form-label">Time</label>
-                <Input
-                  type="datetime-local"
-                  value={formData.time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, time: e.target.value })
-                  }
-                  className="w-full"
-                  required
-                  tabIndex={-1}
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label className="form-label">Type</label>
-                <div className="flex justify-between items-center gap-3 mt-2">
+            {/* Time Selection - Full width on all screens */}
+            <div>
+              <label className="form-label">Time</label>
+              <DateTimePicker
+                value={selectedDateTime}
+                onChange={handleDateTimeChange}
+                disabled={loading}
+                placeholder="Select feeding time..."
+              />
+            </div>
+            
+            {/* Feed Type Selection - Full width on all screens */}
+            <div>
+              <label className="form-label">Type</label>
+              <div className="flex justify-between items-center gap-3 mt-2">
                   {/* Breast Feed Button */}
                   <button
                     type="button"
@@ -563,7 +593,6 @@ export default function FeedForm({
                   </button>
                 </div>
               </div>
-            </div>
             
             {formData.type === 'BREAST' && (
               <BreastFeedForm
