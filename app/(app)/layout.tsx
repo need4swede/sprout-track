@@ -15,7 +15,7 @@ import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/src/lib/utils';
 import { Baby } from '@prisma/client';
 import BabySelector from '@/src/components/BabySelector';
-import BabyQuickStats from '@/src/components/forms/BabyQuickStats';
+import BabyQuickInfo from '@/src/components/BabyQuickInfo';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -432,8 +432,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
         selectedBabyId={selectedBaby?.id || ''}
       />
       
-      {/* Baby Quick Stats Form */}
-      <BabyQuickStats
+      {/* Baby Quick Info Form */}
+      <BabyQuickInfo
         isOpen={quickStatsOpen}
         onClose={() => setQuickStatsOpen(false)}
         selectedBaby={selectedBaby}

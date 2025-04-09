@@ -1,0 +1,67 @@
+import { cn } from "@/src/lib/utils";
+
+/**
+ * Styles for the BabyQuickInfo component
+ * 
+ * These styles define the visual appearance of the baby quick info form
+ */
+
+export const styles = {
+  // Container styles
+  container: "flex flex-col",
+  
+  // Tab navigation
+  tabContainer: "flex flex-row border-b border-gray-200 mb-4 md:justify-start",
+  tabButton: "py-2 px-3 text-sm font-medium hover:text-teal-600 focus:outline-none transition-colors",
+  
+  // Tab content
+  tabContent: "py-4",
+  
+  // Loading and error states
+  loadingContainer: "flex flex-col items-center justify-center py-12",
+  errorContainer: "flex flex-col items-center justify-center py-8",
+  
+  // Footer
+  footerContainer: "flex justify-center",
+  
+  // Section styling
+  sectionContainer: "mb-6 last:mb-0",
+  sectionTitle: "text-lg font-semibold text-gray-800 mb-3",
+  
+  // Notifications tab
+  notificationsContainer: "space-y-6",
+  
+  // Activity items
+  activityItem: "flex items-start p-2 rounded-lg bg-gray-50 mb-1 last:mb-0",
+  activityIconContainer: "flex-shrink-0 p-1.5 mr-2 rounded-full bg-teal-100 text-teal-600",
+  activityContent: "flex-1",
+  activityTitle: "text-sm font-medium text-gray-800",
+  activityTime: "text-xs text-gray-500 mt-1",
+  relativeTime: "font-bold underline text-teal-600",
+  emptyMessage: "text-sm text-gray-500 italic p-3",
+  
+  // Contacts tab
+  contactsContainer: "space-y-2",
+  contactItem: "flex items-start p-3 rounded-lg bg-gray-50 mb-2 last:mb-0",
+  contactInfo: "flex-1",
+  contactName: "text-sm font-medium text-gray-800",
+  contactRole: "text-xs text-gray-500",
+  contactDetails: "flex flex-wrap gap-2 mt-1",
+  contactDetail: "flex items-center text-xs text-gray-600",
+  contactIcon: "h-3 w-3 mr-1 text-gray-400",
+  
+  // Stats tab
+  statsContainer: "space-y-4",
+  statsGrid: "grid grid-cols-2 gap-4 md:grid-cols-3",
+  statCard: "p-3 rounded-lg bg-gray-50",
+  statTitle: "text-xs text-gray-500 mb-1",
+  statValue: "text-sm font-medium text-gray-800",
+  
+  // Calendar events
+  eventsContainer: "space-y-2 mt-4",
+  eventItem: "p-3 rounded-lg bg-gray-50 border-l-4 border-teal-500",
+  eventTitle: "text-sm font-medium text-gray-800",
+  eventTime: "text-xs text-gray-500 mt-1",
+  eventLocation: "text-xs text-gray-600 mt-1 flex items-center",
+  eventLocationIcon: "h-3 w-3 mr-1 text-gray-400"
+};
