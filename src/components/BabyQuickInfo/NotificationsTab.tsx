@@ -8,6 +8,26 @@ import { styles } from './baby-quick-info.styles';
 import { NotificationsTabProps } from './baby-quick-info.types';
 
 /**
+ * Get color for event type
+ * 
+ * Returns the appropriate color for each event type, matching the Calendar component
+ */
+const getEventTypeColor = (type: string): string => {
+  switch (type) {
+    case 'APPOINTMENT':
+      return '#3b82f6'; // blue-500
+    case 'CARETAKER_SCHEDULE':
+      return '#22c55e'; // green-500
+    case 'REMINDER':
+      return '#eab308'; // yellow-500
+    case 'CUSTOM':
+      return '#a855f7'; // purple-500
+    default:
+      return '#6b7280'; // gray-500
+  }
+};
+
+/**
  * NotificationsTab Component
  * 
  * Displays the last activities and upcoming events for a baby
@@ -180,7 +200,9 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
               <div 
                 key={event.id} 
                 className={cn(styles.eventItem, "baby-quick-info-event-item")}
-                style={{ borderLeftColor: event.color || '#14b8a6' }}
+                style={{ 
+                  borderLeftColor: event.color || getEventTypeColor(event.type)
+                }}
               >
                 <div className={cn(styles.eventTitle, "baby-quick-info-event-title")}>
                   {event.title}
