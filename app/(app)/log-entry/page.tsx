@@ -74,11 +74,12 @@ function HomeContent(): React.ReactElement {
       const data = await response.json();
       if (!data.success) return;
       
-      // Filter for sleep logs only
-      const sleepLogs = data.data
-        .filter((activity: ActivityType): activity is SleepLogResponse => 
-          'duration' in activity && 'startTime' in activity
-        );
+    // Filter for sleep logs only - ensure we only get sleep activities, not pump activities
+    const sleepLogs = data.data
+      .filter((activity: ActivityType): activity is SleepLogResponse => 
+        'duration' in activity && 'startTime' in activity && 
+        'type' in activity && (activity.type === 'NAP' || activity.type === 'NIGHT_SLEEP')
+      );
       
       // Find ongoing sleep
       const ongoingSleep = sleepLogs.find((log: SleepLogResponse) => !log.endTime);
@@ -160,6 +161,24 @@ function HomeContent(): React.ReactElement {
           setLastDiaperTime(prev => ({
             ...prev,
             [babyId]: new Date(lastDiaper.time)
+          }));
+        }
+        
+        // Update last sleep end time - only consider sleep activities
+        const completedSleeps = timelineData.data
+          .filter((activity: ActivityType): activity is SleepLogResponse & { endTime: string } => 
+            'duration' in activity && 'startTime' in activity && 
+            'type' in activity && (activity.type === 'NAP' || activity.type === 'NIGHT_SLEEP') &&
+            activity.endTime !== null && typeof activity.endTime === 'string'
+          )
+          .sort((a: SleepLogResponse & { endTime: string }, b: SleepLogResponse & { endTime: string }) => 
+            new Date(b.endTime).getTime() - new Date(a.endTime).getTime()
+          );
+        
+        if (completedSleeps.length > 0) {
+          setLastSleepEndTime(prev => ({
+            ...prev,
+            [babyId]: new Date(completedSleeps[0].endTime)
           }));
         }
       }

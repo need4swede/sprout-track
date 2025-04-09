@@ -22,7 +22,8 @@ export function StatusBubble({
   durationInMinutes, 
   warningTime, 
   className,
-  startTime // Add startTime prop
+  startTime, // Add startTime prop
+  activityType // Add activityType prop
 }: StatusBubbleProps & { startTime?: string }) {
   const { userTimezone, calculateDurationMinutes, formatDuration } = useTimezone();
   const [calculatedDuration, setCalculatedDuration] = useState(durationInMinutes);
@@ -35,9 +36,18 @@ export function StatusBubble({
           // Use the calculateDurationMinutes function from the timezone context
           // This properly handles DST changes
           const now = new Date();
-          const diffMinutes = calculateDurationMinutes(startTime, now.toISOString());
           
-          setCalculatedDuration(diffMinutes);
+          // Only calculate duration if this is the correct activity type
+          // This ensures that "awake" status only considers sleep activities
+          // and isn't affected by other activities like pumping
+          if (!activityType || 
+              (status === 'sleeping' && activityType === 'sleep') || 
+              (status === 'awake' && activityType === 'sleep') ||
+              (status === 'feed' && activityType === 'feed') ||
+              (status === 'diaper' && activityType === 'diaper')) {
+            const diffMinutes = calculateDurationMinutes(startTime, now.toISOString());
+            setCalculatedDuration(diffMinutes);
+          }
         } catch (error) {
           console.error('Error calculating duration:', error);
           // Fallback to the provided duration if calculation fails
@@ -52,7 +62,7 @@ export function StatusBubble({
       const interval = setInterval(updateDuration, 60000);
       return () => clearInterval(interval);
     }
-  }, [startTime, userTimezone, durationInMinutes, calculateDurationMinutes]);
+  }, [startTime, userTimezone, durationInMinutes, calculateDurationMinutes, status, activityType]);
   
   // Use calculated duration if available, otherwise use prop
   const displayDuration = startTime ? calculatedDuration : durationInMinutes;

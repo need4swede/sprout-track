@@ -13,18 +13,31 @@ type ActivityTypeWithCaretaker = (SleepLogResponse | FeedLogResponse | DiaperLog
 type ActivityType = ActivityTypeWithCaretaker;
 
 const getActivityTime = (activity: any): number => {
+  // For activities with a simple time field (feed, diaper, note, bath)
   if ('time' in activity && activity.time) {
     return new Date(activity.time).getTime();
   }
+  
+  // For activities with startTime/endTime (sleep, pump)
   if ('startTime' in activity && activity.startTime) {
-    if ('duration' in activity && activity.endTime) {
+    // For sleep activities, use endTime if available
+    if ('type' in activity && ['NAP', 'NIGHT'].includes(activity.type) && activity.endTime) {
       return new Date(activity.endTime).getTime();
     }
+    // For pump activities, always use startTime for sorting
+    if ('leftAmount' in activity || 'rightAmount' in activity || 'totalAmount' in activity) {
+      return new Date(activity.startTime).getTime();
+    }
+    // Default to startTime for any other activities with startTime
     return new Date(activity.startTime).getTime();
   }
+  
+  // For activities with a date field (milestone, measurement)
   if ('date' in activity && activity.date) {
     return new Date(activity.date).getTime();
   }
+  
+  // Fallback
   return new Date().getTime();
 };
 

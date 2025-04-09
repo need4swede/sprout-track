@@ -402,6 +402,7 @@ export function ActivityTileGroup({
                     className="overflow-visible z-40"
                     durationInMinutes={0} // Fallback value
                     startTime={lastSleepEndTime[selectedBaby.id].toISOString()}
+                    activityType="sleep" // Explicitly specify this is for sleep activities only
                   />
                 )
               )
@@ -441,6 +442,7 @@ export function ActivityTileGroup({
                 durationInMinutes={0} // Fallback value
                 startTime={lastFeedTime[selectedBaby.id].toISOString()}
                 warningTime={selectedBaby.feedWarningTime as string}
+                activityType="feed" // Explicitly specify this is for feed activities only
               />
             )}
           </div>
@@ -476,6 +478,7 @@ export function ActivityTileGroup({
                 durationInMinutes={0} // Fallback value
                 startTime={lastDiaperTime[selectedBaby.id].toISOString()}
                 warningTime={selectedBaby.diaperWarningTime as string}
+                activityType="diaper" // Explicitly specify this is for diaper activities only
               />
             )}
           </div>
