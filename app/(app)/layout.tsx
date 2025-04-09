@@ -345,7 +345,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
               <div className="mx-auto py-2">
                 <div className="flex justify-between items-center h-16"> {/* Fixed height for consistency */}
                   <div className={`flex items-center ${isWideScreen ? 'ml-8' : 'ml-4 sm:ml-6 lg:ml-8'}`}>
-                    {/* Only show Acorn button on small screens */}
+                    {/* Only show Sprout button on small screens */}
                     {!isWideScreen ? (
                       <SideNavTrigger
                         onClick={() => setSideNavOpen(true)}
@@ -353,8 +353,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
                         className="w-16 h-16 flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110 mr-4"
                       >
                         <Image
-                          src="/acorn-128.png"
-                          alt="Acorn Logo"
+                          src="/sprout-128.png"
+                          alt="Sprout Logo"
                           width={64}
                           height={64}
                           className="object-contain"

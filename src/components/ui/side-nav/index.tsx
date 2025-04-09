@@ -179,14 +179,14 @@ export const SideNav: React.FC<SideNavProps> = ({
             <div className={cn("flex justify-between items-center h-20", sideNavStyles.header)}>
               <div className={sideNavStyles.logoContainer}>
                 <Image
-                  src="/acorn-128.png"
-                  alt="Acorn Logo"
+                  src="/sprout-128.png"
+                  alt="Sprout Logo"
                   width={40}
                   height={40}
                   className={sideNavStyles.logo}
                   priority
                 />
-                <span className={cn(sideNavStyles.appName, "side-nav-app-name")}>Baby Tracker</span>
+                <span className={cn(sideNavStyles.appName, "side-nav-app-name")}>Sprout Track</span>
               </div>
               {/* Only show close button in modal mode */}
               {!nonModal && (

@@ -262,8 +262,8 @@ export default function LoginSecurity({ onUnlock }: LoginSecurityProps) {
         <div className="flex flex-col items-center space-y-4 pb-6 pl-6 pr-6">
           <div className="w-24 h-24 p-1 flex items-center justify-center">
             <Image
-              src="/acorn-128.png"
-              alt="Acorn Logo"
+              src="/sprout-128.png"
+              alt="Sprout Logo"
               width={128}
               height={128}
               className="object-contain"
