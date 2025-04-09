@@ -119,7 +119,8 @@ const BabyQuickInfo: React.FC<BabyQuickInfoProps> = ({
             className={cn(
               styles.tabButton, 
               "baby-quick-info-tab-button",
-              activeTab === 'notifications' && "border-b-2 border-teal-500 text-teal-600"
+              activeTab === 'notifications' && styles.tabButtonActive,
+              activeTab === 'notifications' && "baby-quick-info-tab-button-active"
             )}
           >
             Notifications
@@ -130,7 +131,8 @@ const BabyQuickInfo: React.FC<BabyQuickInfoProps> = ({
             className={cn(
               styles.tabButton, 
               "baby-quick-info-tab-button",
-              activeTab === 'contacts' && "border-b-2 border-teal-500 text-teal-600"
+              activeTab === 'contacts' && styles.tabButtonActive,
+              activeTab === 'contacts' && "baby-quick-info-tab-button-active"
             )}
           >
             Contacts
@@ -141,7 +143,8 @@ const BabyQuickInfo: React.FC<BabyQuickInfoProps> = ({
             className={cn(
               styles.tabButton, 
               "baby-quick-info-tab-button",
-              activeTab === 'stats' && "border-b-2 border-teal-500 text-teal-600"
+              activeTab === 'stats' && styles.tabButtonActive,
+              activeTab === 'stats' && "baby-quick-info-tab-button-active"
             )}
           >
             Quick Stats

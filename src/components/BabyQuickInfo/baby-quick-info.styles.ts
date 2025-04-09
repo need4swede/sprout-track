@@ -11,8 +11,9 @@ export const styles = {
   container: "flex flex-col",
   
   // Tab navigation
-  tabContainer: "flex flex-row border-b border-gray-200 mb-4 md:justify-start",
-  tabButton: "py-2 px-3 text-sm font-medium hover:text-teal-600 focus:outline-none transition-colors",
+  tabContainer: "flex flex-row border-b border-gray-200 mb-4 md:justify-start overflow-x-auto",
+  tabButton: "py-2 px-4 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200 focus:outline-none",
+  tabButtonActive: "bg-teal-50 text-teal-700 font-medium border-b-2 border-teal-500",
   
   // Tab content
   tabContent: "py-4",
@@ -32,7 +33,7 @@ export const styles = {
   notificationsContainer: "space-y-6",
   
   // Activity items
-  activityItem: "flex items-start p-2 rounded-lg bg-gray-50 mb-1 last:mb-0",
+  activityItem: "flex items-start p-2 rounded-lg bg-gray-50 border border-gray-100 shadow-sm mb-1 last:mb-0",
   activityIconContainer: "flex-shrink-0 p-1.5 mr-2 rounded-full bg-teal-100 text-teal-600",
   activityContent: "flex-1",
   activityTitle: "text-sm font-medium text-gray-800",
@@ -42,7 +43,7 @@ export const styles = {
   
   // Contacts tab
   contactsContainer: "space-y-2",
-  contactItem: "flex items-start p-3 rounded-lg bg-gray-50 mb-2 last:mb-0",
+  contactItem: "flex items-start p-3 rounded-lg bg-gray-50 border border-gray-100 shadow-sm mb-2 last:mb-0",
   contactInfo: "flex-1",
   contactName: "text-sm font-medium text-gray-800",
   contactRole: "text-xs text-gray-500",
@@ -53,13 +54,13 @@ export const styles = {
   // Stats tab
   statsContainer: "space-y-4",
   statsGrid: "grid grid-cols-2 gap-4 md:grid-cols-3",
-  statCard: "p-3 rounded-lg bg-gray-50",
+  statCard: "p-3 rounded-lg bg-gray-50 border border-gray-100 shadow-sm",
   statTitle: "text-xs text-gray-500 mb-1",
   statValue: "text-sm font-medium text-gray-800",
   
   // Calendar events
   eventsContainer: "space-y-2 mt-4",
-  eventItem: "p-3 rounded-lg bg-gray-50 border-l-4 border-teal-500",
+  eventItem: "p-3 rounded-lg bg-gray-50 border border-gray-100 shadow-sm border-l-4 border-l-teal-500",
   eventTitle: "text-sm font-medium text-gray-800",
   eventTime: "text-xs text-gray-500 mt-1",
   eventLocation: "text-xs text-gray-600 mt-1 flex items-center",
