@@ -5,7 +5,7 @@ export interface DateTimePickerProps {
   /**
    * The currently selected date and time
    */
-  value: Date;
+  value: Date | null;
   
   /**
    * Callback function when date/time changes

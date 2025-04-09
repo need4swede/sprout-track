@@ -46,13 +46,17 @@ export function DateTimePicker({
   disabled = false,
   placeholder = "Select date and time...",
 }: DateTimePickerProps) {
-  // Ensure we have a valid date
-  const [date, setDate] = useState<Date>(() => {
+  // Allow for null date value
+  const [date, setDate] = useState<Date | null>(() => {
     // Check if value is a valid Date
     if (value instanceof Date && isValid(value)) {
       return value;
     }
-    // Fallback to current date
+    // Return null if value is null
+    if (value === null) {
+      return null;
+    }
+    // Fallback to current date for invalid dates
     return new Date();
   });
   
@@ -62,7 +66,9 @@ export function DateTimePicker({
   
   // Update the date when the value prop changes
   useEffect(() => {
-    if (value instanceof Date && isValid(value)) {
+    if (value === null) {
+      setDate(null);
+    } else if (value instanceof Date && isValid(value)) {
       setDate(value);
     }
   }, [value]);
@@ -71,10 +77,17 @@ export function DateTimePicker({
   const handleDateSelect = (newDate: Date | undefined) => {
     if (!newDate) return;
     
-    // Create a new date with the selected date but keep the time from the current value
+    // Create a new date with the selected date but keep the time from the current value if it exists
     const updatedDate = new Date(newDate);
-    updatedDate.setHours(date.getHours());
-    updatedDate.setMinutes(date.getMinutes());
+    
+    if (date) {
+      updatedDate.setHours(date.getHours());
+      updatedDate.setMinutes(date.getMinutes());
+    } else {
+      // Default to midnight if no previous time
+      updatedDate.setHours(0);
+      updatedDate.setMinutes(0);
+    }
     updatedDate.setSeconds(0);
     updatedDate.setMilliseconds(0);
     

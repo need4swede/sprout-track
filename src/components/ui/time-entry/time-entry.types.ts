@@ -9,7 +9,7 @@ export interface TimeEntryProps {
   /**
    * The currently selected time
    */
-  value: Date;
+  value: Date | null;
   
   /**
    * Callback function when time changes

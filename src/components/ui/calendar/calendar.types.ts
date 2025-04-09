@@ -10,7 +10,7 @@ export interface CalendarProps extends VariantProps<typeof calendarVariants> {
   /**
    * The selected date
    */
-  selected?: Date | undefined
+  selected?: Date | null | undefined
   
   /**
    * Callback function when a date is selected

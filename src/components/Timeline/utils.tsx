@@ -422,7 +422,8 @@ export const getActivityDetails = (activity: ActivityType, settings: Settings | 
       switch (type) {
         case 'HEIGHT': return 'Height';
         case 'WEIGHT': return 'Weight';
-        case 'HEAD': return 'Head Circumference';
+        case 'HEAD_CIRCUMFERENCE': return 'Head Circumference';
+        case 'TEMPERATURE': return 'Temperature';
         case 'OTHER': return 'Other';
         default: return type;
       }
@@ -677,7 +678,8 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
       switch (type) {
         case 'HEIGHT': return 'Height';
         case 'WEIGHT': return 'Weight';
-        case 'HEAD': return 'Head';
+        case 'HEAD_CIRCUMFERENCE': return 'Head Circumference';
+        case 'TEMPERATURE': return 'Temperature';
         case 'OTHER': return 'Other';
         default: return type;
       }

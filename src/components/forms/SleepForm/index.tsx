@@ -376,7 +376,7 @@ export default function SleepForm({
               <div>
                 <Label>End Time</Label>
                 <DateTimePicker
-                  value={endDateTime ?? new Date()}
+                  value={endDateTime}
                   onChange={handleEndDateTimeChange}
                   className="w-full"
                   disabled={loading}
