@@ -1,5 +1,21 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Sun, Icon, Moon, Droplet, StickyNote, Utensils, Bath } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Sun, 
+  Icon, 
+  Moon, 
+  Droplet, 
+  StickyNote, 
+  Utensils, 
+  Bath, 
+  Trophy, 
+  LampWallDown,
+  Ruler,
+  Scale,
+  RotateCw,
+  Thermometer
+} from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { Card } from '@/src/components/ui/card';
 import { cardStyles } from '@/src/components/ui/card/card.styles';
@@ -95,7 +111,21 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
   };
 
   // Calculate time awake and asleep
-  const { awakeTime, sleepTime, totalConsumed, diaperChanges, poopCount, leftBreastTime, rightBreastTime, noteCount, solidsConsumed, bathCount } = useMemo(() => {
+  const { 
+    awakeTime, 
+    sleepTime, 
+    totalConsumed, 
+    diaperChanges, 
+    poopCount, 
+    leftBreastTime, 
+    rightBreastTime, 
+    noteCount, 
+    solidsConsumed, 
+    bathCount,
+    milestoneCount,
+    lastMeasurements,
+    pumpTotals
+  } = useMemo(() => {
     // Set start and end of the selected day
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -125,6 +155,15 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
     
     // For counting bath events
     let bathCount = 0;
+    
+    // For counting milestone events
+    let milestoneCount = 0;
+    
+    // For tracking last measurements by type
+    const lastMeasurements: Record<string, { value: number; unit: string; date: Date }> = {};
+    
+    // For tracking pump totals by unit
+    const pumpTotals: Record<string, number> = {};
 
     // Process each activity
     activities.forEach(activity => {
@@ -220,6 +259,75 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
           bathCount++;
         }
       }
+      
+      // Milestone activities
+      if ('title' in activity && 'category' in activity) {
+        const date = new Date(activity.date);
+        
+        // Only count milestones that occurred on the selected day
+        if (date >= startOfDay && date <= endOfDay) {
+          milestoneCount++;
+        }
+      }
+      
+      // Measurement activities
+      if ('value' in activity && 'unit' in activity && 'type' in activity) {
+        const date = new Date(activity.date);
+        
+        // Track the latest measurement of each type
+        if (!lastMeasurements[activity.type] || date > lastMeasurements[activity.type].date) {
+          lastMeasurements[activity.type] = {
+            value: activity.value,
+            unit: activity.unit,
+            date: date
+          };
+        }
+      }
+      
+      // Pump activities
+      if ('leftAmount' in activity || 'rightAmount' in activity) {
+        // Type guard to ensure TypeScript knows this is a pump activity
+        const isPumpActivity = (act: any): act is { 
+          startTime?: string | Date; 
+          endTime?: string | Date | null; 
+          leftAmount?: number; 
+          rightAmount?: number; 
+          totalAmount?: number; 
+          unit?: string;
+        } => {
+          return 'leftAmount' in act || 'rightAmount' in act;
+        };
+        
+        if (isPumpActivity(activity) && activity.startTime) {
+          const startTime = new Date(activity.startTime);
+          
+          // Only count pumps that occurred on the selected day
+          if (startTime >= startOfDay && startTime <= endOfDay) {
+            // Make sure to use the correct unit for grouping
+            const unit = activity.unit ? activity.unit.toLowerCase() : 'oz';
+            
+            if (!pumpTotals[unit]) {
+              pumpTotals[unit] = 0;
+            }
+            
+            // Add left amount if available
+            if (activity.leftAmount && typeof activity.leftAmount === 'number') {
+              pumpTotals[unit] += activity.leftAmount;
+            }
+            
+            // Add right amount if available
+            if (activity.rightAmount && typeof activity.rightAmount === 'number') {
+              pumpTotals[unit] += activity.rightAmount;
+            }
+            
+            // If there's a total amount and no left/right, use that
+            if (activity.totalAmount && typeof activity.totalAmount === 'number' && 
+                (!activity.leftAmount || !activity.rightAmount)) {
+              pumpTotals[unit] += activity.totalAmount;
+            }
+          }
+        }
+      }
     });
 
     // Calculate awake time (elapsed time today minus sleep minutes)
@@ -249,6 +357,11 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
       .map(([unit, amount]) => `${amount} ${unit.toLowerCase()}`)
       .join(', ');
     
+    // Format pump totals - ensure we're grouping by unit type correctly
+    const formattedPumpTotals = Object.entries(pumpTotals)
+      .map(([unit, amount]) => `${amount.toFixed(1)} ${unit}`)
+      .join(', ');
+    
     return {
       awakeTime: formatMinutes(awakeMinutes),
       sleepTime: formatMinutes(totalSleepMinutes),
@@ -259,7 +372,10 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
       rightBreastTime: formatMinutes(Math.floor(rightBreastSeconds / 60)),
       noteCount: noteCount.toString(),
       solidsConsumed: formattedSolidsConsumed || 'None',
-      bathCount: bathCount.toString()
+      bathCount: bathCount.toString(),
+      milestoneCount: milestoneCount.toString(),
+      lastMeasurements,
+      pumpTotals: formattedPumpTotals || 'None'
     };
   }, [activities, date]);
 
@@ -283,7 +399,29 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
               ...(leftBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-blue-500" />, label: "Left", value: leftBreastTime }] : []),
               ...(rightBreastTime !== '0h 0m' ? [{ icon: <Droplet className="h-3 w-3 text-red-500" />, label: "Right", value: rightBreastTime }] : []),
               ...(noteCount !== '0' ? [{ icon: <StickyNote className="h-3 w-3 text-yellow-500" />, label: "Notes", value: noteCount }] : []),
-              ...(bathCount !== '0' ? [{ icon: <Bath className="h-3 w-3 text-orange-500" />, label: "Baths", value: bathCount }] : [])
+              ...(bathCount !== '0' ? [{ icon: <Bath className="h-3 w-3 text-orange-500" />, label: "Baths", value: bathCount }] : []),
+              ...(milestoneCount !== '0' ? [{ icon: <Trophy className="h-3 w-3 text-blue-500" />, label: "Milestones", value: milestoneCount }] : []),
+              ...(pumpTotals !== 'None' ? [{ icon: <LampWallDown className="h-3 w-3 text-purple-500" />, label: "Pumped", value: pumpTotals }] : []),
+              ...(lastMeasurements['HEIGHT'] ? [{ 
+                icon: <Ruler className="h-3 w-3 text-red-500" />, 
+                label: "Height", 
+                value: `${lastMeasurements['HEIGHT'].value} ${lastMeasurements['HEIGHT'].unit}` 
+              }] : []),
+              ...(lastMeasurements['WEIGHT'] ? [{ 
+                icon: <Scale className="h-3 w-3 text-red-500" />, 
+                label: "Weight", 
+                value: `${lastMeasurements['WEIGHT'].value} ${lastMeasurements['WEIGHT'].unit}` 
+              }] : []),
+              ...(lastMeasurements['HEAD_CIRCUMFERENCE'] ? [{ 
+                icon: <RotateCw className="h-3 w-3 text-red-500" />, 
+                label: "Head", 
+                value: `${lastMeasurements['HEAD_CIRCUMFERENCE'].value} ${lastMeasurements['HEAD_CIRCUMFERENCE'].unit}` 
+              }] : []),
+              ...(lastMeasurements['TEMPERATURE'] ? [{ 
+                icon: <Thermometer className="h-3 w-3 text-red-500" />, 
+                label: "Temp", 
+                value: `${lastMeasurements['TEMPERATURE'].value} ${lastMeasurements['TEMPERATURE'].unit}` 
+              }] : [])
             ]}
           />
         )}
@@ -369,6 +507,48 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ activities, date, isLoad
                   icon={<Bath className="h-4 w-4 text-orange-500" />} 
                   label="Baths" 
                   value={bathCount} 
+                />
+              )}
+              {milestoneCount !== '0' && (
+                <StatItem 
+                  icon={<Trophy className="h-4 w-4 text-blue-500" />} 
+                  label="Milestones" 
+                  value={milestoneCount} 
+                />
+              )}
+              {pumpTotals !== 'None' && (
+                <StatItem 
+                  icon={<LampWallDown className="h-4 w-4 text-purple-500" />} 
+                  label="Pumped" 
+                  value={pumpTotals} 
+                />
+              )}
+              {lastMeasurements['HEIGHT'] && (
+                <StatItem 
+                  icon={<Ruler className="h-4 w-4 text-red-500" />} 
+                  label="Height" 
+                  value={`${lastMeasurements['HEIGHT'].value} ${lastMeasurements['HEIGHT'].unit}`} 
+                />
+              )}
+              {lastMeasurements['WEIGHT'] && (
+                <StatItem 
+                  icon={<Scale className="h-4 w-4 text-red-500" />} 
+                  label="Weight" 
+                  value={`${lastMeasurements['WEIGHT'].value} ${lastMeasurements['WEIGHT'].unit}`} 
+                />
+              )}
+              {lastMeasurements['HEAD_CIRCUMFERENCE'] && (
+                <StatItem 
+                  icon={<RotateCw className="h-4 w-4 text-red-500" />} 
+                  label="Head Circ." 
+                  value={`${lastMeasurements['HEAD_CIRCUMFERENCE'].value} ${lastMeasurements['HEAD_CIRCUMFERENCE'].unit}`} 
+                />
+              )}
+              {lastMeasurements['TEMPERATURE'] && (
+                <StatItem 
+                  icon={<Thermometer className="h-4 w-4 text-red-500" />} 
+                  label="Temperature" 
+                  value={`${lastMeasurements['TEMPERATURE'].value} ${lastMeasurements['TEMPERATURE'].unit}`} 
                 />
               )}
             </>

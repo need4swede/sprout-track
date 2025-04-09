@@ -6,7 +6,10 @@ import {
   Bath,
   LampWallDown,
   Trophy,
-  Ruler
+  Ruler,
+  Scale,
+  RotateCw,
+  Thermometer
 } from 'lucide-react';
 import { diaper, bottleBaby } from '@lucide/lab';
 import { 
@@ -41,7 +44,22 @@ export const getActivityIcon = (activity: ActivityType) => {
     return <Trophy className="h-4 w-4 text-white" />; // Milestone activity
   }
   if ('value' in activity && 'unit' in activity) {
-    return <Ruler className="h-4 w-4 text-white" />; // Measurement activity
+    // Different icons based on measurement type
+    if ('type' in activity) {
+      switch (activity.type) {
+        case 'HEIGHT':
+          return <Ruler className="h-4 w-4 text-white" />;
+        case 'WEIGHT':
+          return <Scale className="h-4 w-4 text-white" />;
+        case 'HEAD_CIRCUMFERENCE':
+          return <RotateCw className="h-4 w-4 text-white" />;
+        case 'TEMPERATURE':
+          return <Thermometer className="h-4 w-4 text-white" />;
+        default:
+          return <Ruler className="h-4 w-4 text-white" />; // Default to ruler
+      }
+    }
+    return <Ruler className="h-4 w-4 text-white" />; // Default measurement icon
   }
   return null;
 };

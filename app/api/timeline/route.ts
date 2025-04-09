@@ -356,6 +356,9 @@ async function handleGet(req: NextRequest) {
         // Create a new object without the caretaker property
         const { caretaker, ...logWithoutCaretaker } = log;
         
+        // Get the unit from the unitAbbr field or default to 'oz', ensuring it's lowercase
+        const unit = log.unitAbbr ? log.unitAbbr.toLowerCase() : 'oz';
+        
         // Format dates as ISO strings
         return {
           ...logWithoutCaretaker,
@@ -366,6 +369,7 @@ async function handleGet(req: NextRequest) {
           deletedAt: formatForResponse(log.deletedAt),
           caretakerId: log.caretakerId,
           caretakerName: log.caretaker ? log.caretaker.name : undefined,
+          unit: unit, // Explicitly include the unit in the response
         };
       });
       
