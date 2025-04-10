@@ -263,7 +263,7 @@ export default function SettingsForm({
                   disabled={loading}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Backup Database
+                  Backup Data
                 </Button>
                 <Button
                   variant="outline"
@@ -272,7 +272,7 @@ export default function SettingsForm({
                   disabled={loading || isRestoring}
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Restore Database
+                  Restore Data
                 </Button>
               </div>
             </div>

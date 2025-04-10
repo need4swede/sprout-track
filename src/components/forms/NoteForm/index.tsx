@@ -63,13 +63,35 @@ export default function NoteForm({
     category: '',
   });
   const [categories, setCategories] = useState<string[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Handle click outside to close dropdown
   useEffect(() => {
-    // Fetch existing categories
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current && 
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch existing categories
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch('/api/note?categories=true');
@@ -77,6 +99,7 @@ export default function NoteForm({
         const data = await response.json();
         if (data.success) {
           setCategories(data.data);
+          setFilteredCategories(data.data);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -87,6 +110,20 @@ export default function NoteForm({
       fetchCategories();
     }
   }, [isOpen]);
+
+  // Filter categories based on input
+  useEffect(() => {
+    if (formData.category.trim() === '') {
+      setFilteredCategories(categories);
+      // Close dropdown when input is empty
+      setDropdownOpen(false);
+    } else {
+      const filtered = categories.filter(category => 
+        category.toLowerCase().includes(formData.category.toLowerCase())
+      );
+      setFilteredCategories(filtered);
+    }
+  }, [formData.category, categories]);
 
   // Handle date/time change
   const handleDateTimeChange = (date: Date) => {
@@ -213,6 +250,79 @@ export default function NoteForm({
   const handleCategorySelect = (category: string) => {
     setFormData(prev => ({ ...prev, category }));
     setDropdownOpen(false);
+    // Remove focus from the input after selection
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleCategoryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, category: value }));
+    
+    // Reset highlighted index when input changes
+    setHighlightedIndex(-1);
+    
+    // Open dropdown when typing, but let the useEffect handle closing it when empty
+    if (value.trim() !== '') {
+      setDropdownOpen(true);
+    }
+  };
+
+  const handleCategoryInputFocus = () => {
+    // Only open dropdown if there's already text in the input
+    if (formData.category.trim() !== '') {
+      setDropdownOpen(true);
+    }
+  };
+  
+  const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!dropdownOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        setDropdownOpen(true);
+        e.preventDefault();
+      }
+      return;
+    }
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev < filteredCategories.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev > 0 ? prev - 1 : filteredCategories.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filteredCategories.length) {
+          // Select the highlighted category
+          handleCategorySelect(filteredCategories[highlightedIndex]);
+        } else if (formData.category.trim() !== '') {
+          // Create a new category with the current input value
+          handleCategorySelect(formData.category.trim());
+        }
+        // Blur the input to remove focus
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setDropdownOpen(false);
+        // Blur the input to remove focus
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -240,40 +350,67 @@ export default function NoteForm({
             <div>
               <label className="form-label">Category</label>
               <div className="relative">
-                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <div className="flex items-center w-full">
-                      <Input
-                        ref={inputRef}
-                        value={formData.category}
-                        onChange={(e) => {
-                          setFormData({ ...formData, category: e.target.value });
-                        }}
-                        className="w-full pr-10 note-form-dropdown-trigger"
-                        placeholder="Enter category"
-                        disabled={loading}
-                        onClick={() => setDropdownOpen(true)}
-                      />
-                      <ChevronDown className="absolute right-3 h-4 w-4 text-gray-500 dark:text-gray-400 note-form-dropdown-icon" />
+                <div className="relative w-full">
+                  <div className="flex items-center w-full">
+                    <Input
+                      ref={inputRef}
+                      value={formData.category}
+                      onChange={handleCategoryInputChange}
+                      onFocus={handleCategoryInputFocus}
+                      onKeyDown={handleCategoryKeyDown}
+                      className="w-full pr-10 note-form-dropdown-trigger"
+                      placeholder="Enter or select a category"
+                      disabled={loading}
+                    />
+                    <ChevronDown 
+                      className="absolute right-3 h-4 w-4 text-gray-500 dark:text-gray-400 note-form-dropdown-icon"
+                      onClick={() => {
+                        setDropdownOpen(!dropdownOpen);
+                        // Remove focus when toggling dropdown with the icon
+                        if (document.activeElement instanceof HTMLElement) {
+                          document.activeElement.blur();
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  {dropdownOpen && (
+                    <div 
+                      ref={dropdownRef}
+                      className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 max-h-60 overflow-auto category-dropdown-container"
+                      style={{ width: inputRef.current?.offsetWidth }}
+                    >
+                      {filteredCategories.length > 0 ? (
+                        <div className="py-1">
+                          {filteredCategories.map((category, index) => (
+                            <div 
+                              key={category}
+                              className={`px-3 py-2 text-sm cursor-pointer category-dropdown-item ${
+                                highlightedIndex === index 
+                                  ? 'bg-gray-100 dark:bg-gray-700' 
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                              }`}
+                              onClick={() => handleCategorySelect(category)}
+                              onMouseEnter={() => setHighlightedIndex(index)}
+                            >
+                              {category}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        formData.category.trim() !== '' ? (
+                          <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                            No matching categories. Press Enter to create "{formData.category}".
+                          </div>
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                            No categories found
+                          </div>
+                        )
+                      )}
                     </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full" style={{ width: inputRef.current?.offsetWidth }}>
-                    {categories.length > 0 ? (
-                      <>
-                        {categories.map((category) => (
-                          <DropdownMenuItem 
-                            key={category}
-                            onClick={() => handleCategorySelect(category)}
-                          >
-                            {category}
-                          </DropdownMenuItem>
-                        ))}
-                      </>
-                    ) : (
-                      <DropdownMenuItem disabled>No categories found</DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  )}
+                </div>
               </div>
             </div>
             <div>
