@@ -5,6 +5,8 @@ import { ActivityType, TimelineActivityListProps, FilterType } from './types';
 import { getActivityIcon, getActivityStyle, getActivityDescription } from './utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/src/context/theme';
+import { cn } from '@/src/lib/utils';
+import styles from './timeline.styles';
 import './timeline-activity-list.css';
 
 const TimelineActivityList = ({
@@ -206,27 +208,31 @@ const TimelineActivityList = ({
               })}
             </AnimatePresence>
           ) : !isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center h-full">
-              <div className="text-center p-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <BabyIcon className="h-8 w-8 text-indigo-600" />
+            <div className={cn(styles.emptyState, "timeline-empty-state")}>
+              <div className={cn(styles.emptyStateContent, "timeline-empty-state-content", "mt-6")}>
+                <div className={cn(styles.emptyStateIcon, "timeline-empty-state-icon")}>
+                  <BabyIcon className={cn(styles.emptyStateIconInner, "timeline-empty-state-icon-inner")} />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1 timeline-empty-state">No activities recorded</h3>
-                <p className="text-sm text-gray-500 timeline-empty-description">
+                <h3 className={cn(styles.emptyStateTitle, "timeline-empty-state-title")}>
+                  No activities recorded
+                </h3>
+                <p className={cn(styles.emptyStateDescription, "timeline-empty-state-description")}>
                   Activities will appear here once you start tracking
                 </p>
               </div>
             </div>
           )}
         </div>
-        {/* Loading State - positioned the same way as the empty state */}
+        {/* Loading State */}
         {isLoading && activities.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center h-full">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <div className={cn(styles.loadingContainer, "timeline-loading-container")}>
+            <div className={cn(styles.loadingContent, "timeline-loading-content")}>
+              <div className={cn(styles.loadingIcon, "timeline-loading-icon")}>
+                <div className={cn(styles.loadingIconInner, "timeline-loading-icon-inner")}></div>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1 timeline-empty-state">Loading activities...</h3>
+              <h3 className={cn(styles.loadingText, "timeline-loading-text")}>
+                Loading activities...
+              </h3>
             </div>
           </div>
         )}

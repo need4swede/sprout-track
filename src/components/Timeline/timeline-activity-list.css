@@ -22,12 +22,38 @@ html.dark .timeline-activity-details {
   color: #e5e7eb !important; /* gray-200 */
 }
 
-html.dark .timeline-empty-state {
+html.dark .timeline-empty-state-title {
   color: #e5e7eb !important; /* gray-200 */
 }
 
-html.dark .timeline-empty-description {
+html.dark .timeline-empty-state-description {
   color: #9ca3af !important; /* gray-400 */
+}
+
+html.dark .timeline-empty-state-icon {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+html.dark .timeline-empty-state-icon-inner {
+  color: #93c5fd !important; /* blue-300 */
+}
+
+/* Loading state */
+html.dark .timeline-loading-container {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+html.dark .timeline-loading-text {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+html.dark .timeline-loading-icon {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+html.dark .timeline-loading-icon-inner {
+  border-color: #60a5fa !important; /* blue-400 */
+  border-top-color: transparent !important;
 }
 
 html.dark .timeline-swipe-shadow-left {
