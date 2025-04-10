@@ -16,6 +16,7 @@ import { cn } from '@/src/lib/utils';
 import { Baby } from '@prisma/client';
 import BabySelector from '@/src/components/BabySelector';
 import BabyQuickInfo from '@/src/components/BabyQuickInfo';
+import SetupWizard from '@/src/components/SetupWizard';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -33,6 +34,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [isWideScreen, setIsWideScreen] = useState(false);
   const [familyName, setFamilyName] = useState('');
   const [babies, setBabies] = useState<Baby[]>([]);
+  const [showSetup, setShowSetup] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(() => {
     // Only run this on client-side
     if (typeof window !== 'undefined') {
@@ -95,6 +97,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
         if (babiesData.success) {
           const activeBabies = babiesData.data.filter((baby: Baby) => !baby.inactive);
           setBabies(activeBabies);
+          
+          // Check if we need to show setup
+          setShowSetup(activeBabies.length === 0);
           
           // Get selected baby from URL or select first baby if only one exists
           const urlParams = new URLSearchParams(window.location.search);
@@ -394,7 +399,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
             </header>
             
             <main className="flex-1 relative z-0">
-              {children}
+              {showSetup ? (
+                <SetupWizard onComplete={fetchData} />
+              ) : (
+                children
+              )}
             </main>
           </div>
 

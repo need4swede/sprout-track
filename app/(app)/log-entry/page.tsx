@@ -324,25 +324,11 @@ function HomeContent(): React.ReactElement {
         </Card>
       )}
 
-      {/* Welcome Screen */}
+      {/* No Baby Selected Screen */}
       {!selectedBaby && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-lg p-12 text-center relative z-0">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-teal-100 flex items-center justify-center">
-            <BabyIcon className="h-10 w-10 text-teal-600" />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-3">Welcome to Baby Tracker!</h2>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            Track your baby's daily activities including sleep, feeding, and diaper changes. Get started by adding your baby's information in the settings.
-          </p>
-          <Button
-            onClick={() => {
-              updateUnlockTimer();
-              setShowSettingsModal(true);
-            }}
-            className="bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
-            Open Settings
-          </Button>
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">No Baby Selected</h2>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">Please select a baby from the dropdown menu above.</p>
         </div>
       )}
 
