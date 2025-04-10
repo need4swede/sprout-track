@@ -70,9 +70,9 @@ export default function SetupWizard({ onComplete }: SetupWizardProps) {
       
       try {
         setLoading(true);
-        // Save family name to settings
+        // Save family name to settings (update existing record)
         const response = await fetch('/api/settings', {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },

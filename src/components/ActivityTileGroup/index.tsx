@@ -68,15 +68,16 @@ export function ActivityTileGroup({
   
   if (!selectedBaby?.id) return null;
 
+  // Define all activity types
+  const allActivityTypes: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
+  
   // State for visible activities and their order
   const [visibleActivities, setVisibleActivities] = useState<Set<ActivityType>>(
-    () => new Set(['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'] as ActivityType[])
+    () => new Set(allActivityTypes)
   );
   
   // State for activity order
-  const [activityOrder, setActivityOrder] = useState<ActivityType[]>([
-    'sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement'
-  ]);
+  const [activityOrder, setActivityOrder] = useState<ActivityType[]>([...allActivityTypes]);
   
   // State for drag and drop
   const [draggedActivity, setDraggedActivity] = useState<ActivityType | null>(null);
@@ -164,8 +165,16 @@ export function ActivityTileGroup({
               loadedOrder.push('milestone');
             }
             
-            // Get visible activities without modifying them
+            // Get visible activities and ensure all activities are included
+            const allActivityTypes: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
             const loadedVisible = new Set(data.data.visible as ActivityType[]);
+            
+            // Ensure all activities are visible by default
+            allActivityTypes.forEach(activity => {
+              if (!loadedVisible.has(activity)) {
+                loadedVisible.add(activity);
+              }
+            });
             
             // Store the original loaded settings for comparison
             const originalOrder = [...loadedOrder];
@@ -212,13 +221,12 @@ export function ActivityTileGroup({
   
   // Function to set default settings
   const setDefaultSettings = () => {
-    // Include measurement and milestone in the order but not necessarily in visible activities
-    const defaultOrder: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
-    // Default visible activities
-    const defaultVisible: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
+    // Define all activity types
+    const allActivityTypes: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
     
-    setActivityOrder(defaultOrder);
-    setVisibleActivities(new Set(defaultOrder));
+    // Set default order and make all activities visible by default
+    setActivityOrder([...allActivityTypes]);
+    setVisibleActivities(new Set(allActivityTypes));
     
     // Mark settings as loaded but not modified
     setTimeout(() => {
@@ -226,8 +234,8 @@ export function ActivityTileGroup({
       setSettingsModified(false);
       
       // Store the default settings in the ref
-      originalOrderRef.current = [...defaultOrder];
-      originalVisibleRef.current = [...defaultOrder];
+      originalOrderRef.current = [...allActivityTypes];
+      originalVisibleRef.current = [...allActivityTypes];
     }, 0);
   };
   
