@@ -1,6 +1,43 @@
-# Baby Tracker Scripts
+# Sprout Track Scripts
 
-This directory contains utility scripts for the Baby Tracker application.
+This directory contains utility scripts for the Sprout Track application.
+
+## setup.sh
+
+This script performs the initial setup for the Sprout Track application.
+
+### Purpose
+
+This script automates the complete installation process by:
+1. Installing dependencies
+2. Generating the Prisma client
+3. Running database migrations (creates the database schema)
+4. Seeding the database with initial data (creates default settings with PIN 111222 and adds units)
+
+### Running the Script
+
+```bash
+# Make sure the script is executable
+chmod +x scripts/setup.sh
+
+# Run the setup script
+./scripts/setup.sh
+```
+
+### Output
+
+The script provides detailed output about its progress:
+- Status of each installation step
+- Error messages if any step fails
+- Confirmation when the setup is complete
+- The default security PIN (111222)
+
+### When to Use
+
+You should run this script:
+1. When setting up a new installation
+2. After cloning the repository for the first time
+3. When you need to reset the database to its initial state
 
 ## ensure-utc-dates-improved.js
 

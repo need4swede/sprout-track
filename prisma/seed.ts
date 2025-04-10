@@ -6,6 +6,25 @@ type UnitData = {
 };
 
 async function main() {
+  // Ensure default settings exist with PIN 111222
+  const settingsCount = await prisma.settings.count();
+  if (settingsCount === 0) {
+    console.log('Creating default settings with PIN: 111222');
+    await prisma.settings.create({
+      data: {
+        familyName: "My Family",
+        securityPin: "111222",
+        defaultBottleUnit: "OZ",
+        defaultSolidsUnit: "TBSP",
+        defaultHeightUnit: "IN",
+        defaultWeightUnit: "LB",
+        defaultTempUnit: "F",
+        enableDebugTimer: false,
+        enableDebugTimezone: false
+      }
+    });
+  }
+
   // Create units
   const units: UnitData[] = [
     { unitAbbr: 'OZ', unitName: 'Ounces' },
