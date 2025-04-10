@@ -6,6 +6,7 @@ A custom calendar component with styled appearance that follows the project's de
 
 - Month navigation with previous/next buttons
 - Date selection with customizable callbacks
+- Date range selection with visual indicators
 - Support for disabled dates
 - Highlighting of today's date
 - Responsive design with different size variants
@@ -17,7 +18,7 @@ A custom calendar component with styled appearance that follows the project's de
 ```tsx
 import { Calendar } from '@/src/components/ui/calendar';
 
-// Basic usage
+// Basic usage (single date selection)
 <Calendar 
   selected={selectedDate}
   onSelect={setSelectedDate}
@@ -51,14 +52,29 @@ import { Calendar } from '@/src/components/ui/calendar';
   onSelect={setSelectedDate}
   isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6} // Disable weekends
 />
+
+// Date range selection
+<Calendar 
+  mode="range"
+  rangeFrom={fromDate}
+  rangeTo={toDate}
+  onRangeChange={(from, to) => {
+    setFromDate(from);
+    setToDate(to);
+  }}
+/>
 ```
 
 ## Props
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `selected` | `Date \| undefined` | The currently selected date |
-| `onSelect` | `(date: Date) => void` | Callback function when a date is selected |
+| `mode` | `"single" \| "range"` | Selection mode - single date or date range |
+| `selected` | `Date \| undefined` | The currently selected date (for single date mode) |
+| `onSelect` | `(date: Date) => void` | Callback function when a date is selected (for single date mode) |
+| `rangeFrom` | `Date \| undefined` | The start date of the selected range (for range mode) |
+| `rangeTo` | `Date \| undefined` | The end date of the selected range (for range mode) |
+| `onRangeChange` | `(from: Date \| null, to: Date \| null) => void` | Callback function when a date range is selected |
 | `month` | `Date` | The month to display (defaults to current month) |
 | `className` | `string` | Additional CSS classes |
 | `variant` | `"default" \| "compact"` | Size variant of the calendar |

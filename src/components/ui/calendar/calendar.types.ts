@@ -8,14 +8,34 @@ import { calendarVariants } from "./calendar.styles"
  */
 export interface CalendarProps extends VariantProps<typeof calendarVariants> {
   /**
-   * The selected date
+   * The selected date (for single date selection)
    */
   selected?: Date | null | undefined
   
   /**
-   * Callback function when a date is selected
+   * Callback function when a date is selected (for single date selection)
    */
   onSelect?: (date: Date) => void
+  
+  /**
+   * The selected date range start (for range selection)
+   */
+  rangeFrom?: Date | null | undefined
+  
+  /**
+   * The selected date range end (for range selection)
+   */
+  rangeTo?: Date | null | undefined
+  
+  /**
+   * Callback function when a date range is selected
+   */
+  onRangeChange?: (from: Date | null, to: Date | null) => void
+  
+  /**
+   * Whether to use date range selection mode
+   */
+  mode?: "single" | "range"
   
   /**
    * The month to display

@@ -99,6 +99,18 @@ export const calendarDayVariants = cva(
         true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700",
         false: "hover:bg-teal-50 hover:text-teal-700",
       },
+      rangeStart: {
+        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 rounded-l-md rounded-r-none",
+        false: "",
+      },
+      rangeEnd: {
+        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 rounded-r-md rounded-l-none",
+        false: "",
+      },
+      rangeMiddle: {
+        true: "bg-teal-100 hover:bg-teal-200 text-teal-800",
+        false: "",
+      },
       today: {
         true: "border-2 border-teal-500 font-bold",
         false: "",
