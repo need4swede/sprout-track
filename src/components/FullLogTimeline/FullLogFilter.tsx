@@ -74,15 +74,15 @@ const FullLogFilter: React.FC<FullLogFilterProps> = ({
   };
 
   return (
-    <div className="flex justify-between px-6 py-3 items-center text-sm font-medium">
-      <div className="flex items-center">
+    <div className="flex flex-wrap justify-between py-3 items-center text-sm font-medium">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:mb-0">
         {/* Date Range Selector */}
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button 
               variant="ghost" 
               size="sm"
-              className="h-7 px-2 text-sm font-medium text-white hover:bg-transparent hover:text-white/90 mr-4"
+              className="h-7 px-2 text-sm font-medium text-white hover:bg-transparent hover:text-white/90"
             >
               {formatDateRange()}
             </Button>
@@ -126,32 +126,34 @@ const FullLogFilter: React.FC<FullLogFilterProps> = ({
         </Popover>
         
         {/* Quick Filter Buttons */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onQuickFilter(2)}
-          className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90 mr-2"
-        >
-          2 Days
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onQuickFilter(7)}
-          className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90 mr-2"
-        >
-          7 Days
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onQuickFilter(30)}
-          className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90"
-        >
-          30 Days
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onQuickFilter(2)}
+            className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90"
+          >
+            2 Days
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onQuickFilter(7)}
+            className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90"
+          >
+            7 Days
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onQuickFilter(30)}
+            className="h-7 px-2 text-white hover:bg-transparent hover:text-white/90"
+          >
+            30 Days
+          </Button>
+        </div>
       </div>
       
       {/* Filters Dropdown */}
