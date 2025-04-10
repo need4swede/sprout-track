@@ -148,43 +148,42 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
       );
     };
 
-    // Function to check if a date is selected (for single date mode)
+    // Helper to compare dates (ignoring time)
+    const isSameDay = (date1: Date | null | undefined, date2: Date | null | undefined): boolean => {
+      if (!date1 || !date2) return false;
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      );
+    };
+    
+    // Function to check if a date is selected (for single date mode OR first click in range mode)
     const isSelected = (date: Date) => {
-      if (mode === "range" || !selected) return false;
-      
-      return (
-        date.getFullYear() === selected.getFullYear() &&
-        date.getMonth() === selected.getMonth() &&
-        date.getDate() === selected.getDate()
-      );
+      if (mode === "single") {
+        return isSameDay(date, selected);
+      } else if (mode === "range") {
+        // Highlight the first selected date when waiting for the second
+        return isSameDay(date, rangeFrom) && !rangeTo;
+      }
+      return false;
     };
     
-    // Function to check if a date is the range start
+    // Function to check if a date is the range start (only when range is complete)
     const isRangeStart = (date: Date) => {
-      if (mode !== "range" || !rangeFrom) return false;
-      
-      return (
-        date.getFullYear() === rangeFrom.getFullYear() &&
-        date.getMonth() === rangeFrom.getMonth() &&
-        date.getDate() === rangeFrom.getDate()
-      );
+      return mode === "range" && rangeFrom && rangeTo && isSameDay(date, rangeFrom);
     };
     
-    // Function to check if a date is the range end
+    // Function to check if a date is the range end (only when range is complete)
     const isRangeEnd = (date: Date) => {
-      if (mode !== "range" || !rangeTo) return false;
-      
-      return (
-        date.getFullYear() === rangeTo.getFullYear() &&
-        date.getMonth() === rangeTo.getMonth() &&
-        date.getDate() === rangeTo.getDate()
-      );
+      return mode === "range" && rangeFrom && rangeTo && isSameDay(date, rangeTo);
     };
     
-    // Function to check if a date is in the middle of the range
+    // Function to check if a date is in the middle of the range (only when range is complete)
     const isInRange = (date: Date) => {
       if (mode !== "range" || !rangeFrom || !rangeTo) return false;
       
+      // Ensure dates are compared without time
       const normalizedDate = new Date(date);
       normalizedDate.setHours(0, 0, 0, 0);
       
@@ -206,29 +205,39 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
     // Function to handle date selection
     const handleDateSelect = (date: Date) => {
       if (isDisabled(date)) return;
-      
+
       if (mode === "single") {
         if (onSelect) onSelect(date);
       } else if (mode === "range" && onRangeChange) {
+        // Normalize the clicked date to remove time component for comparison
+        const clickedDay = new Date(date);
+        clickedDay.setHours(0, 0, 0, 0);
+
         if (rangeSelectionState === 'start') {
-          // Start a new range - clear any existing selection
-          onRangeChange(date, null);
-          setRangeSelectionState('end');
-        } else {
-          // Complete the range
+          // First click: Set the start date, clear the end date
+          onRangeChange(clickedDay, null);
+          setRangeSelectionState('end'); // Move to selecting the end date
+        } else { // rangeSelectionState === 'end'
+          // Second click: Set the end date
           if (rangeFrom) {
-            // Ensure end date is after start date
-            if (date < rangeFrom) {
-              // If user selects a date before the start date, swap them
-              onRangeChange(date, rangeFrom);
-            } else {
-              onRangeChange(rangeFrom, date);
+            const normalizedFrom = new Date(rangeFrom);
+            normalizedFrom.setHours(0, 0, 0, 0);
+
+            // Only set the end date if it's strictly after the start date
+            if (clickedDay > normalizedFrom) {
+              onRangeChange(rangeFrom, clickedDay);
+              setRangeSelectionState('start'); // Reset to start selection for next range
+            } else if (isSameDay(clickedDay, normalizedFrom)) {
+              // If the same day is clicked again, reset the selection
+              onRangeChange(null, null);
+              setRangeSelectionState('start');
             }
+            // If clickedDay < normalizedFrom, do nothing (as per requirement 3)
           } else {
-            // If somehow we don't have a start date, set both to the same
-            onRangeChange(date, date);
+            // Should not happen if logic is correct, but as a fallback, start a new range
+            onRangeChange(clickedDay, null);
+            setRangeSelectionState('end');
           }
-          setRangeSelectionState('start');
         }
       }
     };
@@ -249,10 +258,10 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
           isOutsideMonth: true,
           isDisabled: isDisabled(date),
           isToday: isToday(date),
-          isSelected: isSelected(date),
-          isRangeStart: isRangeStart(date),
-          isRangeEnd: isRangeEnd(date),
-          isInRange: isInRange(date),
+          isSelected: isSelected(date), // Will highlight 'from' date when 'to' is null
+          isRangeStart: isRangeStart(date), // Only true when range is complete
+          isRangeEnd: isRangeEnd(date),     // Only true when range is complete
+          isInRange: isInRange(date),       // Only true when range is complete
         });
       }
       
@@ -265,10 +274,10 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
           isOutsideMonth: false,
           isDisabled: isDisabled(date),
           isToday: isToday(date),
-          isSelected: isSelected(date),
-          isRangeStart: isRangeStart(date),
-          isRangeEnd: isRangeEnd(date),
-          isInRange: isInRange(date),
+          isSelected: isSelected(date), // Will highlight 'from' date when 'to' is null
+          isRangeStart: isRangeStart(date), // Only true when range is complete
+          isRangeEnd: isRangeEnd(date),     // Only true when range is complete
+          isInRange: isInRange(date),       // Only true when range is complete
         });
       }
       
@@ -283,15 +292,15 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
           isOutsideMonth: true,
           isDisabled: isDisabled(date),
           isToday: isToday(date),
-          isSelected: isSelected(date),
-          isRangeStart: isRangeStart(date),
-          isRangeEnd: isRangeEnd(date),
-          isInRange: isInRange(date),
+          isSelected: isSelected(date), // Will highlight 'from' date when 'to' is null
+          isRangeStart: isRangeStart(date), // Only true when range is complete
+          isRangeEnd: isRangeEnd(date),     // Only true when range is complete
+          isInRange: isInRange(date),       // Only true when range is complete
         });
       }
       
       return result;
-    }, [month, selected, rangeFrom, rangeTo, disabledDates, minDate, maxDate, isDateDisabled, mode]);
+    }, [month, selected, rangeFrom, rangeTo, disabledDates, minDate, maxDate, isDateDisabled, mode, rangeSelectionState]); // Added rangeSelectionState dependency
 
     // Day names for the calendar header
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -361,31 +370,34 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
               type="button"
               onClick={() => handleDateSelect(day.date)}
               disabled={day.isDisabled}
-              className={cn(
-                calendarDayVariants({
-                  variant,
-                  selected: day.isSelected,
-                  rangeStart: day.isRangeStart,
-                  rangeEnd: day.isRangeEnd,
-                  rangeMiddle: day.isInRange,
-                  today: day.isToday,
-                  disabled: day.isDisabled,
-                  outside: day.isOutsideMonth,
-                }),
-                "calendar-day",
-                day.isSelected && "calendar-day-selected",
-                day.isRangeStart && "calendar-day-range-start",
-                day.isRangeEnd && "calendar-day-range-end",
-                day.isInRange && "calendar-day-range-middle",
-                day.isToday && "calendar-day-today",
-                day.isDisabled && "calendar-day-disabled",
-                day.isOutsideMonth && "calendar-day-outside"
-              )}
-              aria-label={day.date.toLocaleDateString()}
-              aria-selected={day.isSelected || day.isRangeStart || day.isRangeEnd}
-              tabIndex={day.isSelected || day.isRangeStart || day.isRangeEnd || (initialFocus && index === 0) ? 0 : -1}
-            >
-              {day.dayOfMonth}
+                className={cn(
+                  calendarDayVariants({
+                    variant,
+                    // Apply 'selected' style if it's the single selected date OR the 'from' date when 'to' is not yet selected
+                    selected: day.isSelected, 
+                    // Apply range styles only when both from and to are selected
+                    rangeStart: day.isRangeStart,
+                    rangeEnd: day.isRangeEnd,
+                    rangeMiddle: day.isInRange,
+                    today: day.isToday,
+                    disabled: day.isDisabled,
+                    outside: day.isOutsideMonth,
+                  }),
+                  "calendar-day",
+                  // Add specific classes for easier CSS targeting if needed, but rely on variants primarily
+                  day.isSelected && "calendar-day-selected", // Covers single mode and range 'from' selection phase
+                  day.isRangeStart && "calendar-day-range-start",
+                  day.isRangeEnd && "calendar-day-range-end",
+                  day.isInRange && "calendar-day-range-middle",
+                  day.isToday && "calendar-day-today",
+                  day.isDisabled && "calendar-day-disabled",
+                  day.isOutsideMonth && "calendar-day-outside"
+                )}
+                aria-label={day.date.toLocaleDateString()}
+                aria-selected={(day.isSelected || day.isRangeStart || day.isRangeEnd) ? "true" : undefined}
+                tabIndex={day.isSelected || day.isRangeStart || day.isRangeEnd || (initialFocus && index === 0) ? 0 : -1}
+              >
+                {day.dayOfMonth}
             </button>
           ))}
         </div>

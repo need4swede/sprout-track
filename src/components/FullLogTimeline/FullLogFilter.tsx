@@ -93,16 +93,19 @@ const FullLogFilter: React.FC<FullLogFilterProps> = ({
               rangeFrom={startDate}
               rangeTo={endDate}
               onRangeChange={(from, to) => {
+                // Always update the parent state regardless of whether the range is complete
+                // The Calendar component now handles the logic of setting 'to' to null on the first click
+                const newStartDate = from ? new Date(from) : null;
+                if (newStartDate) newStartDate.setHours(0, 0, 0, 0);
+                
+                const newEndDate = to ? new Date(to) : null;
+                if (newEndDate) newEndDate.setHours(23, 59, 59, 999);
+
+                // Pass potentially null dates up; the parent component uses these directly
+                onDateRangeChange(newStartDate || startDate, newEndDate || endDate); // Fallback to existing dates if null
+
+                // Only close the popover if *both* dates are now selected (i.e., 'to' is not null)
                 if (from && to) {
-                  // Set start date to beginning of day
-                  const newStartDate = new Date(from);
-                  newStartDate.setHours(0, 0, 0, 0);
-                  
-                  // Set end date to end of day
-                  const newEndDate = new Date(to);
-                  newEndDate.setHours(23, 59, 59, 999);
-                  
-                  onDateRangeChange(newStartDate, newEndDate);
                   // Close the popover after selection with a delay
                   setTimeout(() => {
                     setCalendarOpen(false);
