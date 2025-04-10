@@ -16,7 +16,7 @@ import { cn } from "@/src/lib/utils";
 export const babySelectorContainer = (gender: 'MALE' | 'FEMALE' | null | undefined) => {
   return cn(
     "h-auto py-1 px-2 text-white transition-colors duration-200 flex items-center space-x-2 rounded-full",
-    gender === 'MALE' ? 'bg-blue-500' : gender === 'FEMALE' ? 'bg-pink-500' : ''
+    gender === 'MALE' ? 'bg-blue-500' : gender === 'FEMALE' ? 'bg-pink-300' : ''
   );
 };
 
