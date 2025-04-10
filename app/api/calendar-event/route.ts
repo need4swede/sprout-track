@@ -537,7 +537,7 @@ async function handleDelete(req: NextRequest, authContext: AuthResult) {
       where: { id },
     });
     
-    if (!existingEvent || existingEvent.deletedAt) {
+    if (!existingEvent) {
       return NextResponse.json<ApiResponse<void>>(
         {
           success: false,
@@ -546,6 +546,9 @@ async function handleDelete(req: NextRequest, authContext: AuthResult) {
         { status: 404 }
       );
     }
+    
+    // Allow deleting even if it's already marked as deleted
+    // This prevents errors when trying to delete an event multiple times
     
     // Soft delete the event
     await prisma.calendarEvent.update({

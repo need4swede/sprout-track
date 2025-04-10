@@ -179,8 +179,21 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   };
   
   // Handle event save
-  const handleSaveEvent = async (eventData: CalendarEventFormData) => {
+  const handleSaveEvent = async (eventData: CalendarEventFormData & { _deleted?: boolean }) => {
     try {
+      // Check if this is a deletion (special flag set by CalendarEventForm)
+      if (eventData._deleted) {
+        // Close form if it's open
+        setShowEventForm(false);
+        
+        // Notify parent component to refresh
+        if (onAddEvent) {
+          onAddEvent(date);
+        }
+        
+        return; // Exit early - the actual deletion has already been handled by the form
+      }
+      
       const method = eventData.id ? 'PUT' : 'POST';
       const url = eventData.id ? `/api/calendar-event?id=${eventData.id}` : '/api/calendar-event';
       
