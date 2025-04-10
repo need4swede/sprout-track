@@ -93,24 +93,32 @@ const FullLogFilter: React.FC<FullLogFilterProps> = ({
               rangeFrom={startDate}
               rangeTo={endDate}
               onRangeChange={(from, to) => {
-                // Always update the parent state regardless of whether the range is complete
-                // The Calendar component now handles the logic of setting 'to' to null on the first click
                 const newStartDate = from ? new Date(from) : null;
                 if (newStartDate) newStartDate.setHours(0, 0, 0, 0);
-                
+
                 const newEndDate = to ? new Date(to) : null;
                 if (newEndDate) newEndDate.setHours(23, 59, 59, 999);
 
-                // Pass potentially null dates up; the parent component uses these directly
-                onDateRangeChange(newStartDate || startDate, newEndDate || endDate); // Fallback to existing dates if null
-
-                // Only close the popover if *both* dates are now selected (i.e., 'to' is not null)
-                if (from && to) {
-                  // Close the popover after selection with a delay
+                // Handle state update based on selection phase
+                if (newStartDate && !newEndDate) {
+                  // First click: 'to' is null. Pass newStartDate for both to satisfy type.
+                  // The Calendar component internally knows 'to' is null for rendering.
+                  onDateRangeChange(newStartDate, newStartDate); 
+                } else if (newStartDate && newEndDate) {
+                  // Second click: Both dates are valid. Update parent state fully.
+                  onDateRangeChange(newStartDate, newEndDate);
+                  
+                  // Close the popover only when the range is complete (second click)
                   setTimeout(() => {
                     setCalendarOpen(false);
                   }, 500);
+                } else if (!newStartDate && !newEndDate) {
+                  // Range reset case (e.g., clicking same day twice)
+                  // Call parent with original dates to reflect no change / reset state
+                  // (Assuming parent handles this appropriately or we adjust later)
+                  onDateRangeChange(startDate, endDate); 
                 }
+                // If newStartDate is null (shouldn't happen with current Calendar logic), do nothing.
               }}
               initialFocus
             />
