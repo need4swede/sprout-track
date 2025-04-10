@@ -31,7 +31,7 @@ export interface ApiResponse<T> {
  */
 export interface AuthResult {
   authenticated: boolean;
-  caretakerId?: string;
+  caretakerId?: string | null;
   caretakerType?: string | null;
   caretakerRole?: string;
   error?: string;
@@ -213,6 +213,17 @@ export function withAuthContext<T>(
         },
         { status: 401 }
       );
+    }
+    
+    // Modify authResult for system admin to use null caretakerId for database operations
+    if (authResult.caretakerId === 'system') {
+      // Create a new object to avoid modifying the original
+      const modifiedAuthResult = {
+        ...authResult,
+        // Set caretakerId to null for database operations
+        caretakerId: null
+      };
+      return handler(req, modifiedAuthResult);
     }
     
     return handler(req, authResult);
