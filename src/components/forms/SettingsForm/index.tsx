@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Baby, Unit, Caretaker } from '@prisma/client';
 import { Settings } from '@/app/api/types';
 import { Settings as Plus, Edit, Download, Upload } from 'lucide-react';
+import { Contact } from '@/src/components/CalendarEvent/calendar-event.types';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
@@ -21,6 +22,7 @@ import {
 } from '@/src/components/ui/form-page';
 import BabyForm from '@/src/components/forms/BabyForm';
 import CaretakerForm from '@/src/components/forms/CaretakerForm';
+import ContactForm from '@/src/components/forms/ContactForm';
 import ChangePinModal from '@/src/components/modals/ChangePinModal';
 
 interface SettingsFormProps {
@@ -41,12 +43,15 @@ export default function SettingsForm({
   const [settings, setSettings] = useState<Settings | null>(null);
   const [babies, setBabies] = useState<Baby[]>([]);
   const [caretakers, setCaretakers] = useState<Caretaker[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBabyForm, setShowBabyForm] = useState(false);
   const [showCaretakerForm, setShowCaretakerForm] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
   const [selectedCaretaker, setSelectedCaretaker] = useState<Caretaker | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [localSelectedBabyId, setLocalSelectedBabyId] = useState<string>('');
   const [showChangePinModal, setShowChangePinModal] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -61,11 +66,12 @@ export default function SettingsForm({
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [settingsResponse, babiesResponse, unitsResponse, caretakersResponse] = await Promise.all([
+      const [settingsResponse, babiesResponse, unitsResponse, caretakersResponse, contactsResponse] = await Promise.all([
         fetch('/api/settings'),
         fetch('/api/baby'),
         fetch('/api/units'),
-        fetch('/api/caretaker?includeInactive=true')
+        fetch('/api/caretaker?includeInactive=true'),
+        fetch('/api/contact')
       ]);
 
       if (settingsResponse.ok) {
@@ -86,6 +92,11 @@ export default function SettingsForm({
       if (caretakersResponse.ok) {
         const caretakersData = await caretakersResponse.json();
         setCaretakers(caretakersData.data);
+      }
+
+      if (contactsResponse.ok) {
+        const contactsData = await contactsResponse.json();
+        setContacts(contactsData.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -127,6 +138,11 @@ export default function SettingsForm({
   const handleCaretakerFormClose = async () => {
     setShowCaretakerForm(false);
     await fetchData(); // Refresh local caretakers list
+  };
+
+  const handleContactFormClose = async () => {
+    setShowContactForm(false);
+    await fetchData(); // Refresh local contacts list
   };
 
   const handleBackup = async () => {
@@ -357,6 +373,53 @@ export default function SettingsForm({
             </div>
 
             <div className="border-t border-slate-200 pt-6">
+              <h3 className="form-label mb-4">Manage Contacts</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2 w-full">
+                  <div className="flex-1 min-w-[200px]">
+                    <Select 
+                      value={selectedContact?.id || ''} 
+                      onValueChange={(contactId) => {
+                        const contact = contacts.find(c => c.id === contactId);
+                        setSelectedContact(contact || null);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a contact" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {contacts.map((contact) => (
+                          <SelectItem key={contact.id} value={contact.id}>
+                            {contact.name} {contact.role ? `(${contact.role})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    disabled={!selectedContact}
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowContactForm(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-3 mr-2" />
+                    Edit
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setIsEditing(false);
+                    setSelectedContact(null);
+                    setShowContactForm(true);
+                  }}>
+                    <Plus className="h-4 w-3 mr-2" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
               <h3 className="form-label mb-4">Debug Settings</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -544,6 +607,14 @@ export default function SettingsForm({
         isEditing={isEditing}
         caretaker={selectedCaretaker}
         onCaretakerChange={fetchData}
+      />
+
+      <ContactForm
+        isOpen={showContactForm}
+        onClose={handleContactFormClose}
+        contact={selectedContact || undefined}
+        onSave={() => fetchData()}
+        onDelete={() => fetchData()}
       />
 
       <ChangePinModal
