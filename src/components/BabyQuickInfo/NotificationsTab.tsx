@@ -161,7 +161,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
               </div>
               <div className={cn(styles.activityContent, "baby-quick-info-activity-content")}>
                 <div className={cn(styles.activityTitle, "baby-quick-info-activity-title")}>
-                  {selectedBaby.firstName}'s head: <span className={cn(styles.relativeTime)}>{lastActivities.lastMeasurements.headCircumference.value} {lastActivities.lastMeasurements.headCircumference.unit}</span>
+                  {selectedBaby.firstName}'s head circumference: <span className={cn(styles.relativeTime)}>{lastActivities.lastMeasurements.headCircumference.value} {lastActivities.lastMeasurements.headCircumference.unit}</span>
                 </div>
                 <div className={cn(styles.activityTime, "baby-quick-info-activity-time")}>
                   {formatRelativeTime(lastActivities.lastMeasurements.headCircumference.date)}

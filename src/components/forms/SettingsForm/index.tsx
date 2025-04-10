@@ -142,6 +142,7 @@ export default function SettingsForm({
 
   const handleContactFormClose = async () => {
     setShowContactForm(false);
+    setSelectedContact(null); // Reset selected contact when form closes
     await fetchData(); // Refresh local contacts list
   };
 

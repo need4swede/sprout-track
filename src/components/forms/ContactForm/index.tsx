@@ -50,7 +50,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
     };
   });
   
-  // Update form data when contact changes
+  // Update form data when contact changes or when form opens/closes
   useEffect(() => {
     if (contact) {
       // Convert from Contact type to ContactFormData type
@@ -62,6 +62,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
         email: contact.email || undefined, // Convert null to undefined
       });
     } else {
+      // Reset form data for new contact
       setFormData({
         name: '',
         role: '',
@@ -69,7 +70,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
         email: undefined,
       });
     }
-  }, [contact]);
+    // Also reset errors when form data changes
+    setErrors({});
+  }, [contact, isOpen]);
   
   // Form validation errors
   const [errors, setErrors] = useState<ContactFormErrors>({});
@@ -170,6 +173,14 @@ const ContactForm: React.FC<ContactFormProps> = ({
         // Call the onSave callback with the saved contact
         onSave(result.data);
         
+        // Reset form data to defaults
+        setFormData({
+          name: '',
+          role: '',
+          phone: undefined,
+          email: undefined,
+        });
+        
         // Close the form
         onClose();
       } else {
@@ -218,6 +229,14 @@ const ContactForm: React.FC<ContactFormProps> = ({
       if (result.success) {
         // Call the onDelete callback
         onDelete(contact.id);
+        
+        // Reset form data to defaults
+        setFormData({
+          name: '',
+          role: '',
+          phone: undefined,
+          email: undefined,
+        });
         
         // Close the form
         onClose();
