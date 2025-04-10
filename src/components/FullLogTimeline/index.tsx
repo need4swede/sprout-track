@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Settings } from '@prisma/client';
 import { CardHeader } from '@/src/components/ui/card';
 import SleepForm from '@/src/components/forms/SleepForm';
@@ -11,6 +11,7 @@ import MilestoneForm from '@/src/components/forms/MilestoneForm';
 import MeasurementForm from '@/src/components/forms/MeasurementForm';
 import { ActivityType, FilterType, FullLogTimelineProps } from './full-log-timeline.types';
 import FullLogFilter from './FullLogFilter';
+import FullLogSearchBar from './FullLogSearchBar';
 import FullLogActivityList from './FullLogActivityList';
 import FullLogActivityDetails from './FullLogActivityDetails';
 import { getActivityEndpoint, getActivityTime } from '@/src/components/Timeline/utils';
@@ -39,6 +40,7 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch settings on component mount
   useEffect(() => {
@@ -63,9 +65,151 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
     onDateRangeChange(start, end);
   };
 
+  // Search function to check if activity matches search query
+  const matchesSearch = useCallback((activity: ActivityType, query: string): boolean => {
+    if (!query) return true;
+    
+    const searchLower = query.toLowerCase();
+    
+    // Check common fields
+    if (activity.babyId && activity.babyId.toLowerCase().includes(searchLower)) return true;
+    if (activity.caretakerName && activity.caretakerName.toLowerCase().includes(searchLower)) return true;
+    
+    // Type guards for different activity types
+    const isSleepActivity = (act: any): act is { 
+      duration: number; 
+      type?: string; 
+      location?: string; 
+      quality?: string;
+    } => {
+      return 'duration' in act;
+    };
+    
+    const isFeedActivity = (act: any): act is { 
+      amount: number; 
+      type?: string; 
+      unitAbbr?: string; 
+      side?: string; 
+      food?: string;
+    } => {
+      return 'amount' in act;
+    };
+    
+    const isDiaperActivity = (act: any): act is { 
+      condition: string; 
+      type?: string; 
+      color?: string;
+    } => {
+      return 'condition' in act;
+    };
+    
+    const isNoteActivity = (act: any): act is { 
+      content: string; 
+      category?: string;
+    } => {
+      return 'content' in act;
+    };
+    
+    const isBathActivity = (act: any): act is { 
+      soapUsed: boolean; 
+      notes?: string;
+    } => {
+      return 'soapUsed' in act;
+    };
+    
+    const isPumpActivity = (act: any): act is { 
+      leftAmount?: number; 
+      rightAmount?: number; 
+      totalAmount?: number; 
+      unit?: string; 
+      notes?: string;
+    } => {
+      return 'leftAmount' in act || 'rightAmount' in act;
+    };
+    
+    const isMilestoneActivity = (act: any): act is { 
+      title: string; 
+      category: string; 
+      description?: string;
+    } => {
+      return 'title' in act && 'category' in act;
+    };
+    
+    const isMeasurementActivity = (act: any): act is { 
+      value: number; 
+      unit: string; 
+      type?: string; 
+      notes?: string;
+    } => {
+      return 'value' in act && 'unit' in act;
+    };
+    
+    // Check type-specific fields
+    if (isSleepActivity(activity)) {
+      if (activity.type && activity.type.toLowerCase().includes(searchLower)) return true;
+      if (activity.location && activity.location.toLowerCase().includes(searchLower)) return true;
+      if (activity.quality && activity.quality.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isFeedActivity(activity)) {
+      if (activity.type && activity.type.toLowerCase().includes(searchLower)) return true;
+      if (activity.amount && activity.amount.toString().includes(searchLower)) return true;
+      if (activity.unitAbbr && activity.unitAbbr.toLowerCase().includes(searchLower)) return true;
+      if (activity.side && activity.side.toLowerCase().includes(searchLower)) return true;
+      if (activity.food && activity.food.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isDiaperActivity(activity)) {
+      if (activity.type && activity.type.toLowerCase().includes(searchLower)) return true;
+      if (activity.condition && activity.condition.toLowerCase().includes(searchLower)) return true;
+      if (activity.color && activity.color.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isNoteActivity(activity)) {
+      if (activity.content && activity.content.toLowerCase().includes(searchLower)) return true;
+      if (activity.category && activity.category.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isBathActivity(activity)) {
+      if (activity.notes && activity.notes.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isPumpActivity(activity)) {
+      if (activity.leftAmount && activity.leftAmount.toString().includes(searchLower)) return true;
+      if (activity.rightAmount && activity.rightAmount.toString().includes(searchLower)) return true;
+      if (activity.totalAmount && activity.totalAmount.toString().includes(searchLower)) return true;
+      if (activity.unit && activity.unit.toLowerCase().includes(searchLower)) return true;
+      if (activity.notes && activity.notes.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isMilestoneActivity(activity)) {
+      if (activity.title && activity.title.toLowerCase().includes(searchLower)) return true;
+      if (activity.category && activity.category.toLowerCase().includes(searchLower)) return true;
+      if (activity.description && activity.description.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    if (isMeasurementActivity(activity)) {
+      if (activity.type && activity.type.toLowerCase().includes(searchLower)) return true;
+      if (activity.value && activity.value.toString().includes(searchLower)) return true;
+      if (activity.unit && activity.unit.toLowerCase().includes(searchLower)) return true;
+      if (activity.notes && activity.notes.toLowerCase().includes(searchLower)) return true;
+      return false;
+    }
+    
+    return false;
+  }, []);
+
   // Filter and sort activities
   const sortedActivities = useMemo(() => {
-    const filtered = !activeFilter 
+    // First filter by activity type
+    const typeFiltered = !activeFilter 
       ? activities 
       : activities.filter(activity => {
           switch (activeFilter) {
@@ -89,8 +233,13 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
               return true;
           }
         });
+    
+    // Then filter by search query
+    const searchFiltered = !searchQuery 
+      ? typeFiltered 
+      : typeFiltered.filter(activity => matchesSearch(activity, searchQuery));
 
-    const sorted = [...filtered].sort((a, b) => {
+    const sorted = [...searchFiltered].sort((a, b) => {
       const timeA = new Date(getActivityTime(a));
       const timeB = new Date(getActivityTime(b));
       return timeB.getTime() - timeA.getTime();
@@ -98,11 +247,12 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     return sorted.slice(startIndex, startIndex + itemsPerPage);
-  }, [activities, activeFilter, currentPage, itemsPerPage]);
+  }, [activities, activeFilter, currentPage, itemsPerPage, searchQuery, matchesSearch]);
 
   // Calculate total pages
   const totalPages = useMemo(() => {
-    const filtered = !activeFilter 
+    // First filter by activity type
+    const typeFiltered = !activeFilter 
       ? activities 
       : activities.filter(activity => {
           switch (activeFilter) {
@@ -126,8 +276,14 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
               return true;
           }
         });
-    return Math.ceil(filtered.length / itemsPerPage);
-  }, [activities, activeFilter, itemsPerPage]);
+    
+    // Then filter by search query
+    const searchFiltered = !searchQuery 
+      ? typeFiltered 
+      : typeFiltered.filter(activity => matchesSearch(activity, searchQuery));
+    
+    return Math.ceil(searchFiltered.length / itemsPerPage);
+  }, [activities, activeFilter, itemsPerPage, searchQuery, matchesSearch]);
 
   // Handle activity deletion
   const handleDelete = async (activity: ActivityType) => {
@@ -179,6 +335,12 @@ const FullLogTimeline: React.FC<FullLogTimelineProps> = ({
           onQuickFilter={handleQuickFilter}
         />
       </CardHeader>
+
+      {/* Search Bar */}
+      <FullLogSearchBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
       {/* Activity List */}
       <FullLogActivityList

@@ -29,6 +29,11 @@ export interface FullLogFilterProps {
   onQuickFilter: (days: number) => void;
 }
 
+export interface FullLogSearchBarProps {
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+}
+
 export interface FullLogActivityListProps {
   activities: ActivityType[];
   settings: Settings | null;

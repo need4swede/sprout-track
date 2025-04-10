@@ -7,6 +7,12 @@ import { cva } from "class-variance-authority";
  */
 
 export const styles = {
+  // Search styles
+  search: {
+    bar: "border-t border-gray-200 bg-gray-100 px-6 py-3",
+    container: "bg-white rounded-xl px-3 py-2",
+    input: "border-0 bg-transparent focus:ring-0 focus:border-0 h-8 px-0 py-1",
+  },
   // Container styles
   container: "flex flex-col h-[calc(100vh-80px)] border-t-[1px] border-white",
   
