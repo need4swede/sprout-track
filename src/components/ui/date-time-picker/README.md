@@ -8,7 +8,7 @@ A modern, accessible date and time picker component for the Baby Tracker applica
 - Calendar component for date selection in a popover
 - iOS-style time picker with touch/swipe controls in a popover
 - Automatic closing of date popover when a date is selected
-- Done button for time selection
+- Time popover closes when clicking outside
 - Fixed dimensions for consistent UI (360px height, 350px width)
 - Bottom-aware positioning with margin
 - Keyboard accessibility
@@ -60,7 +60,7 @@ Main component for selecting both date and time with a user-friendly interface.
 - Clicking the date button opens a calendar popover
 - Clicking the time button opens a time picker popover
 - Selecting a date automatically closes the calendar popover
-- Time picker includes a "Done" button to confirm selection
+- Time picker popover closes when clicking outside
 - Both popovers have fixed dimensions for consistent UI
 - Popovers are positioned with awareness of the bottom of the screen
 

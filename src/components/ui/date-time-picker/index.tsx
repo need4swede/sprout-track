@@ -22,8 +22,7 @@ import {
   dateTimePickerPopoverContentStyles,
   dateTimePickerCalendarContainerStyles,
   dateTimePickerTimeContainerStyles,
-  dateTimePickerFooterStyles,
-  dateTimePickerDoneButtonStyles,
+  dateTimePickerFooterStyles, // Keep footer style for potential future use or spacing
 } from './date-time-picker.styles';
 
 /**
@@ -126,10 +125,7 @@ export function DateTimePicker({
     }
   };
   
-  // Handle done button click for time selection
-  const handleTimeDone = () => {
-    setTimeOpen(false);
-  };
+  // The time popover will now close when clicking outside, removing the need for a "Done" button.
   
   return (
     <div className={cn(dateTimePickerContainerStyles, "date-time-picker-container", className)}>
@@ -188,18 +184,7 @@ export function DateTimePicker({
               className="mx-auto w-full"
             />
           </div>
-          
-          {/* Footer with done button */}
-          <div className={cn(dateTimePickerFooterStyles, "date-time-picker-footer")}>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleTimeDone}
-              className={cn(dateTimePickerDoneButtonStyles, "date-time-picker-done-button")}
-            >
-              Done
-            </Button>
-          </div>
+          {/* Removed Footer with done button */}
         </PopoverContent>
       </Popover>
     </div>

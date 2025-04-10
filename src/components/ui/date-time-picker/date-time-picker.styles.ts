@@ -39,13 +39,6 @@ export const dateTimePickerFooterStyles = cn(
   "flex justify-end p-3 border-t border-gray-200"
 );
 
-// Done button styles
-export const dateTimePickerDoneButtonStyles = cn(
-  "text-white transition-colors duration-300",
-  "bg-gradient-to-r from-teal-700 to-emerald-600",
-  "hover:bg-gradient-to-r hover:from-teal-800 hover:to-emerald-700"
-);
-
 // Input container styles (keeping this for backward compatibility)
 export const dateTimePickerInputContainerStyles = cn(
   "relative cursor-pointer"
