@@ -4,27 +4,36 @@ import { Bath, MapPin, Ruler, Scale, RotateCw, StickyNote } from 'lucide-react';
 import { diaper } from '@lucide/lab';
 import { Icon } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { styles } from './baby-quick-info.styles';
+import { styles, eventTypeColors } from './baby-quick-info.styles';
 import { NotificationsTabProps } from './baby-quick-info.types';
+
+/**
+ * Get event type style class
+ * 
+ * Returns the appropriate style class for each event type
+ */
+const getEventTypeClass = (type: string): string => {
+  switch (type) {
+    case 'APPOINTMENT':
+      return styles.eventAppointment;
+    case 'CARETAKER_SCHEDULE':
+      return styles.eventCaretakerSchedule;
+    case 'REMINDER':
+      return styles.eventReminder;
+    case 'CUSTOM':
+      return styles.eventCustom;
+    default:
+      return styles.eventDefault;
+  }
+};
 
 /**
  * Get color for event type
  * 
- * Returns the appropriate color for each event type, matching the Calendar component
+ * Returns the appropriate color for each event type, for inline styling if needed
  */
 const getEventTypeColor = (type: string): string => {
-  switch (type) {
-    case 'APPOINTMENT':
-      return '#3b82f6'; // blue-500
-    case 'CARETAKER_SCHEDULE':
-      return '#22c55e'; // green-500
-    case 'REMINDER':
-      return '#eab308'; // yellow-500
-    case 'CUSTOM':
-      return '#a855f7'; // purple-500
-    default:
-      return '#6b7280'; // gray-500
-  }
+  return eventTypeColors[type as keyof typeof eventTypeColors] || eventTypeColors.DEFAULT;
 };
 
 /**
@@ -199,10 +208,13 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
             upcomingEvents.map((event) => (
               <div 
                 key={event.id} 
-                className={cn(styles.eventItem, "baby-quick-info-event-item")}
-                style={{ 
-                  borderLeftColor: event.color || getEventTypeColor(event.type)
-                }}
+                className={cn(
+                  styles.eventItem, 
+                  getEventTypeClass(event.type),
+                  "baby-quick-info-event-item",
+                  `baby-quick-info-event-${event.type.toLowerCase().replace('_', '-')}`
+                )}
+                style={event.color ? { borderLeftColor: event.color } : undefined}
               >
                 <div className={cn(styles.eventTitle, "baby-quick-info-event-title")}>
                   {event.title}

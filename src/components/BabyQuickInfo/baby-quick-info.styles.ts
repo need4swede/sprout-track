@@ -6,6 +6,18 @@ import { cn } from "@/src/lib/utils";
  * These styles define the visual appearance of the baby quick info form
  */
 
+/**
+ * Event type colors for light mode
+ * These colors match the Calendar component
+ */
+export const eventTypeColors = {
+  APPOINTMENT: '#3b82f6', // blue-500
+  CARETAKER_SCHEDULE: '#22c55e', // green-500
+  REMINDER: '#eab308', // yellow-500
+  CUSTOM: '#a855f7', // purple-500
+  DEFAULT: '#6b7280', // gray-500
+};
+
 export const styles = {
   // Container styles
   container: "flex flex-col",
@@ -60,7 +72,12 @@ export const styles = {
   
   // Calendar events
   eventsContainer: "space-y-2 mt-4",
-  eventItem: "p-3 rounded-lg bg-gray-50 border border-gray-100 shadow-sm border-l-4 border-l-teal-500",
+  eventItem: "p-3 rounded-lg bg-gray-50 border border-gray-100 shadow-sm border-l-4",
+  eventAppointment: "border-l-blue-500",
+  eventCaretakerSchedule: "border-l-green-500",
+  eventReminder: "border-l-yellow-500",
+  eventCustom: "border-l-purple-500",
+  eventDefault: "border-l-gray-500",
   eventTitle: "text-sm font-medium text-gray-800",
   eventTime: "text-xs text-gray-500 mt-1",
   eventLocation: "text-xs text-gray-600 mt-1 flex items-center",

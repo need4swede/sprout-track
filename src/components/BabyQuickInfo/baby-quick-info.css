@@ -107,8 +107,28 @@ html.dark .baby-quick-info-stat-value {
 html.dark .baby-quick-info-event-item {
   background-color: #1f2937 !important; /* gray-800 */
   border-color: #374151 !important; /* gray-700 */
-  border-left-color: #0d9488 !important; /* teal-600 */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Event type colors for dark mode */
+html.dark .baby-quick-info-event-appointment {
+  border-left-color: #60a5fa !important; /* blue-400 */
+}
+
+html.dark .baby-quick-info-event-caretaker-schedule {
+  border-left-color: #4ade80 !important; /* green-400 */
+}
+
+html.dark .baby-quick-info-event-reminder {
+  border-left-color: #facc15 !important; /* yellow-400 */
+}
+
+html.dark .baby-quick-info-event-custom {
+  border-left-color: #c084fc !important; /* purple-400 */
+}
+
+html.dark .baby-quick-info-event-default {
+  border-left-color: #9ca3af !important; /* gray-400 */
 }
 
 html.dark .baby-quick-info-event-title {
