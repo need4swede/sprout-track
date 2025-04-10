@@ -87,7 +87,7 @@ export const calendarMonthSelectVariants = cva(
  * Calendar day styles
  */
 export const calendarDayVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -96,8 +96,8 @@ export const calendarDayVariants = cva(
         "date-time-picker": "h-10 w-9",
       },
       selected: {
-        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700",
-        false: "hover:bg-teal-50 hover:text-teal-700",
+        true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 rounded-md",
+        false: "hover:bg-teal-50 hover:text-teal-700 rounded-md",
       },
       rangeStart: {
         true: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 rounded-l-md rounded-r-none",
@@ -108,7 +108,7 @@ export const calendarDayVariants = cva(
         false: "",
       },
       rangeMiddle: {
-        true: "bg-teal-100 hover:bg-teal-200 text-teal-800",
+        true: "bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-none",
         false: "",
       },
       today: {
@@ -145,7 +145,7 @@ export const calendarDayVariants = cva(
  * Calendar day names styles
  */
 export const calendarDayNamesVariants = cva(
-  "grid grid-cols-7 gap-1 mb-1",
+  "grid grid-cols-7 gap-0 mb-1",
   {
     variants: {
       variant: {

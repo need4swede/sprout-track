@@ -58,10 +58,21 @@ html.dark .calendar-day-range-end:hover {
 html.dark .calendar-day-range-middle {
   background-color: #134e4a !important; /* dark:bg-teal-900 */
   color: #99f6e4 !important; /* dark:text-teal-200 */
+  border-radius: 0 !important;
 }
 
 html.dark .calendar-day-range-middle:hover {
   background-color: #115e59 !important; /* dark:hover:bg-teal-800 */
+}
+
+html.dark .calendar-day-range-start {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+html.dark .calendar-day-range-end {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 
 /* Additional dark mode styles from calendar.styles.ts */

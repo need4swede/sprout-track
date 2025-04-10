@@ -211,7 +211,7 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
         if (onSelect) onSelect(date);
       } else if (mode === "range" && onRangeChange) {
         if (rangeSelectionState === 'start') {
-          // Start a new range
+          // Start a new range - clear any existing selection
           onRangeChange(date, null);
           setRangeSelectionState('end');
         } else {
@@ -354,7 +354,7 @@ const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
         </div>
         
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1 calendar-grid">
+        <div className="grid grid-cols-7 gap-0 calendar-grid">
           {days.map((day, index) => (
             <button
               key={`${day.date.toISOString()}-${index}`}
