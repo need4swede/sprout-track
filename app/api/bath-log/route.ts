@@ -11,11 +11,46 @@ async function handlePost(req: NextRequest, authContext: AuthResult) {
     // Convert time to UTC for storage
     const timeUTC = toUTC(body.time);
     
+    // Check if the baby exists before creating the bath log
+    const baby = await prisma.baby.findUnique({
+      where: { id: body.babyId },
+    });
+    
+    if (!baby) {
+      return NextResponse.json<ApiResponse<BathLogResponse>>(
+        {
+          success: false,
+          error: 'Baby not found',
+        },
+        { status: 404 }
+      );
+    }
+    
+    // Handle the system admin case - set caretakerId to null if it's the system admin
+    const caretakerId = authContext.caretakerId === 'system' ? null : authContext.caretakerId;
+    
+    // If caretakerId is provided and not system, verify it exists
+    if (caretakerId) {
+      const caretaker = await prisma.caretaker.findUnique({
+        where: { id: caretakerId },
+      });
+      
+      if (!caretaker) {
+        return NextResponse.json<ApiResponse<BathLogResponse>>(
+          {
+            success: false,
+            error: 'Caretaker not found',
+          },
+          { status: 404 }
+        );
+      }
+    }
+    
     const bathLog = await prisma.bathLog.create({
       data: {
         ...body,
         time: timeUTC,
-        caretakerId: authContext.caretakerId,
+        caretakerId: caretakerId, // Use null for system admin
         soapUsed: body.soapUsed ?? true, // Default to true if not provided
         shampooUsed: body.shampooUsed ?? true, // Default to true if not provided
       },
@@ -76,11 +111,33 @@ async function handlePut(req: NextRequest, authContext: AuthResult) {
       );
     }
 
+    // Handle the system admin case - set caretakerId to null if it's the system admin
+    const caretakerId = authContext.caretakerId === 'system' ? null : authContext.caretakerId;
+    
+    // If caretakerId is provided and not system, verify it exists
+    if (caretakerId && body.caretakerId === undefined) {
+      const caretaker = await prisma.caretaker.findUnique({
+        where: { id: caretakerId },
+      });
+      
+      if (!caretaker) {
+        return NextResponse.json<ApiResponse<BathLogResponse>>(
+          {
+            success: false,
+            error: 'Caretaker not found',
+          },
+          { status: 404 }
+        );
+      }
+    }
+    
     // Process date fields - convert to UTC
     const data = {
       ...(body.time ? { time: toUTC(body.time) } : {}),
+      // Only set caretakerId if not already in the body
+      ...(body.caretakerId === undefined ? { caretakerId } : {}),
       ...Object.entries(body)
-        .filter(([key]) => !['time'].includes(key))
+        .filter(([key]) => !['time', 'caretakerId'].includes(key))
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
     };
 

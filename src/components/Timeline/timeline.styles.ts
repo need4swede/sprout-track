@@ -12,7 +12,7 @@ export const styles = {
   
   // Content styles
   content: "flex-1 overflow-y-auto bg-white",
-  activityList: "divide-y divide-gray-100 h-full",
+  activityList: "divide-y divide-gray-100 min-h-full",
   
   // Activity item styles
   activityItem: "group hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer",

@@ -295,20 +295,32 @@ function HomeContent(): React.ReactElement {
       {/* Timeline Section */}
       {selectedBaby && (
         <Card className="overflow-hidden border-0 relative z-0">
-          <Timeline 
-            activities={activities} 
-            onActivityDeleted={(dateFilter?: Date) => {
-              if (selectedBaby?.id) {
-                // If a date filter is provided, use it when refreshing activities
-                if (dateFilter) {
-                  console.log(`Refreshing with date filter: ${dateFilter.toISOString()}`);
-                  // Don't call refreshActivities here, let the Timeline component handle it
-                } else {
-                  refreshActivities(selectedBaby.id);
+          {activities.length > 0 ? (
+            <Timeline 
+              activities={activities} 
+              onActivityDeleted={(dateFilter?: Date) => {
+                if (selectedBaby?.id) {
+                  // If a date filter is provided, use it when refreshing activities
+                  if (dateFilter) {
+                    console.log(`Refreshing with date filter: ${dateFilter.toISOString()}`);
+                    // Don't call refreshActivities here, let the Timeline component handle it
+                  } else {
+                    refreshActivities(selectedBaby.id);
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-192px)] text-center bg-white">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+                <BabyIcon className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
+              <p className="text-sm text-gray-500">
+              Activities will appear here once you start tracking
+              </p>
+            </div>
+          )}
         </Card>
       )}
 

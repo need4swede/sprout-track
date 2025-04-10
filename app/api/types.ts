@@ -175,6 +175,7 @@ export interface BathLogCreate {
   soapUsed?: boolean;
   shampooUsed?: boolean;
   notes?: string;
+  caretakerId?: string | null;
 }
 
 // Pump log types
