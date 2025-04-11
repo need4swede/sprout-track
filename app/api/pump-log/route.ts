@@ -280,12 +280,9 @@ async function handleDelete(req: NextRequest, authContext: AuthResult) {
       );
     }
 
-    // Soft delete by setting deletedAt timestamp
-    await prisma.pumpLog.update({
+    // Hard delete the record
+    await prisma.pumpLog.delete({
       where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
     });
 
     return NextResponse.json<ApiResponse<void>>({

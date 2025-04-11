@@ -40,6 +40,20 @@ const TimelineActivityDetails = ({
     }
   };
 
+  const handleDelete = () => {
+    if (activity) {
+      // For pump logs, we need to ensure the activity is properly identified
+      if ('leftAmount' in activity || 'rightAmount' in activity || 
+          (activity.id && activity.id.length > 0 && 'startTime' in activity)) {
+        // Just pass the original activity - the key is to ensure we're using the correct endpoint
+        // The getActivityEndpoint function in utils.tsx will check for leftAmount or rightAmount properties
+        onDelete(activity);
+      } else {
+        onDelete(activity);
+      }
+    }
+  };
+
   return (
     <FormPage 
       isOpen={isOpen} 
@@ -61,7 +75,7 @@ const TimelineActivityDetails = ({
           <div className="flex gap-2">
             <Button
               variant="destructive"
-              onClick={() => onDelete(activity)}
+              onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete

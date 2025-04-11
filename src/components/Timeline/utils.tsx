@@ -700,14 +700,19 @@ export const getActivityDescription = (activity: ActivityType, settings: Setting
 };
 
 export const getActivityEndpoint = (activity: ActivityType): string => {
+  // Check for pump activity first since it can also have duration
+  if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump-log';
   if ('duration' in activity) return 'sleep-log';
   if ('amount' in activity) return 'feed-log';
   if ('condition' in activity) return 'diaper-log';
   if ('content' in activity) return 'note';
   if ('soapUsed' in activity) return 'bath-log';
-  if ('leftAmount' in activity || 'rightAmount' in activity) return 'pump-log';
   if ('title' in activity && 'category' in activity) return 'milestone-log';
   if ('value' in activity && 'unit' in activity) return 'measurement-log';
+  
+  // Log the activity for debugging
+  console.log('Activity type not identified:', activity);
+  
   return '';
 };
 
