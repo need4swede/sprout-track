@@ -5,12 +5,13 @@ A form component for recording and editing breast pumping activities in the Baby
 ## Features
 
 - Records start and end times for pumping sessions
-- Tracks left and right breast amounts separately
-- Automatically calculates total amount
-- Supports different measurement units (oz, ml)
+- Tracks left and right breast amounts separately with intuitive increment/decrement controls
+- Automatically calculates total amount based on left and right amounts
+- Supports different measurement units (oz, ml) with easy toggle buttons
 - Allows adding notes for each session
 - Handles both creation and editing of pump records
 - Follows the application's form design pattern
+- Supports dark mode with appropriate styling
 
 ## Usage
 
@@ -65,10 +66,10 @@ The form includes the following fields:
 
 1. **Start Time**: When the pumping session began (required)
 2. **End Time**: When the pumping session ended (optional)
-3. **Left Amount**: Amount pumped from left breast (optional)
-4. **Right Amount**: Amount pumped from right breast (optional)
+3. **Left Amount**: Amount pumped from left breast with increment/decrement buttons (optional)
+4. **Right Amount**: Amount pumped from right breast with increment/decrement buttons (optional)
 5. **Total Amount**: Total amount pumped (calculated automatically)
-6. **Unit**: Measurement unit (oz or ml)
+6. **Unit**: Measurement unit (oz or ml) with toggle buttons
 7. **Notes**: Additional notes about the session (optional)
 
 ## Behavior
@@ -83,12 +84,25 @@ The form includes the following fields:
 The component uses the following UI components from the application's component library:
 
 - `FormPage`, `FormPageContent`, `FormPageFooter` for layout
-- `Input` for text and date inputs
+- `DateTimePicker` for date and time selection
+- `Input` for text inputs
 - `Textarea` for multiline text input
-- `Button` for form actions
+- `Button` for form actions and increment/decrement controls
 - `Label` for form field labels
+- Lucide React icons (`Plus`, `Minus`) for increment/decrement buttons
 
 The component follows the standard form initialization pattern to prevent form resets when the `initialTime` prop changes.
+
+### User Experience Improvements
+
+- Unit selection buttons positioned at the top for easy access
+- Left and right amount inputs on separate rows for better clarity
+- Larger input fields with increased text size for better readability
+- Increment/decrement buttons for easy adjustment of amounts
+- Automatic calculation of total amount as left and right amounts are changed
+- Appropriate step sizes for increments (0.5 for oz, 5 for ml)
+- Descriptive form title and description
+- Dark mode support with custom styling
 
 ## API Integration
 
@@ -104,4 +118,6 @@ This component is designed with cross-platform compatibility in mind:
 - Uses standard React patterns that can be adapted to React Native
 - Avoids web-specific APIs where possible
 - Uses relative sizing that can be adapted to different screen sizes
-- Implements touch-friendly input controls
+- Implements touch-friendly input controls with appropriately sized buttons
+- Separates styling concerns with CSS files for easier platform-specific styling
+- Uses a modular approach that can be adapted to different platforms

@@ -8,11 +8,21 @@ import { Textarea } from '@/src/components/ui/textarea';
 import { Label } from '@/src/components/ui/label';
 import { DateTimePicker } from '@/src/components/ui/date-time-picker';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/src/components/ui/select';
+import {
   FormPage, 
   FormPageContent, 
   FormPageFooter 
 } from '@/src/components/ui/form-page';
 import { useTimezone } from '@/app/context/timezone';
+import { useTheme } from '@/src/context/theme';
+import { Plus, Minus } from 'lucide-react';
+import './pump-form.css';
 
 
 interface PumpFormProps {
@@ -68,6 +78,7 @@ export default function PumpForm({
     }
   });
   
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     startTime: initialTime,
     endTime: '',
@@ -175,32 +186,59 @@ export default function PumpForm({
     }
   }, [isOpen, initialTime, activity, isInitialized]);
 
+  // Handle amount increment/decrement
+  const incrementAmount = (field: 'leftAmount' | 'rightAmount') => {
+    const currentAmount = parseFloat(formData[field] || '0');
+    const step = formData.unitAbbr === 'ML' ? 5 : 0.5;
+    const newAmount = (currentAmount + step).toFixed(1); // Only show one decimal place
+    
+    // Update the field and recalculate total
+    updateAmountField(field, newAmount);
+  };
+
+  const decrementAmount = (field: 'leftAmount' | 'rightAmount') => {
+    const currentAmount = parseFloat(formData[field] || '0');
+    const step = formData.unitAbbr === 'ML' ? 5 : 0.5;
+    if (currentAmount >= step) {
+      const newAmount = (currentAmount - step).toFixed(1); // Only show one decimal place
+      
+      // Update the field and recalculate total
+      updateAmountField(field, newAmount);
+    }
+  };
+
+  // Update amount field and recalculate total
+  const updateAmountField = (field: 'leftAmount' | 'rightAmount' | 'totalAmount', value: string) => {
+    // For amount fields, allow any numeric values
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      if (field === 'leftAmount' || field === 'rightAmount') {
+        // Update the specific field
+        setFormData(prev => ({ ...prev, [field]: value }));
+        
+        // Recalculate total
+        const leftVal = field === 'leftAmount' ? value : formData.leftAmount;
+        const rightVal = field === 'rightAmount' ? value : formData.rightAmount;
+        
+        const leftNum = leftVal ? parseFloat(leftVal) : 0;
+        const rightNum = rightVal ? parseFloat(rightVal) : 0;
+        
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          totalAmount: (leftNum + rightNum).toFixed(1) // Only show one decimal place
+        }));
+      } else {
+        // Just update the total field directly
+        setFormData(prev => ({ ...prev, totalAmount: value }));
+      }
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // For amount fields, only allow numeric values with up to 2 decimal places
     if (['leftAmount', 'rightAmount', 'totalAmount'].includes(name)) {
-      // Allow empty string or valid decimal number
-      if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-        setFormData(prev => ({ ...prev, [name]: value }));
-        
-        // Auto-calculate total amount if left or right amount changes
-        if (name === 'leftAmount' || name === 'rightAmount') {
-          const leftVal = name === 'leftAmount' ? value : formData.leftAmount;
-          const rightVal = name === 'rightAmount' ? value : formData.rightAmount;
-          
-          const leftNum = leftVal ? parseFloat(leftVal) : 0;
-          const rightNum = rightVal ? parseFloat(rightVal) : 0;
-          
-          if (leftVal || rightVal) {
-            setFormData(prev => ({ 
-              ...prev, 
-              [name]: value,
-              totalAmount: (leftNum + rightNum).toString()
-            }));
-          }
-        }
-      }
+      updateAmountField(name as 'leftAmount' | 'rightAmount' | 'totalAmount', value);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -283,6 +321,7 @@ export default function PumpForm({
       isOpen={isOpen}
       onClose={onClose}
       title={activity ? 'Edit Pump' : 'New Pump'}
+      description={activity ? 'Update details about your pumping session' : 'Record details about your pumping session'}
     >
       <form onSubmit={handleSubmit}>
         <FormPageContent>
@@ -309,11 +348,46 @@ export default function PumpForm({
               />
             </div>
             
-            {/* Amount Inputs */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="leftAmount">Left Amount</Label>
-                <div className="flex">
+            {/* Unit Selection with Buttons - Moved above amount inputs */}
+            <div className="space-y-2">
+              <Label htmlFor="unitAbbr">Unit</Label>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant={formData.unitAbbr === 'OZ' ? 'default' : 'outline'}
+                  className="w-full unit-button"
+                  onClick={() => setFormData(prev => ({ ...prev, unitAbbr: 'OZ' }))}
+                  disabled={loading}
+                >
+                  oz
+                </Button>
+                <Button
+                  type="button"
+                  variant={formData.unitAbbr === 'ML' ? 'default' : 'outline'}
+                  className="w-full unit-button"
+                  onClick={() => setFormData(prev => ({ ...prev, unitAbbr: 'ML' }))}
+                  disabled={loading}
+                >
+                  ml
+                </Button>
+              </div>
+            </div>
+            
+            {/* Left Amount Input - Now on its own row */}
+            <div className="space-y-2">
+              <Label htmlFor="leftAmount">Left Amount</Label>
+              <div className="flex items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => decrementAmount('leftAmount')}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-10 w-10 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 decrement-button"
+                >
+                  <Minus className="h-4 w-4 text-white" />
+                </Button>
+                <div className="flex mx-2">
                   <Input
                     id="leftAmount"
                     name="leftAmount"
@@ -322,17 +396,40 @@ export default function PumpForm({
                     placeholder="0.0"
                     value={formData.leftAmount}
                     onChange={handleInputChange}
-                    className="rounded-r-none"
+                    className="rounded-r-none text-center text-lg w-24"
                   />
-                  <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">
+                  <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md amount-unit">
                     {formData.unitAbbr}
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => incrementAmount('leftAmount')}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-10 w-10 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 increment-button"
+                >
+                  <Plus className="h-4 w-4 text-white" />
+                </Button>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="rightAmount">Right Amount</Label>
-                <div className="flex">
+            </div>
+            
+            {/* Right Amount Input - Now on its own row */}
+            <div className="space-y-2">
+              <Label htmlFor="rightAmount">Right Amount</Label>
+              <div className="flex items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => decrementAmount('rightAmount')}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-10 w-10 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 decrement-button"
+                >
+                  <Minus className="h-4 w-4 text-white" />
+                </Button>
+                <div className="flex mx-2">
                   <Input
                     id="rightAmount"
                     name="rightAmount"
@@ -341,12 +438,22 @@ export default function PumpForm({
                     placeholder="0.0"
                     value={formData.rightAmount}
                     onChange={handleInputChange}
-                    className="rounded-r-none"
+                    className="rounded-r-none text-center text-lg w-24"
                   />
-                  <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">
+                  <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md amount-unit">
                     {formData.unitAbbr}
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => incrementAmount('rightAmount')}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-teal-600 to-emerald-600 border-0 rounded-full h-10 w-10 flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 increment-button"
+                >
+                  <Plus className="h-4 w-4 text-white" />
+                </Button>
               </div>
             </div>
             
@@ -362,27 +469,12 @@ export default function PumpForm({
                   placeholder="0.0"
                   value={formData.totalAmount}
                   onChange={handleInputChange}
-                  className="rounded-r-none"
+                  className="rounded-r-none text-lg"
                 />
-                <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md">
+                <div className="inline-flex items-center px-3 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md amount-unit">
                   {formData.unitAbbr}
                 </div>
               </div>
-            </div>
-            
-            {/* Unit Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="unitAbbr">Unit</Label>
-              <select
-                id="unitAbbr"
-                name="unitAbbr"
-                value={formData.unitAbbr}
-                onChange={(e) => setFormData(prev => ({ ...prev, unitAbbr: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="OZ">Ounces (oz)</option>
-                <option value="ML">Milliliters (ml)</option>
-              </select>
             </div>
             
             {/* Notes */}

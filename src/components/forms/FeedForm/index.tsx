@@ -252,9 +252,8 @@ export default function FeedForm({
   }, [formData.type, babyId, defaultSettings.defaultBottleUnit, defaultSettings.defaultSolidsUnit]);
 
   const handleAmountChange = (newAmount: string) => {
-    // Ensure it's a valid number and not negative
-    const numValue = parseFloat(newAmount);
-    if (!isNaN(numValue) && numValue >= 0) {
+    // Allow any numeric values
+    if (newAmount === '' || /^\d*\.?\d*$/.test(newAmount)) {
       setFormData(prev => ({
         ...prev,
         amount: newAmount
@@ -265,10 +264,10 @@ export default function FeedForm({
   const incrementAmount = () => {
     const currentAmount = parseFloat(formData.amount || '0');
     const step = formData.unit === 'ML' ? 5 : 0.5;
-    const newAmount = currentAmount + step;
+    const newAmount = (currentAmount + step).toFixed(1); // Only show one decimal place
     setFormData(prev => ({
       ...prev,
-      amount: newAmount.toString()
+      amount: newAmount
     }));
   };
 
@@ -276,10 +275,10 @@ export default function FeedForm({
     const currentAmount = parseFloat(formData.amount || '0');
     const step = formData.unit === 'ML' ? 5 : 0.5;
     if (currentAmount >= step) {
-      const newAmount = currentAmount - step;
+      const newAmount = (currentAmount - step).toFixed(1); // Only show one decimal place
       setFormData(prev => ({
         ...prev,
-        amount: newAmount.toString()
+        amount: newAmount
       }));
     }
   };

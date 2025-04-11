@@ -42,13 +42,12 @@ export default function SolidsFeedForm({
             <Minus className="h-5 w-5 text-white" />
           </Button>
           <Input
-            type="number"
+            type="text"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
             className="w-24 mx-3 text-center"
             placeholder="Amount"
-            min="0"
-            step="0.5"
+            inputMode="decimal"
             disabled={loading}
           />
           <Button
