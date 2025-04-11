@@ -26,15 +26,25 @@ git clone https://github.com/Oak-and-Sprout/sprout-track.git
 cd sprout-track
 ```
 
-2. Give execute permissions to the scripts folder:
+2. If deploying to a restricted directory (like /var/www), set proper permissions:
+```bash
+# For standard web server directories like /var/www
+sudo chown -R $(whoami):$(whoami) .
+# Or specify your web server user (e.g., www-data)
+# sudo chown -R www-data:www-data .
+```
+
+3. Give execute permissions to the scripts folder:
 ```bash
 chmod +x scripts/*.sh
 ```
 
-3. Run the setup script:
+4. Run the setup script:
 ```bash
 ./scripts/setup.sh
 ```
+
+> **Note:** Do not run the setup script with sudo, as it installs Node.js for the current user. If you need to run as root, install Node.js system-wide first.
 
 This setup script will:
 - Check if Node.js is installed and install it if needed

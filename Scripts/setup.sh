@@ -96,7 +96,7 @@ echo "To run the development server:"
 echo "  npm run dev"
 echo ""
 echo "To run the production server:"
-echo "  npm start"
+echo "  npm run start"
 echo "-------------------------------------"
 
 exit 0
