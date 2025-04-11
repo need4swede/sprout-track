@@ -1,4 +1,4 @@
-# Baby Tracker
+# Baby Tracker2
 
 A Next.js application for tracking baby activities, milestones, and development.
 
