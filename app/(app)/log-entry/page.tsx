@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
+import './no-activities.css';
 import { SleepLogResponse, FeedLogResponse, DiaperLogResponse, NoteResponse, BathLogResponse, PumpLogResponse, MeasurementResponse, MilestoneResponse } from '@/app/api/types';
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
@@ -311,13 +312,13 @@ function HomeContent(): React.ReactElement {
               }}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-192px)] text-center bg-white">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-                <BabyIcon className="h-8 w-8 text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-192px)] text-center bg-white border-t border-gray-200 no-activities-container">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center no-activities-icon-container">
+                <BabyIcon className="h-8 w-8 text-indigo-600 no-activities-icon" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No activities recorded</h3>
-              <p className="text-sm text-gray-500">
-              Activities will appear here once you start tracking
+              <h3 className="text-lg font-medium text-gray-900 mb-1 no-activities-title">No activities recorded</h3>
+              <p className="text-sm text-gray-500 no-activities-text">
+                Activities will appear here once you start tracking
               </p>
             </div>
           )}
