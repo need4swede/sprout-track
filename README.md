@@ -148,6 +148,61 @@ The Setup Wizard ensures your application is properly configured with the necess
 
 ## Deployment
 
+### Docker Deployment
+
+The application can be easily deployed using Docker. This method provides a consistent environment and simplifies the setup process.
+
+#### Prerequisites
+
+- Docker and Docker Compose installed on your system
+- Git to clone the repository
+
+#### Quick Docker Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Oak-and-Sprout/sprout-track.git
+cd sprout-track
+```
+
+2. Make the Docker setup script executable:
+```bash
+chmod +x scripts/docker-setup.sh
+```
+
+3. Build the Docker image:
+```bash
+./scripts/docker-setup.sh build
+```
+
+4. Start the application:
+```bash
+./scripts/docker-setup.sh start
+```
+
+The application will be available at http://localhost:3000 by default.
+
+#### Docker Management Commands
+
+The `docker-setup.sh` script provides several commands to manage the Docker deployment:
+
+- `./scripts/docker-setup.sh build` - Build the Docker image
+- `./scripts/docker-setup.sh start` - Start the Docker containers
+- `./scripts/docker-setup.sh stop` - Stop the Docker containers
+- `./scripts/docker-setup.sh restart` - Restart the Docker containers
+- `./scripts/docker-setup.sh logs` - View container logs
+- `./scripts/docker-setup.sh status` - Check container status
+- `./scripts/docker-setup.sh clean` - Remove containers, images, and volumes (caution: data loss)
+
+You can customize the port by setting the PORT environment variable:
+```bash
+PORT=8080 ./scripts/docker-setup.sh start
+```
+
+#### Data Persistence
+
+The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
+
 ### Setting Up as a Linux Service
 
 The application can be easily set up as a systemd service on Linux using the provided script:
