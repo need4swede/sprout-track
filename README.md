@@ -140,6 +140,7 @@ The Setup Wizard ensures your application is properly configured with the necess
 ### Utility Scripts
 
 - `./scripts/setup.sh` - Complete setup process (Node.js check, dependencies, database, build)
+- `./scripts/setup-service.sh` - Set up the application as a Linux systemd service with custom port
 - `./scripts/backup.sh` - Create a backup of the application
 - `./scripts/update.sh` - Update application (git pull, prisma operations, build)
 - `./scripts/deployment.sh` - Full deployment process (backup + update)
@@ -147,18 +148,31 @@ The Setup Wizard ensures your application is properly configured with the necess
 
 ## Deployment
 
-### Prerequisites
+### Setting Up as a Linux Service
 
-1. Configure the service name in `.env`:
+The application can be easily set up as a systemd service on Linux using the provided script:
+
 ```bash
-SERVICE_NAME="baby-tracker"
+./scripts/setup-service.sh
 ```
 
-2. Create and configure the systemd service
-3. Ensure user has sudo privileges for service management
+This script will:
+1. Prompt you for a service name (default: sprout-track)
+2. Prompt you for a port number (default: 3000)
+3. Update package.json with the specified port
+4. Create a systemd service file
+5. Enable and start the service
+
+The script requires sudo privileges to create and manage the systemd service.
+
+### Prerequisites
+
+1. Linux system with systemd
+2. Node.js installed (v22 recommended)
+3. Sudo privileges for service management
 4. Make deployment scripts executable:
 ```bash
-chmod +x Scripts/*.sh
+chmod +x scripts/*.sh
 ```
 
 ### Deployment Scripts
