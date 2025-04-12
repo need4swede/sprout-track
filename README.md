@@ -2,32 +2,25 @@
 
 A Next.js application for tracking baby activities, milestones, and development.
 
-### Mobile-First Design
-![Mobile App Interface](public/LogEntry-Mobile.png)
-*Mobile-first app for tracking your child's activities with an intuitive interface*
+## Screenshots
 
-![Dark Mode](public/LogEntry-Mobile-Dark.png)
-*Dark mode support for those late night feedings and minimal eye strain*
-
-![Tablet View](public/LogEntry-Tablet.png)
-*Responsive design that adapts seamlessly to larger devices*
-
-### Key Features
-![Quick Entry](public/FeedLog-Mobile.png)
-*Quick entry interface for logging activities with minimal effort*
-
-![Full Activity Log](public/FullLog-Mobile.png)
-*Comprehensive activity log with powerful search capabilities*
-
-![Calendar View](public/Calendar-Mobile.png)
-*Calendar functionality for tracking events, appointments, and reminders*
-
-### Security & Setup
-![Login Screen](public/Login-Mobile.png)
-*Secure login screen with built-in IP-based lockout protection*
-
-![Setup Wizard](public/SetupPage1-Mobile.png)
-*User-friendly setup wizard for easy onboarding*
+<table>
+  <tr>
+    <td width="33%"><img src="public/LogEntry-Mobile.png" width="100%" alt="Mobile App Interface"/><br/><em>Mobile-first app for tracking your child's activities</em></td>
+    <td width="33%"><img src="public/LogEntry-Mobile-Dark.png" width="100%" alt="Dark Mode"/><br/><em>Dark mode for late night feedings</em></td>
+    <td width="33%"><img src="public/LogEntry-Tablet.png" width="100%" alt="Tablet View"/><br/><em>Responsive design for larger devices</em></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="public/FeedLog-Mobile.png" width="100%" alt="Quick Entry"/><br/><em>Quick entry for logging activities</em></td>
+    <td width="33%"><img src="public/FullLog-Mobile.png" width="100%" alt="Full Activity Log"/><br/><em>Comprehensive searchable activity log</em></td>
+    <td width="33%"><img src="public/Calendar-Mobile.png" width="100%" alt="Calendar View"/><br/><em>Calendar for tracking events and reminders</em></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="public/Login-Mobile.png" width="100%" alt="Login Screen"/><br/><em>Secure login with IP-based lockout</em></td>
+    <td width="33%"><img src="public/SetupPage1-Mobile.png" width="100%" alt="Setup Wizard"/><br/><em>User-friendly setup wizard</em></td>
+    <td width="33%"></td>
+  </tr>
+</table>
 
 ## Tech Stack
 
