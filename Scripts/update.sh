@@ -17,12 +17,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Extract current port configuration from package.json before update
-echo "Checking current port configuration..."
-CURRENT_DEV_PORT=$(grep -o '"dev": "next dev -p [0-9]*"' package.json | grep -o '[0-9]*' || echo "3000")
-CURRENT_START_PORT=$(grep -o '"start": "next start -p [0-9]*"' package.json | grep -o '[0-9]*' || echo "3000")
-echo "Current port configuration: DEV=$CURRENT_DEV_PORT, START=$CURRENT_START_PORT"
-
 # Stash any local changes before pulling
 echo "Stashing any local changes..."
 cd "$PROJECT_DIR" || exit 1
