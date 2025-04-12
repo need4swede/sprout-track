@@ -2,6 +2,33 @@
 
 A Next.js application for tracking baby activities, milestones, and development.
 
+### Mobile-First Design
+![Mobile App Interface](public/LogEntry-Mobile.png)
+*Mobile-first app for tracking your child's activities with an intuitive interface*
+
+![Dark Mode](public/LogEntry-Mobile-Dark.png)
+*Dark mode support for those late night feedings and minimal eye strain*
+
+![Tablet View](public/LogEntry-Tablet.png)
+*Responsive design that adapts seamlessly to larger devices*
+
+### Key Features
+![Quick Entry](public/FeedLog-Mobile.png)
+*Quick entry interface for logging activities with minimal effort*
+
+![Full Activity Log](public/FullLog-Mobile.png)
+*Comprehensive activity log with powerful search capabilities*
+
+![Calendar View](public/Calendar-Mobile.png)
+*Calendar functionality for tracking events, appointments, and reminders*
+
+### Security & Setup
+![Login Screen](public/Login-Mobile.png)
+*Secure login screen with built-in IP-based lockout protection*
+
+![Setup Wizard](public/SetupPage1-Mobile.png)
+*User-friendly setup wizard for easy onboarding*
+
 ## Tech Stack
 
 - Next.js with App Router
