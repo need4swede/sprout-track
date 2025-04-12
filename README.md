@@ -16,7 +16,7 @@ A Next.js application for tracking baby activities, milestones, and development.
 ### Prerequisites
 
 - Git (to clone the repository)
-- Node.js 22 and npm
+- Node.js 22+ and npm 10+
 - Bash shell (for running the setup script)
 
 ### Quick Setup (Recommended)
