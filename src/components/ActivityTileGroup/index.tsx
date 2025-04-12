@@ -165,16 +165,8 @@ export function ActivityTileGroup({
               loadedOrder.push('milestone');
             }
             
-            // Get visible activities and ensure all activities are included
-            const allActivityTypes: ActivityType[] = ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'];
+            // Get visible activities from saved settings
             const loadedVisible = new Set(data.data.visible as ActivityType[]);
-            
-            // Ensure all activities are visible by default
-            allActivityTypes.forEach(activity => {
-              if (!loadedVisible.has(activity)) {
-                loadedVisible.add(activity);
-              }
-            });
             
             // Store the original loaded settings for comparison
             const originalOrder = [...loadedOrder];

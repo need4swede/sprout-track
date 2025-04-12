@@ -20,8 +20,8 @@ async function getActivitySettings(req: NextRequest): Promise<NextResponse<ApiRe
     
     // Default settings to use if none are found
     const defaultSettings: ActivitySettings = {
-      order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-      visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+      order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'],
+      visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'],
       caretakerId: caretakerId || null,
     };
     
@@ -102,8 +102,8 @@ async function getActivitySettings(req: NextRequest): Promise<NextResponse<ApiRe
     return NextResponse.json({ 
       success: true, 
       data: {
-        order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-        visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
+        order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'],
+        visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'],
         caretakerId: errorCaretakerId || null,
       }
     });
@@ -153,8 +153,8 @@ async function saveActivitySettings(req: NextRequest): Promise<NextResponse<ApiR
           defaultTempUnit: 'F',
           activitySettings: JSON.stringify({
             global: {
-              order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump'],
-              visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump']
+              order: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone'],
+              visible: ['sleep', 'feed', 'diaper', 'note', 'bath', 'pump', 'measurement', 'milestone']
             }
           })
         }
