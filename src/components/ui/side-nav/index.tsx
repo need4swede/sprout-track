@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ChangelogModal from '@/src/components/modals/changelog';
 import { X, Settings, LogOut } from 'lucide-react';
 import ThemeToggle from '@/src/components/ui/theme-toggle';
 import Image from 'next/image';
@@ -95,6 +96,11 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
  * 
  * A responsive side navigation menu that slides in from the left
  */
+/**
+ * SideNav component
+ * 
+ * A responsive side navigation menu that slides in from the left
+ */
 export const SideNav: React.FC<SideNavProps> = ({
   isOpen,
   onClose,
@@ -108,6 +114,7 @@ export const SideNav: React.FC<SideNavProps> = ({
 }) => {
   const { theme } = useTheme();
   const [isSystemDarkMode, setIsSystemDarkMode] = useState<boolean>(false);
+  const [showChangelog, setShowChangelog] = useState<boolean>(false);
   
   // Check if system is in dark mode
   useEffect(() => {
@@ -229,8 +236,21 @@ export const SideNav: React.FC<SideNavProps> = ({
 
         {/* Version display at bottom of nav items */}
         <div className="w-full text-center mb-4">
-          <span className="text-xs text-gray-500">v0.9.0</span>
+          <span 
+            className="text-xs text-gray-500 cursor-pointer hover:text-teal-600 transition-colors"
+            onClick={() => setShowChangelog(true)}
+            aria-label="View changelog"
+          >
+            v0.9.0
+          </span>
         </div>
+
+        {/* Changelog Modal */}
+        <ChangelogModal 
+          open={showChangelog} 
+          onClose={() => setShowChangelog(false)} 
+          version="0.9.0"
+        />
 
         {/* Footer with Theme Toggle, Settings and Logout */}
         <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
