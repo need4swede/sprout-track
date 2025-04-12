@@ -36,6 +36,7 @@ A Next.js application for tracking baby activities, milestones, and development.
 ### Prerequisites
 
 - Git (to clone the repository)
+- Node.js (v22+) and NPM (v10+)
 - Bash shell (for running the setup script)
 
 ### Quick Setup (Recommended)
@@ -64,10 +65,7 @@ chmod +x scripts/*.sh
 ./scripts/setup.sh
 ```
 
-> **Note:** Do not run the setup script with sudo, as it installs Node.js for the current user. If you need to run as root, install Node.js system-wide first.
-
 This setup script will:
-- Check if Node.js is installed and install it if needed
 - Install all dependencies
 - Generate the Prisma client
 - Run database migrations
@@ -80,7 +78,7 @@ After setup completes, you can run the application in development or production 
 
 If you prefer to set up manually or the setup script doesn't work for your environment:
 
-1. Ensure Node.js is installed (v22 recommended)
+1. Ensure Node.js and NPM are installed
 
 2. Install dependencies:
 ```bash
@@ -249,35 +247,6 @@ PORT=8080 ./scripts/docker-setup.sh start
 
 The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
 
-The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
-
-### Setting Up as a Linux Service
-
-The application can be easily set up as a systemd service on Linux using the provided script:
-
-```bash
-./scripts/setup-service.sh
-```
-
-This script will:
-1. Prompt you for a service name (default: sprout-track)
-2. Prompt you for a port number (default: 3000)
-3. Update package.json with the specified port
-4. Create a systemd service file
-5. Enable and start the service
-
-The script requires sudo privileges to create and manage the systemd service.
-
-### Prerequisites
-
-1. Linux system with systemd
-2. Node.js installed (v22 recommended)
-3. Sudo privileges for service management
-4. Make deployment scripts executable:
-```bash
-chmod +x scripts/*.sh
-```
-
 ### Deployment Scripts
 
 The following deployment scripts are available in the `Scripts` directory:
@@ -287,9 +256,9 @@ The following deployment scripts are available in the `Scripts` directory:
 - `update.sh` - Update application (git pull, prisma operations, build)
 - `deployment.sh` - Full deployment process (backup + update)
 
-### Running a Deployment
+### Updating the Application
 
-For a full deployment process:
+For a full update/deployment process:
 ```bash
 ./scripts/deployment.sh
 ```
