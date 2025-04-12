@@ -140,6 +140,23 @@ The Setup Wizard ensures your application is properly configured with the necess
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
+### Customizing Port Numbers
+
+By default, the application runs on port 3000. To change the port:
+
+1. Open `package.json` in your preferred text editor
+2. Locate the "scripts" section
+3. Modify the "dev" and/or "start" scripts to include the `-p` flag followed by your desired port number:
+
+```json
+"scripts": {
+  "dev": "next dev -p 4000",  // Development server will run on port 4000
+  "start": "next start -p 8080"  // Production server will run on port 8080
+}
+```
+
+This change will persist across application updates. For Docker deployments, use the PORT environment variable as described in the Docker section.
+
 ### Database Scripts
 
 - `npm run prisma:generate` - Generate Prisma client
