@@ -22,6 +22,29 @@ A Next.js application for tracking baby activities, milestones, and development.
   </tr>
 </table>
 
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Quick Setup (Recommended)](#quick-setup-recommended)
+  - [Manual Setup (Alternative)](#manual-setup-alternative)
+  - [Default Security PIN](#default-security-pin)
+- [Initial Application Setup](#initial-application-setup)
+  - [Setup Wizard](#setup-wizard)
+- [Project Structure](#project-structure)
+- [Available Scripts](#available-scripts)
+  - [Next.js Server/Dev Scripts](#nextjs-serverdev-scripts)
+  - [Customizing Port Numbers](#customizing-port-numbers)
+  - [Database Scripts](#database-scripts)
+  - [Utility Scripts](#utility-scripts)
+  - [Updating the Application](#updating-the-application)
+- [Docker Deployment](#docker-deployment)
+  - [Prerequisites](#prerequisites-1)
+  - [Quick Docker Setup](#quick-docker-setup)
+  - [Docker Management Commands](#docker-management-commands)
+  - [Data Persistence](#data-persistence)
+
 ## Tech Stack
 
 - Next.js with App Router
@@ -30,6 +53,7 @@ A Next.js application for tracking baby activities, milestones, and development.
 - TailwindCSS for styling
 - React Query for data fetching
 - React Hook Form for form handling
+- Docker for containerization (optional)
 
 ## Getting Started
 
@@ -78,7 +102,7 @@ After setup completes, you can run the application in development or production 
 
 If you prefer to set up manually or the setup script doesn't work for your environment:
 
-1. Ensure Node.js and NPM are installed
+1. Ensure Node.js (v22+) and NPM (v10+) are installed
 
 2. Install dependencies:
 ```bash
@@ -99,15 +123,19 @@ npm run prisma:migrate
 ```bash
 npm run prisma:seed
 ```
+### To run the development server:
+```bash
+npm run dev
+```
 
-6. Build the application:
+### To run the production server:
+1. Build the application:
 ```bash
 npm run build
 ```
-
-7. Run the development server:
+2. Run the production server:
 ```bash
-npm run dev
+npm run start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -137,7 +165,7 @@ The application includes a built-in Setup Wizard (`src/components/SetupWizard`) 
 3. **Baby Setup**
    - Enter baby's information (first name, last name, birth date, gender)
    - Configure warning times for feeding and diaper changes
-   - Default warning times: Feed (3 hours), Diaper (2 hours)
+   - Default warning times: Feed (2 hours), Diaper (3 hours)
 
 The Setup Wizard ensures your application is properly configured with the necessary security settings and initial data before you start tracking your baby's activities.
 
@@ -151,7 +179,7 @@ The Setup Wizard ensures your application is properly configured with the necess
 
 ## Available Scripts
 
-### Development Scripts
+### Next.js Server/Dev Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
@@ -185,23 +213,37 @@ This change will persist across application updates. For Docker deployments, use
 ### Utility Scripts
 
 - `./scripts/setup.sh` - Complete setup process (Node.js check, dependencies, database, build)
-- `./scripts/backup.sh` - Create a backup of the application
+- `./scripts/backup.sh` - Create a backup of the application and database
 - `./scripts/update.sh` - Update application (git pull, prisma operations, build)
 - `./scripts/deployment.sh` - Full deployment process (backup + update)
 - `./scripts/service.sh {start|stop|restart|status}` - Manage the application service
 
-## Deployment
+### Updating the Application
 
-### Docker Deployment
+For a full update/deployment process:
+```bash
+./scripts/deployment.sh
+```
+
+This will:
+1. Create a backup of the current application
+2. Pull latest changes from git
+3. Run Prisma operations
+4. Build the application
+5. Manage service stop/start as needed
+
+Each script can also be run independently for specific operations.
+
+## Docker Deployment
 
 The application can be easily deployed using Docker. This method provides a consistent environment and simplifies the setup process.
 
-#### Prerequisites
+### Prerequisites
 
 - Docker and Docker Compose installed on your system
 - Git to clone the repository
 
-#### Quick Docker Setup
+### Quick Docker Setup
 
 1. Clone the repository:
 ```bash
@@ -226,7 +268,7 @@ chmod +x scripts/docker-setup.sh
 
 The application will be available at http://localhost:3000 by default.
 
-#### Docker Management Commands
+### Docker Management Commands
 
 The `docker-setup.sh` script provides several commands to manage the Docker deployment:
 
@@ -243,31 +285,6 @@ You can customize the port by setting the PORT environment variable:
 PORT=8080 ./scripts/docker-setup.sh start
 ```
 
-#### Data Persistence
+### Data Persistence
 
 The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
-
-### Deployment Scripts
-
-The following deployment scripts are available in the `Scripts` directory:
-
-- `service.sh {start|stop|restart|status}` - Manage the application service
-- `backup.sh` - Create a backup of the application
-- `update.sh` - Update application (git pull, prisma operations, build)
-- `deployment.sh` - Full deployment process (backup + update)
-
-### Updating the Application
-
-For a full update/deployment process:
-```bash
-./scripts/deployment.sh
-```
-
-This will:
-1. Create a backup of the current application
-2. Pull latest changes from git
-3. Run Prisma operations
-4. Build the application
-5. Manage service stop/start as needed
-
-Each script can also be run independently for specific operations.
