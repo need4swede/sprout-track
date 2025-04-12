@@ -323,8 +323,8 @@ export default function PumpForm({
       title={activity ? 'Edit Pump' : 'New Pump'}
       description={activity ? 'Update details about your pumping session' : 'Record details about your pumping session'}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Start Time Input */}
             <div className="space-y-2">
@@ -490,6 +490,7 @@ export default function PumpForm({
               />
             </div>
           </div>
+          </form>
         </FormPageContent>
         
         <FormPageFooter>
@@ -503,14 +504,13 @@ export default function PumpForm({
               Cancel
             </Button>
             <Button 
-              type="submit" 
+              onClick={handleSubmit} 
               disabled={loading}
             >
               {loading ? 'Saving...' : (activity ? 'Update' : 'Save')}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

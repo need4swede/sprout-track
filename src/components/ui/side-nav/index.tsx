@@ -227,6 +227,11 @@ export const SideNav: React.FC<SideNavProps> = ({
           />
         </nav>
 
+        {/* Version display at bottom of nav items */}
+        <div className="w-full text-center mb-4">
+          <span className="text-xs text-gray-500">v0.9.0</span>
+        </div>
+
         {/* Footer with Theme Toggle, Settings and Logout */}
         <div className={cn(sideNavStyles.footer, "side-nav-footer")}>
           {/* Theme Toggle Component */}

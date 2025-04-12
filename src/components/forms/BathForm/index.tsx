@@ -168,8 +168,8 @@ export default function BathForm({
       onClose={onClose}
       title={activity ? 'Edit Bath' : 'New Bath'}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Date/Time Input */}
             <div className="space-y-2">
@@ -226,6 +226,7 @@ export default function BathForm({
               />
             </div>
           </div>
+          </form>
         </FormPageContent>
         
         <FormPageFooter>
@@ -239,14 +240,13 @@ export default function BathForm({
               Cancel
             </Button>
             <Button
-              type="submit"
+              onClick={handleSubmit}
               disabled={loading}
             >
               {loading ? 'Saving...' : activity ? 'Update' : 'Save'}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

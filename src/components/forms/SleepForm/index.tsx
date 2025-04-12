@@ -358,8 +358,8 @@ export default function SleepForm({
       title={title}
       description={description}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
           <div className="space-y-3">
             <div>
@@ -449,6 +449,7 @@ export default function SleepForm({
               </div>
             )}
           </div>
+          </form>
         </FormPageContent>
         <FormPageFooter>
           <div className="flex justify-end space-x-2">
@@ -461,14 +462,13 @@ export default function SleepForm({
               Cancel
             </Button>
             <Button 
-              type="submit"
+              onClick={handleSubmit}
               disabled={loading}
             >
               {isEditMode ? 'Update Sleep' : (isSleeping ? 'End Sleep' : 'Start Sleep')}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

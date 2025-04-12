@@ -513,8 +513,8 @@ export default function FeedForm({
       title={activity ? 'Edit Feeding' : 'Log Feeding'}
       description={activity ? 'Update what and when your baby ate' : 'Record what and when your baby ate'}
     >
-      <form onSubmit={handleSubmit} className="h-full flex flex-col">
         <FormPageContent className="overflow-y-auto">
+          <form onSubmit={handleSubmit} className="h-full flex flex-col">
           <div className="space-y-4 pb-20">
             {/* Time Selection - Full width on all screens */}
             <div>
@@ -647,6 +647,7 @@ export default function FeedForm({
               />
             )}
           </div>
+          </form>
         </FormPageContent>
         <FormPageFooter>
           <div className="flex justify-end space-x-2">
@@ -658,12 +659,11 @@ export default function FeedForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button onClick={handleSubmit} disabled={loading}>
               {activity ? 'Update' : 'Save'}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

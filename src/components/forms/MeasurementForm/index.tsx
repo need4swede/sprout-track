@@ -382,8 +382,8 @@ export default function MeasurementForm({
       title={activity ? 'Edit Measurement' : 'Log Measurements'}
       description={activity ? 'Update details about your baby\'s measurement' : 'Record new measurements for your baby'}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Date & Time - Full width on all screens */}
             <div>
@@ -575,6 +575,7 @@ export default function MeasurementForm({
               />
             </div>
           </div>
+          </form>
         </FormPageContent>
         <FormPageFooter>
           <div className="flex justify-end space-x-2">
@@ -586,12 +587,11 @@ export default function MeasurementForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button onClick={handleSubmit} disabled={loading}>
               {activity ? 'Update' : 'Save'}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

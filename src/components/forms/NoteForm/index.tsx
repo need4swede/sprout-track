@@ -332,8 +332,8 @@ export default function NoteForm({
       title={activity ? 'Edit Note' : 'Add Note'}
       description={activity ? 'Update your note about your baby' : 'Record a note about your baby'}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Time Selection - Full width on all screens */}
             <div>
@@ -427,6 +427,7 @@ export default function NoteForm({
               />
             </div>
           </div>
+          </form>
         </FormPageContent>
         <FormPageFooter>
           <div className="flex justify-end space-x-2">
@@ -438,12 +439,11 @@ export default function NoteForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button onClick={handleSubmit} disabled={loading}>
               {activity ? 'Update' : 'Save'}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }

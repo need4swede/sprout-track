@@ -193,8 +193,8 @@ export default function DiaperForm({
       title={activity ? 'Edit Diaper Change' : 'Log Diaper Change'}
       description={activity ? 'Update details about your baby\'s diaper change' : 'Record details about your baby\'s diaper change'}
     >
-      <form onSubmit={handleSubmit}>
         <FormPageContent>
+          <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Time Selection - Full width on all screens */}
             <div>
@@ -275,6 +275,7 @@ export default function DiaperForm({
               </div>
             )}
           </div>
+          </form>
         </FormPageContent>
         <FormPageFooter>
           <div className="flex justify-end space-x-2">
@@ -286,12 +287,11 @@ export default function DiaperForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button onClick={handleSubmit} disabled={loading}>
               {activity ? 'Update' : 'Save'}
             </Button>
           </div>
         </FormPageFooter>
-      </form>
     </FormPage>
   );
 }
