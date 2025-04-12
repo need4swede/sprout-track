@@ -16,7 +16,6 @@ A Next.js application for tracking baby activities, milestones, and development.
 ### Prerequisites
 
 - Git (to clone the repository)
-- Node.js 22+ and npm 10+
 - Bash shell (for running the setup script)
 
 ### Quick Setup (Recommended)
@@ -45,10 +44,10 @@ chmod +x scripts/*.sh
 ./scripts/setup.sh
 ```
 
-> **Note:** Do not run the setup script with sudo. The script expects Node.js to be installed for the current user.
+> **Note:** Do not run the setup script with sudo, as it installs Node.js for the current user. If you need to run as root, install Node.js system-wide first.
 
 This setup script will:
-- Check if Node.js is installed
+- Check if Node.js is installed and install it if needed
 - Install all dependencies
 - Generate the Prisma client
 - Run database migrations
@@ -151,7 +150,6 @@ The Setup Wizard ensures your application is properly configured with the necess
 ### Utility Scripts
 
 - `./scripts/setup.sh` - Complete setup process (Node.js check, dependencies, database, build)
-- `./scripts/setup-service.sh` - Set up the application as a Linux systemd service with custom port
 - `./scripts/backup.sh` - Create a backup of the application
 - `./scripts/update.sh` - Update application (git pull, prisma operations, build)
 - `./scripts/deployment.sh` - Full deployment process (backup + update)
@@ -211,6 +209,8 @@ PORT=8080 ./scripts/docker-setup.sh start
 ```
 
 #### Data Persistence
+
+The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
 
 The application data is stored in a Docker volume named `sprout-track-db`. This ensures that your data persists even if the container is removed or rebuilt.
 
