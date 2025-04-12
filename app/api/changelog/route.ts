@@ -9,7 +9,7 @@ import path from 'path';
 export async function GET() {
   try {
     // Get the absolute path to the CHANGELOG.MD file
-    const changelogPath = path.join(process.cwd(), 'CHANGELOG.MD');
+    const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
     
     // Check if the file exists
     if (!fs.existsSync(changelogPath)) {
