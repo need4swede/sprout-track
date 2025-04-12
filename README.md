@@ -16,6 +16,7 @@ A Next.js application for tracking baby activities, milestones, and development.
 ### Prerequisites
 
 - Git (to clone the repository)
+- Node.js 22 and npm
 - Bash shell (for running the setup script)
 
 ### Quick Setup (Recommended)
@@ -44,10 +45,10 @@ chmod +x scripts/*.sh
 ./scripts/setup.sh
 ```
 
-> **Note:** Do not run the setup script with sudo, as it installs Node.js for the current user. If you need to run as root, install Node.js system-wide first.
+> **Note:** Do not run the setup script with sudo. The script expects Node.js to be installed for the current user.
 
 This setup script will:
-- Check if Node.js is installed and install it if needed
+- Check if Node.js is installed
 - Install all dependencies
 - Generate the Prisma client
 - Run database migrations
