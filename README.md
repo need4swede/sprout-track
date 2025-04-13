@@ -43,6 +43,8 @@ A Next.js application for tracking baby activities, milestones, and development.
   - [Prerequisites](#prerequisites-1)
   - [Quick Docker Setup](#quick-docker-setup)
   - [Docker Management Commands](#docker-management-commands)
+  - [Updating Docker Deployment](#updating-docker-deployment)
+  - [Database Backups in Docker](#database-backups-in-docker)
   - [Data Persistence](#data-persistence)
 
 ## Tech Stack
@@ -276,6 +278,8 @@ The `docker-setup.sh` script provides several commands to manage the Docker depl
 - `./scripts/docker-setup.sh start` - Start the Docker containers
 - `./scripts/docker-setup.sh stop` - Stop the Docker containers
 - `./scripts/docker-setup.sh restart` - Restart the Docker containers
+- `./scripts/docker-setup.sh update` - Update the container with latest code and run migrations
+- `./scripts/docker-setup.sh backup` - Create a backup of the database volume
 - `./scripts/docker-setup.sh logs` - View container logs
 - `./scripts/docker-setup.sh status` - Check container status
 - `./scripts/docker-setup.sh clean` - Remove containers, images, and volumes (caution: data loss)
@@ -284,6 +288,30 @@ You can customize the port by setting the PORT environment variable:
 ```bash
 PORT=8080 ./scripts/docker-setup.sh start
 ```
+
+### Updating Docker Deployment
+
+To update your Docker deployment with the latest code and run any necessary database migrations:
+
+```bash
+./scripts/docker-setup.sh update
+```
+
+This command will:
+1. Pull the latest code from git
+2. Create a backup of your database
+3. Rebuild the Docker image with the latest code
+4. Stop and restart the container (which automatically runs migrations)
+
+### Database Backups in Docker
+
+You can create a backup of your database at any time with:
+
+```bash
+./scripts/docker-setup.sh backup
+```
+
+Backups are stored in the `backups` directory in your project folder with timestamps in the filename format `sprout-track-db-YYYYMMDD_HHMMSS.tar`.
 
 ### Data Persistence
 
