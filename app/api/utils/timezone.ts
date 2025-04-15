@@ -29,7 +29,30 @@ export function getSystemTimezone(): string {
         return match[1];
       }
     } else if (process.platform === 'linux') {
-      return execSync('cat /etc/timezone').toString().trim();
+      try {
+        // Try /etc/timezone first (Debian, Ubuntu)
+        return execSync('cat /etc/timezone').toString().trim();
+      } catch (error) {
+        try {
+          // Try /etc/localtime as a symlink (RHEL, CentOS, Alpine)
+          const linkTarget = execSync('readlink -f /etc/localtime').toString().trim();
+          const match = linkTarget.match(/\/usr\/share\/zoneinfo\/(.+)$/);
+          if (match && match[1]) {
+            return match[1];
+          }
+        } catch (innerError) {
+          // Try TZ file (Alpine Linux)
+          try {
+            return execSync('cat /etc/TZ').toString().trim();
+          } catch (tzError) {
+            // Fallback to TZ environment variable or Intl API
+            if (process.env.TZ) {
+              return process.env.TZ;
+            }
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
+          }
+        }
+      }
     }
     
     // Fallback to Intl API for Windows or other platforms

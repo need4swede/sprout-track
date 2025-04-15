@@ -45,7 +45,7 @@
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tailwindcss/postcss": "^4.0.17",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.13.4",
+    "@types/node": "^22.14.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
