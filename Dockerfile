@@ -16,6 +16,9 @@ COPY prisma ./prisma/
 # Install dependencies
 RUN npm ci
 
+# Disable Next.js telemetry
+RUN npm exec next telemetry disable
+
 # Note: Prisma client generation moved to docker-startup.sh
 
 # Copy application files

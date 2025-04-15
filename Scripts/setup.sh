@@ -45,6 +45,11 @@ if [ $? -ne 0 ]; then
 fi
 echo "Dependencies installed successfully."
 
+# Disable Next.js telemetry
+echo "Disabling Next.js telemetry..."
+npm exec next telemetry disable
+echo "Next.js telemetry disabled."
+
 # Step 3: Generate Prisma client
 echo "Step 3: Generating Prisma client..."
 npm run prisma:generate
