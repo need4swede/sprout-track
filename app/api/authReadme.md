@@ -158,9 +158,12 @@ Authentication errors return appropriate HTTP status codes:
 
 1. **Cookie Security**:
    - HTTP-only: Prevents JavaScript access to the cookie
-   - Secure: Only sent over HTTPS in production
+   - Secure: Only sent over HTTPS when `COOKIE_SECURE` environment variable is set to `"true"`
    - SameSite: Strict to prevent CSRF attacks
    - Limited expiration: 30 minutes
+   - The `COOKIE_SECURE` environment variable (in `.env` file) controls whether cookies require HTTPS:
+     - Set to `"false"` (default) to allow cookies on non-HTTPS connections
+     - Set to `"true"` when you have an SSL certificate in place and want to enforce secure cookies
 
 2. **Session Management**:
    - Two separate timeout mechanisms are implemented:

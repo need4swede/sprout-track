@@ -39,6 +39,7 @@ A Next.js application for tracking baby activities, milestones, and development.
   - [Database Scripts](#database-scripts)
   - [Utility Scripts](#utility-scripts)
   - [Updating the Application](#updating-the-application)
+- [Environment Variables](#environment-variables)
 - [Docker Deployment](#docker-deployment)
   - [Prerequisites](#prerequisites-1)
   - [Quick Docker Setup](#quick-docker-setup)
@@ -235,6 +236,29 @@ This will:
 5. Manage service stop/start as needed
 
 Each script can also be run independently for specific operations.
+
+## Environment Variables
+
+The application can be configured using environment variables in the `.env` file. Here are the available options:
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `DATABASE_URL` | Path to the SQLite database | `"file:../db/baby-tracker.db"` | `"file:/path/to/custom/db.sqlite"` |
+| `SERVICE_NAME` | Name of the systemd service | `"baby-tracker"` | `"sprout-track"` |
+| `AUTH_LIFE` | Authentication token validity period in seconds | `"86400"` (24 hours) | `"43200"` (12 hours) |
+| `IDLE_TIME` | Idle timeout before automatic logout in seconds | `"28800"` (8 hours) | `"3600"` (1 hour) |
+| `APP_VERSION` | Application version | `"0.9.0"` | `"1.0.0"` |
+| `COOKIE_SECURE` | Whether cookies require HTTPS connections | `"false"` | `"true"` |
+
+### Important Notes:
+
+- **DATABASE_URL**: Changing this after initial setup requires migrating your data manually.
+- **AUTH_LIFE**: Lower values increase security but require more frequent logins.
+- **IDLE_TIME**: Determines how long a user can be inactive before being logged out.
+- **COOKIE_SECURE**: 
+  - Set to `"false"` to allow cookies on non-HTTPS connections (development or initial setup)
+  - Set to `"true"` when you have an SSL certificate in place (recommended for production)
+  - When set to `"true"`, the application will only work over HTTPS connections
 
 ## Docker Deployment
 

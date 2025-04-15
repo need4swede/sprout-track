@@ -1,6 +1,9 @@
 # Use Node.js LTS as the base image
 FROM node:22-alpine
 
+# Install tzdata package for timezone support
+RUN apk add --no-cache tzdata
+
 # Set working directory
 WORKDIR /app
 
@@ -13,6 +16,9 @@ COPY prisma ./prisma/
 # Install dependencies
 RUN npm ci
 
+# Disable Next.js telemetry
+RUN npm exec next telemetry disable
+
 # Note: Prisma client generation moved to docker-startup.sh
 
 # Copy application files
@@ -24,6 +30,7 @@ RUN npm run build
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV TZ=UTC
 
 # Update database URL to point to the volume
 ENV DATABASE_URL="file:/db/baby-tracker.db"

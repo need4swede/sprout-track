@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
         // Also set the caretakerId cookie for backward compatibility
         response.cookies.set('caretakerId', 'system', {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: process.env.COOKIE_SECURE === 'true',
           sameSite: 'strict',
           maxAge: TOKEN_EXPIRATION, // Use AUTH_LIFE env variable
           path: '/',
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
         // Also set the caretakerId cookie for backward compatibility
         response.cookies.set('caretakerId', caretaker.id, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: process.env.COOKIE_SECURE === 'true',
           sameSite: 'strict',
           maxAge: TOKEN_EXPIRATION, // Use AUTH_LIFE env variable
           path: '/',

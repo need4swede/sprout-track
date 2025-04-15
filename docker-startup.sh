@@ -7,6 +7,16 @@ mkdir -p /db
 mkdir -p /app
 ln -sf /db /app/db
 
+# Set up timezone for Alpine Linux
+if [ -n "$TZ" ]; then
+  # Create the timezone file if it doesn't exist
+  echo "$TZ" > /etc/TZ
+  # Create a symlink to the zoneinfo file if it exists
+  if [ -f "/usr/share/zoneinfo/$TZ" ]; then
+    ln -sf "/usr/share/zoneinfo/$TZ" /etc/localtime
+  fi
+fi
+
 echo "Generating Prisma client..."
 DATABASE_URL="file:/db/baby-tracker.db" npx prisma generate
 
