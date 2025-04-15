@@ -1,6 +1,6 @@
 # Sprout Track Changelog
 
-## v0.9.3 (Release) - April 2025
+## v0.9.3 (Beta Patch) - April 2025
 
 ### Changes
 
