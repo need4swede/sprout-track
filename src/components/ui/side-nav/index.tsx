@@ -9,6 +9,7 @@ import { sideNavStyles, triggerButtonVariants } from './side-nav.styles';
 import { SideNavProps, SideNavTriggerProps, SideNavItemProps } from './side-nav.types';
 import { ReactNode } from 'react';
 import './side-nav.css'; // Import the CSS file with dark mode overrides
+import packageInfo from '@/package.json';
 
 // Interface for the FooterButton component
 interface FooterButtonProps {
@@ -241,7 +242,7 @@ export const SideNav: React.FC<SideNavProps> = ({
             onClick={() => setShowChangelog(true)}
             aria-label="View changelog"
           >
-            v0.9.0
+            v{packageInfo.version}
           </span>
         </div>
 
@@ -249,7 +250,7 @@ export const SideNav: React.FC<SideNavProps> = ({
         <ChangelogModal 
           open={showChangelog} 
           onClose={() => setShowChangelog(false)} 
-          version="0.9.0"
+          version={packageInfo.version}
         />
 
         {/* Footer with Theme Toggle, Settings and Logout */}
