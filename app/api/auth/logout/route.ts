@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     // Clear the caretakerId cookie with the same settings it was set with
     response.cookies.set('caretakerId', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.COOKIE_SECURE === 'true',
       sameSite: 'strict',
       path: '/',
       maxAge: 0, // Expire immediately
